@@ -48,4 +48,14 @@ class ProductProject extends Model
     {
         return $this->hasMany(WorkflowTransition::class);
     }
+
+    public function sources(): HasMany
+    {
+        return $this->hasMany(ProductSource::class);
+    }
+
+    public function skus(): HasMany
+    {
+        return $this->hasMany(ProductSku::class);
+    }
 }
