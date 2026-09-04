@@ -24,11 +24,22 @@ class CampaignTestController extends Controller
             'impressions' => ['required', 'integer', 'min:0'],
             'clicks' => ['required', 'integer', 'min:0'],
             'conversions' => ['required', 'integer', 'min:0'],
-            'feedback_target_stage' => ['nullable', Rule::in(['market_research', 'website_operations', 'content_creative'])],
+            'creative_asset_id' => [
+                'required',
+                Rule::exists('creative_assets', 'id')->where(fn ($query) => $query
+                    ->where('product_project_id', $project->id)
+                    ->where('asset_type', 'video')),
+            ],
+            'landing_page_id' => [
+                'required',
+                Rule::exists('landing_pages', 'id')->where('product_project_id', $project->id),
+            ],
+            'feedback_target_stages' => ['nullable', 'array'],
+            'feedback_target_stages.*' => ['nullable', 'distinct', Rule::in(['market_research', 'website_operations', 'content_creative'])],
             'feedback_note' => ['nullable', 'string'],
         ]);
 
-        if (! empty($data['feedback_target_stage']) && empty($data['feedback_note'])) {
+        if (! empty($data['feedback_target_stages']) && empty($data['feedback_note'])) {
             return back()->withErrors(['feedback_note' => '填写反馈部门时，请同时填写优化建议。']);
         }
 
@@ -43,22 +54,39 @@ class CampaignTestController extends Controller
                 'clicks' => $data['clicks'],
                 'conversions' => $data['conversions'],
                 'ctr' => $ctr,
+                'creative_asset_id' => $data['creative_asset_id'],
+                'landing_page_id' => $data['landing_page_id'],
                 'created_by' => $request->user()->id,
             ]);
 
-            if (! empty($data['feedback_target_stage'])) {
-                OptimizationFeedback::create([
+            foreach ($data['feedback_target_stages'] ?? [] as $targetStage) {
+                $feedback = OptimizationFeedback::create([
                     'product_project_id' => $project->id,
                     'campaign_test_id' => $campaign->id,
-                    'target_stage' => $data['feedback_target_stage'],
+                    'target_stage' => $targetStage,
                     'note' => $data['feedback_note'],
                     'status' => 'open',
                     'created_by' => $request->user()->id,
                 ]);
+                app(RecordProjectActivity::class)->handle($project, $request->user(), 'feedback.created', [
+                    'feedback_id' => $feedback->id,
+                    'campaign_test_id' => $campaign->id,
+                    'target_stage' => $feedback->target_stage,
+                ]);
             }
-            app(RecordProjectActivity::class)->handle($project, $request->user(), 'campaign_test.created', ['campaign_test_id' => $campaign->id, 'campaign_name' => $campaign->campaign_name, 'ctr' => $campaign->ctr]);
+
+            $campaign->load(['creativeAsset', 'landingPage']);
+            app(RecordProjectActivity::class)->handle($project, $request->user(), 'campaign_test.created', [
+                'campaign_test_id' => $campaign->id,
+                'campaign_name' => $campaign->campaign_name,
+                'ctr' => $campaign->ctr,
+                'creative_asset_id' => $campaign->creative_asset_id,
+                'creative_asset_title' => $campaign->creativeAsset->title,
+                'landing_page_id' => $campaign->landing_page_id,
+                'landing_page_title' => $campaign->landingPage->title,
+            ]);
         });
 
-        return to_route('projects.index');
+        return to_route('projects.workspace', ['project' => $project, 'tab' => 'campaigns']);
     }
 }

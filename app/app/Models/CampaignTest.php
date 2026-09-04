@@ -22,4 +22,14 @@ class CampaignTest extends Model
     {
         return $this->hasMany(OptimizationFeedback::class);
     }
+
+    public function creativeAsset(): BelongsTo
+    {
+        return $this->belongsTo(CreativeAsset::class);
+    }
+
+    public function landingPage(): BelongsTo
+    {
+        return $this->belongsTo(LandingPage::class);
+    }
 }
