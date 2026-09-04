@@ -35,6 +35,13 @@
         </form>
     </details>
 
+    <form method="GET" class="mb-4 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-5">
+        <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="搜索产品名称或项目编号" class="rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 lg:col-span-2">
+        <select name="stage" class="rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"><option value="">全部环节</option><option value="market_research" @selected(($filters['stage'] ?? '') === 'market_research')>市场研究</option><option value="website_operations" @selected(($filters['stage'] ?? '') === 'website_operations')>网站运营</option><option value="content_creative" @selected(($filters['stage'] ?? '') === 'content_creative')>内容创意</option><option value="traffic_growth" @selected(($filters['stage'] ?? '') === 'traffic_growth')>流量增长</option></select>
+        <select name="priority" class="rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"><option value="">全部优先级</option><option value="high" @selected(($filters['priority'] ?? '') === 'high')>高</option><option value="medium" @selected(($filters['priority'] ?? '') === 'medium')>中</option><option value="low" @selected(($filters['priority'] ?? '') === 'low')>低</option></select>
+        <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">筛选项目</button>
+    </form>
+
     <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div class="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-700">全部项目</div>
         <div class="divide-y divide-slate-100">
