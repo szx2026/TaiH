@@ -88,5 +88,6 @@ class LandingPageTest extends TestCase
         ]);
         $this->assertDatabaseHas('landing_page_skus', ['product_sku_id' => $sku->id]);
         $this->assertDatabaseHas('product_skus', ['id' => $sku->id, 'sku_status' => 'used_on_page']);
+        $this->assertDatabaseHas('project_activities', ['product_project_id' => $project->id, 'event' => 'landing_page.created']);
     }
 }

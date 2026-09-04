@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Activity\RecordProjectActivity;
 use App\Models\CreativeAsset;
 use App\Models\ProductProject;
 use Illuminate\Http\RedirectResponse;
@@ -35,7 +36,7 @@ class CreativeAssetController extends Controller
 
         $path = $request->file('asset_file')?->store('creative-assets/'.$project->id, 'local');
 
-        CreativeAsset::create([
+        $asset = CreativeAsset::create([
             'product_project_id' => $project->id,
             'title' => $data['title'],
             'asset_type' => $data['asset_type'],
@@ -49,6 +50,7 @@ class CreativeAssetController extends Controller
             'status' => 'draft',
             'created_by' => $request->user()->id,
         ]);
+        app(RecordProjectActivity::class)->handle($project, $request->user(), 'creative_asset.created', ['asset_id' => $asset->id, 'title' => $asset->title]);
 
         return to_route('projects.index');
     }

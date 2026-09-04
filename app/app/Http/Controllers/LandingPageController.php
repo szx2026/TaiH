@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Activity\RecordProjectActivity;
 use App\Models\LandingPage;
 use App\Models\ProductProject;
 use App\Models\ProductSku;
@@ -48,6 +49,7 @@ class LandingPageController extends Controller
 
             $page->skus()->sync($skuIds);
             ProductSku::query()->whereIn('id', $skuIds)->update(['sku_status' => 'used_on_page']);
+            app(RecordProjectActivity::class)->handle($project, $request->user(), 'landing_page.created', ['landing_page_id' => $page->id, 'title' => $page->title]);
         });
 
         return to_route('projects.index');

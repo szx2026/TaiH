@@ -76,5 +76,6 @@ class CreativeAssetTest extends TestCase
         ]);
         $storedPath = DB::table('creative_assets')->where('product_project_id', $project->id)->value('storage_path');
         Storage::disk('local')->assertExists($storedPath);
+        $this->assertDatabaseHas('project_activities', ['product_project_id' => $project->id, 'event' => 'creative_asset.created']);
     }
 }

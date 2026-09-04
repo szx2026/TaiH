@@ -55,6 +55,11 @@ class ResearchSubmissionTest extends TestCase
             'action' => 'submit',
             'operator_id' => $user->id,
         ]);
+        $this->assertDatabaseHas('project_activities', [
+            'product_project_id' => $project->id,
+            'actor_id' => $user->id,
+            'event' => 'stage.advanced',
+        ]);
     }
 
     /** @return array{User, ProductProject} */

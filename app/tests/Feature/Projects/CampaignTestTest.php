@@ -79,5 +79,6 @@ class CampaignTestTest extends TestCase
             'status' => 'open',
             'note' => 'CTR 合格但转化偏低，请检查价格和规格。',
         ]);
+        $this->assertDatabaseHas('project_activities', ['product_project_id' => $project->id, 'event' => 'campaign_test.created']);
     }
 }

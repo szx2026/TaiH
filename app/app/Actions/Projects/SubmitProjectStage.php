@@ -2,6 +2,7 @@
 
 namespace App\Actions\Projects;
 
+use App\Actions\Activity\RecordProjectActivity;
 use App\Models\ProductProject;
 use App\Models\User;
 use App\Models\WorkflowTransition;
@@ -19,7 +20,7 @@ class SubmitProjectStage
                 'status' => 'in_progress',
             ]);
 
-            return WorkflowTransition::create([
+            $transition = WorkflowTransition::create([
                 'product_project_id' => $project->id,
                 'from_stage' => $fromStage,
                 'to_stage' => $targetStage,
@@ -27,6 +28,15 @@ class SubmitProjectStage
                 'note' => $note,
                 'operator_id' => $actor->id,
             ]);
+
+            app(RecordProjectActivity::class)->handle($project, $actor, 'stage.advanced', [
+                'from_stage' => $fromStage,
+                'to_stage' => $targetStage,
+                'note' => $note,
+                'transition_id' => $transition->id,
+            ]);
+
+            return $transition;
         });
     }
 }

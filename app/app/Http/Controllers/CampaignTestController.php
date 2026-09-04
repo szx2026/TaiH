@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Activity\RecordProjectActivity;
 use App\Models\CampaignTest;
 use App\Models\OptimizationFeedback;
 use App\Models\ProductProject;
@@ -55,6 +56,7 @@ class CampaignTestController extends Controller
                     'created_by' => $request->user()->id,
                 ]);
             }
+            app(RecordProjectActivity::class)->handle($project, $request->user(), 'campaign_test.created', ['campaign_test_id' => $campaign->id, 'campaign_name' => $campaign->campaign_name, 'ctr' => $campaign->ctr]);
         });
 
         return to_route('projects.index');
