@@ -4,6 +4,7 @@ namespace Tests\Feature\Projects;
 
 use App\Models\Department;
 use App\Models\ProductProject;
+use App\Models\ProductSource;
 use App\Models\ProductSku;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,6 +60,51 @@ class InternalSkuIntakeTest extends TestCase
             ])
             ->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'research']))
             ->assertSessionHasErrors('sku_code');
+    }
+
+    public function test_legacy_supplier_sku_duplicates_are_preserved_but_cannot_be_imported_again(): void
+    {
+        [$user, $project] = $this->marketResearchProject();
+        $firstSource = ProductSource::create([
+            'product_project_id' => $project->id,
+            'supplier_url' => 'https://detail.1688.com/offer/1.html',
+            'currency' => 'CNY',
+            'created_by' => $user->id,
+        ]);
+        $secondSource = ProductSource::create([
+            'product_project_id' => $project->id,
+            'supplier_url' => 'https://detail.1688.com/offer/2.html',
+            'currency' => 'CNY',
+            'created_by' => $user->id,
+        ]);
+
+        ProductSku::create([
+            'product_project_id' => $project->id,
+            'product_source_id' => $firstSource->id,
+            'sku_code' => 'NC03342609026143',
+            'variant_name' => '夜灯 + 3 影片',
+            'sku_status' => 'imported',
+            'created_by' => $user->id,
+        ]);
+        ProductSku::create([
+            'product_project_id' => $project->id,
+            'product_source_id' => $secondSource->id,
+            'sku_code' => 'NC03342609026143',
+            'variant_name' => '夜灯 + 12 影片',
+            'sku_status' => 'imported',
+            'created_by' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->from(route('projects.workspace', ['project' => $project, 'tab' => 'research']))
+            ->post("/projects/{$project->id}/skus", [
+                'sku_code' => 'NC03342609026143',
+                'variant_name' => '夜灯 + 6 影片',
+            ])
+            ->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'research']))
+            ->assertSessionHasErrors('sku_code');
+
+        $this->assertDatabaseCount('product_skus', 2);
     }
 
     public function test_only_market_research_members_and_administrators_can_import_internal_skus(): void

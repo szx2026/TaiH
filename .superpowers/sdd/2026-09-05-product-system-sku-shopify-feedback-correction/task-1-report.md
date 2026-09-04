@@ -13,3 +13,11 @@
 - Focused tests passed: `InternalSkuIntakeTest` (4 tests, 12 assertions), `ProductSourceAndSkuTest` (1 test, 5 assertions), and `ProjectWorkspaceTest` (5 tests, 22 assertions).
 - PHP syntax checks passed for every new or modified PHP file.
 - Full suite passed: `docker exec erp-redesign-demo php artisan test` — 37 tests, 136 assertions.
+
+## Review fix round 1
+
+- Removed the new project-wide database unique index so forward migration preserves valid historic duplicate supplier SKU codes that belong to different sources.
+- Kept route-project validation for new market-research imports, so an imported source-less SKU cannot reuse an existing project SKU code.
+- Added a regression test that retains two legacy supplier SKUs with the same code and verifies a new manual import of that code is rejected.
+- Focused tests passed: `InternalSkuIntakeTest` — 5 tests, 17 assertions; `ProductSourceAndSkuTest` — 1 test, 5 assertions.
+- Full suite passed: `docker exec erp-redesign-demo php artisan test` — 38 tests, 141 assertions. PHP syntax checks passed for the changed migration and test.
