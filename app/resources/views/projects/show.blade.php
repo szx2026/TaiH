@@ -107,7 +107,21 @@
             <h2>优化反馈</h2>
             <ul>
                 @forelse ($project->optimizationFeedback as $feedback)
-                    <li>发送至 {{ $feedback->target_stage }} · {{ $feedback->status }} · {{ $feedback->note }}</li>
+                    <li>
+                        <p>发送至 {{ $feedback->target_stage }} · {{ $feedback->status }} · {{ $feedback->note }}</p>
+                        @if ($feedback->response_note)
+                            <p>处理说明：{{ $feedback->response_note }}</p>
+                        @endif
+                        @if (auth()->user()?->department?->code === $feedback->target_stage && $feedback->status !== 'resolved')
+                            <form method="post" action="{{ route('projects.optimization-feedback.update', [$project, $feedback]) }}">
+                                @csrf
+                                @method('PATCH')
+                                <label>处理状态 <select name="status"><option value="in_progress">处理中</option><option value="resolved">已解决</option></select></label>
+                                <label>处理说明 <textarea name="response_note" required></textarea></label>
+                                <button type="submit">处理反馈</button>
+                            </form>
+                        @endif
+                    </li>
                 @empty
                     <li>暂无优化反馈</li>
                 @endforelse

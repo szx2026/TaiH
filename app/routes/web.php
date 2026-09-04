@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductSourceController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\CreativeAssetController;
 use App\Http\Controllers\CampaignTestController;
+use App\Http\Controllers\OptimizationFeedbackController;
 use App\Http\Controllers\ProjectWorkflowController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,4 +22,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/projects/{project}/landing-pages', [LandingPageController::class, 'store'])->name('projects.landing-pages.store');
     Route::post('/projects/{project}/creative-assets', [CreativeAssetController::class, 'store'])->name('projects.creative-assets.store');
     Route::post('/projects/{project}/campaign-tests', [CampaignTestController::class, 'store'])->name('projects.campaign-tests.store');
+    Route::patch('/projects/{project}/optimization-feedback/{feedback}', [OptimizationFeedbackController::class, 'update'])->name('projects.optimization-feedback.update');
 });

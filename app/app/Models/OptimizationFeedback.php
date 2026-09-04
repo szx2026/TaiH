@@ -9,7 +9,7 @@ class OptimizationFeedback extends Model
 {
     protected $table = 'optimization_feedback';
 
-    protected $fillable = ['product_project_id', 'campaign_test_id', 'target_stage', 'note', 'status', 'created_by'];
+    protected $fillable = ['product_project_id', 'campaign_test_id', 'target_stage', 'note', 'response_note', 'status', 'resolved_by', 'resolved_at', 'created_by'];
 
     public function project(): BelongsTo
     {
