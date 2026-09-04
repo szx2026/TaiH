@@ -61,4 +61,17 @@ class ProjectWorkspaceTest extends TestCase
             ->assertSee('展示次数')
             ->assertSee('已有投放测试');
     }
+
+    public function test_feedback_tab_shows_actionable_feedback_for_the_target_department(): void
+    {
+        $department = Department::factory()->create(['code' => 'website_operations']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-FEEDBACK-TAB', 'product_name' => '夜灯', 'market' => 'US', 'priority' => 'high', 'current_stage' => 'website_operations', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+
+        $this->actingAs($user)->get(route('projects.workspace', ['project' => $project, 'tab' => 'feedback']))
+            ->assertOk()
+            ->assertSee('项目优化反馈')
+            ->assertSee('处理状态')
+            ->assertSee('暂无待处理反馈');
+    }
 }
