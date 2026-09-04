@@ -76,7 +76,7 @@ class LandingPageTest extends TestCase
                 'specifications' => '夜灯，含 3 张投影片',
                 'sku_ids' => [$sku->id],
             ])
-            ->assertRedirect('/projects');
+            ->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'operations']));
 
         $this->assertDatabaseHas('landing_pages', [
             'product_project_id' => $project->id,

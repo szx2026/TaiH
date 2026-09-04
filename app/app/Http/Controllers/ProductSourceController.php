@@ -18,9 +18,11 @@ class ProductSourceController extends Controller
 
         $data = $request->validate([
             'supplier_url' => ['required', 'url', 'max:2048'],
+            'supplier_name' => ['nullable', 'string', 'max:255'],
             'purchase_price' => ['nullable', 'numeric', 'min:0'],
             'currency' => ['required', 'string', 'size:3'],
             'weight_g' => ['nullable', 'integer', 'min:0'],
+            'notes' => ['nullable', 'string', 'max:4000'],
             'skus' => ['required', 'array', 'min:1'],
             'skus.*.sku_code' => ['required', 'string', 'max:100'],
             'skus.*.variant_name' => ['required', 'string', 'max:255'],
@@ -31,9 +33,11 @@ class ProductSourceController extends Controller
             $source = ProductSource::create([
                 'product_project_id' => $project->id,
                 'supplier_url' => $data['supplier_url'],
+                'supplier_name' => $data['supplier_name'] ?? null,
                 'purchase_price' => $data['purchase_price'] ?? null,
                 'currency' => strtoupper($data['currency']),
                 'weight_g' => $data['weight_g'] ?? null,
+                'notes' => $data['notes'] ?? null,
                 'created_by' => $request->user()->id,
             ]);
 
@@ -54,6 +58,6 @@ class ProductSourceController extends Controller
             ]);
         });
 
-        return to_route('projects.index');
+        return to_route('projects.workspace', ['project' => $project, 'tab' => 'operations']);
     }
 }

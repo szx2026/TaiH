@@ -32,8 +32,10 @@ class ProjectWorkspaceTest extends TestCase
 
         $this->actingAs($user)->get(route('projects.workspace', ['project' => $project, 'tab' => 'operations']))
             ->assertOk()
-            ->assertSee('1688 货源')
-            ->assertSee('SKU 与落地页');
+            ->assertSee('网站运营工作台')
+            ->assertSee('录入 1688 货源与内部 SKU')
+            ->assertSee('上传正式落地页链接')
+            ->assertSee('向市场研究部提出 SKU 开发要求');
     }
 
     public function test_assets_tab_provides_manual_creative_intake_for_content_creative(): void

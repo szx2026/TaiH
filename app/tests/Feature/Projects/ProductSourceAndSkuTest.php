@@ -31,21 +31,25 @@ class ProductSourceAndSkuTest extends TestCase
         $this->actingAs($user)
             ->post("/projects/{$project->id}/sources", [
                 'supplier_url' => 'https://detail.1688.com/offer/1073153738003.html',
+                'supplier_name' => '义乌夜灯源头工厂',
                 'purchase_price' => 22.00,
                 'currency' => 'CNY',
                 'weight_g' => 93,
+                'notes' => '确认 3 / 6 / 12 影片版本可供货。',
                 'skus' => [[
                     'sku_code' => 'NC03342609026143',
                     'variant_name' => '夜灯+3影片',
                 ]],
             ])
-            ->assertRedirect('/projects');
+            ->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'operations']));
 
         $this->assertDatabaseHas('product_sources', [
             'product_project_id' => $project->id,
             'supplier_url' => 'https://detail.1688.com/offer/1073153738003.html',
+            'supplier_name' => '义乌夜灯源头工厂',
             'purchase_price' => 22,
             'weight_g' => 93,
+            'notes' => '确认 3 / 6 / 12 影片版本可供货。',
         ]);
         $this->assertDatabaseHas('product_skus', [
             'sku_code' => 'NC03342609026143',

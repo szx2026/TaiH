@@ -52,6 +52,6 @@ class LandingPageController extends Controller
             app(RecordProjectActivity::class)->handle($project, $request->user(), 'landing_page.created', ['landing_page_id' => $page->id, 'title' => $page->title]);
         });
 
-        return to_route('projects.index');
+        return to_route('projects.workspace', ['project' => $project, 'tab' => 'operations']);
     }
 }
