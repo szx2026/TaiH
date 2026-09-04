@@ -24,7 +24,7 @@
                 <x-nav-item label="产品中心" :href="route('projects.index')" :active="request()->routeIs('projects.*')" />
                 <x-nav-item label="素材中心" />
                 <x-nav-item label="投放中心" />
-                <x-nav-item label="反馈中心" />
+                <x-nav-item label="反馈中心" :href="route('feedback.index')" :active="request()->routeIs('feedback.*')" />
                 <x-nav-item label="活动" />
             </nav>
 

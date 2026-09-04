@@ -1,0 +1,4 @@
+<x-layouts.app title="反馈中心 · 跨境产品 ERP">
+    <div class="mb-7"><p class="text-sm font-semibold text-blue-600">反馈中心</p><h1 class="mt-1 text-3xl font-bold">待处理优化反馈</h1><p class="mt-2 text-sm text-slate-500">集中处理来自投放测试的页面、素材、选品与 SKU 优化建议。</p></div>
+    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div class="divide-y divide-slate-100">@forelse($feedback as $item)<div class="p-5"><div class="flex items-start justify-between gap-4"><div><a href="{{ route('projects.workspace', $item->project) }}" class="font-semibold text-slate-900">{{ $item->project->product_name }}</a><p class="mt-2 text-sm text-slate-600">{{ $item->note }}</p><p class="mt-2 text-xs text-slate-400">目标环节：{{ $item->target_stage }} · {{ $item->created_at->diffForHumans() }}</p></div><x-status-badge :status="$item->status" /></div></div>@empty<p class="px-5 py-14 text-center text-sm text-slate-500">当前没有待处理反馈。</p>@endforelse</div></section>
+</x-layouts.app>
