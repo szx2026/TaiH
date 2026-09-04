@@ -34,6 +34,24 @@
             </section>
         @endif
 
+        @if (auth()->user()?->department?->code === 'traffic_growth')
+            <section>
+                <h2>记录投放测试</h2>
+                <form method="post" action="{{ route('projects.campaign-tests.store', $project) }}">
+                    @csrf
+                    <p><label>投放平台 <select name="platform"><option value="facebook">Facebook</option><option value="tiktok">TikTok</option><option value="other">其他</option></select></label></p>
+                    <p><label>广告系列名称 <input name="campaign_name" required></label></p>
+                    <p><label>花费 <input name="spend" type="number" min="0" step="0.01" required></label></p>
+                    <p><label>展示次数 <input name="impressions" type="number" min="0" required></label></p>
+                    <p><label>点击次数 <input name="clicks" type="number" min="0" required></label></p>
+                    <p><label>转化次数 <input name="conversions" type="number" min="0" required></label></p>
+                    <p><label>反馈给 <select name="feedback_target_stage"><option value="">暂不创建反馈</option><option value="website_operations">网站运营部（落地页/价格/规格）</option><option value="content_creative">内容创意部（素材）</option><option value="market_research">市场研究部（选品/SKU）</option></select></label></p>
+                    <p><label>优化反馈 <textarea name="feedback_note"></textarea></label></p>
+                    <p><button type="submit">保存测试数据</button></p>
+                </form>
+            </section>
+        @endif
+
         @if (auth()->user()?->department?->code === 'content_creative')
             <section>
                 <h2>上传素材</h2>
@@ -70,6 +88,28 @@
                     <li>{{ $asset->title }} · {{ $asset->asset_type }} · {{ $asset->source_type }} · {{ $asset->status }}</li>
                 @empty
                     <li>暂未录入创意素材</li>
+                @endforelse
+            </ul>
+        </section>
+
+        <section>
+            <h2>投放测试结果</h2>
+            <ul>
+                @forelse ($project->campaignTests as $campaign)
+                    <li>{{ $campaign->platform }} · {{ $campaign->campaign_name }} · 花费 {{ $campaign->spend }} · CTR {{ $campaign->ctr }}% · 转化 {{ $campaign->conversions }}</li>
+                @empty
+                    <li>暂未录入投放测试</li>
+                @endforelse
+            </ul>
+        </section>
+
+        <section>
+            <h2>优化反馈</h2>
+            <ul>
+                @forelse ($project->optimizationFeedback as $feedback)
+                    <li>发送至 {{ $feedback->target_stage }} · {{ $feedback->status }} · {{ $feedback->note }}</li>
+                @empty
+                    <li>暂无优化反馈</li>
                 @endforelse
             </ul>
         </section>

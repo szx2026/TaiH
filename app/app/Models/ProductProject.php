@@ -68,4 +68,14 @@ class ProductProject extends Model
     {
         return $this->hasMany(CreativeAsset::class);
     }
+
+    public function campaignTests(): HasMany
+    {
+        return $this->hasMany(CampaignTest::class);
+    }
+
+    public function optimizationFeedback(): HasMany
+    {
+        return $this->hasMany(OptimizationFeedback::class);
+    }
 }
