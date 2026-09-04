@@ -12,6 +12,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectWorkflowController;
 use App\Http\Controllers\ProjectWorkspaceController;
 use App\Http\Controllers\FeedbackCenterController;
+use App\Http\Controllers\ResearchSourceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => auth()->check() ? to_route('projects.index') : to_route('login'));
@@ -26,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/projects/{project}', [ProductProjectController::class, 'show'])->name('projects.show');
     Route::post('/projects', [ProductProjectController::class, 'store'])->name('projects.store');
     Route::post('/projects/{project}/submit', [ProjectWorkflowController::class, 'submit'])->name('projects.submit');
+    Route::post('/projects/{project}/research-sources', [ResearchSourceController::class, 'store'])->name('projects.research-sources.store');
     Route::post('/projects/{project}/sources', [ProductSourceController::class, 'store'])->name('projects.sources.store');
     Route::post('/projects/{project}/landing-pages', [LandingPageController::class, 'store'])->name('projects.landing-pages.store');
     Route::post('/projects/{project}/creative-assets', [CreativeAssetController::class, 'store'])->name('projects.creative-assets.store');
