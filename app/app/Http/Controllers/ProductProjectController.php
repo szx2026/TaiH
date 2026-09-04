@@ -23,4 +23,11 @@ class ProductProjectController extends Controller
 
         return to_route('projects.index');
     }
+
+    public function show(ProductProject $project): View
+    {
+        return view('projects.show', [
+            'project' => $project->load(['skus', 'landingPages.skus']),
+        ]);
+    }
 }

@@ -58,4 +58,9 @@ class ProductProject extends Model
     {
         return $this->hasMany(ProductSku::class);
     }
+
+    public function landingPages(): HasMany
+    {
+        return $this->hasMany(LandingPage::class);
+    }
 }

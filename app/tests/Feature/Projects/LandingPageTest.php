@@ -1,0 +1,92 @@
+<?php
+
+namespace Tests\Feature\Projects;
+
+use App\Models\Department;
+use App\Models\ProductProject;
+use App\Models\ProductSku;
+use App\Models\ProductSource;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class LandingPageTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_website_operations_can_open_the_manual_landing_page_form(): void
+    {
+        $department = Department::factory()->create(['code' => 'website_operations']);
+        $user = User::factory()->create(['department_id' => $department->id, 'role' => 'member']);
+        $project = ProductProject::create([
+            'project_code' => 'PP-202609-LANDING02',
+            'product_name' => '星空投影灯',
+            'market' => 'US',
+            'priority' => 'high',
+            'current_stage' => 'website_operations',
+            'status' => 'in_progress',
+            'owner_department_id' => $department->id,
+            'owner_user_id' => $user->id,
+            'created_by' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->get("/projects/{$project->id}")
+            ->assertOk()
+            ->assertSee('新建落地页版本')
+            ->assertSee('关联 SKU');
+    }
+
+    public function test_website_operations_can_create_a_landing_page_with_price_specs_and_skus(): void
+    {
+        $department = Department::factory()->create(['code' => 'website_operations']);
+        $user = User::factory()->create(['department_id' => $department->id, 'role' => 'member']);
+        $project = ProductProject::create([
+            'project_code' => 'PP-202609-LANDING01',
+            'product_name' => '星空投影灯',
+            'market' => 'US',
+            'priority' => 'high',
+            'current_stage' => 'website_operations',
+            'status' => 'in_progress',
+            'owner_department_id' => $department->id,
+            'owner_user_id' => $user->id,
+            'created_by' => $user->id,
+        ]);
+        $source = ProductSource::create([
+            'product_project_id' => $project->id,
+            'supplier_url' => 'https://detail.1688.com/offer/1073153738003.html',
+            'currency' => 'CNY',
+            'created_by' => $user->id,
+        ]);
+        $sku = ProductSku::create([
+            'product_project_id' => $project->id,
+            'product_source_id' => $source->id,
+            'sku_code' => 'NC03342609026143',
+            'variant_name' => '夜灯+3影片',
+            'sku_status' => 'imported',
+            'created_by' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->post("/projects/{$project->id}/landing-pages", [
+                'title' => '星空投影灯 - 美国站详情页',
+                'page_url' => 'https://shop.example.com/products/star-projector',
+                'selling_price' => 39.99,
+                'currency' => 'USD',
+                'specifications' => '夜灯，含 3 张投影片',
+                'sku_ids' => [$sku->id],
+            ])
+            ->assertRedirect('/projects');
+
+        $this->assertDatabaseHas('landing_pages', [
+            'product_project_id' => $project->id,
+            'version' => 1,
+            'title' => '星空投影灯 - 美国站详情页',
+            'page_url' => 'https://shop.example.com/products/star-projector',
+            'selling_price' => 39.99,
+            'status' => 'draft',
+        ]);
+        $this->assertDatabaseHas('landing_page_skus', ['product_sku_id' => $sku->id]);
+        $this->assertDatabaseHas('product_skus', ['id' => $sku->id, 'sku_status' => 'used_on_page']);
+    }
+}

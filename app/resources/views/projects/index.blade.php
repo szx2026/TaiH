@@ -25,7 +25,7 @@
 
         <ul>
             @forelse ($projects as $project)
-                <li>{{ $project->project_code }} · {{ $project->product_name }} · {{ $project->market }}</li>
+                <li><a href="{{ route('projects.show', $project) }}">{{ $project->project_code }} · {{ $project->product_name }} · {{ $project->market }}</a></li>
             @empty
                 <li>暂无产品项目</li>
             @endforelse
