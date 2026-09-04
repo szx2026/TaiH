@@ -48,4 +48,17 @@ class ProjectWorkspaceTest extends TestCase
             ->assertSee('外部素材链接')
             ->assertSee('已有素材');
     }
+
+    public function test_campaigns_tab_provides_manual_campaign_intake_for_traffic_growth(): void
+    {
+        $department = Department::factory()->create(['code' => 'traffic_growth']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-CAMPAIGN-TAB', 'product_name' => '夜灯', 'market' => 'US', 'priority' => 'high', 'current_stage' => 'traffic_growth', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+
+        $this->actingAs($user)->get(route('projects.workspace', ['project' => $project, 'tab' => 'campaigns']))
+            ->assertOk()
+            ->assertSee('广告测试录入')
+            ->assertSee('展示次数')
+            ->assertSee('已有投放测试');
+    }
 }
