@@ -5,7 +5,6 @@ namespace Tests\Feature\Projects;
 use App\Models\Department;
 use App\Models\ProductProject;
 use App\Models\ProductSku;
-use App\Models\ProductSource;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -35,6 +34,12 @@ class LandingPageTest extends TestCase
             ->assertOk()
             ->assertSee('新建落地页版本')
             ->assertSee('关联 SKU');
+
+        $this->actingAs($user)
+            ->get(route('projects.workspace', ['project' => $project, 'tab' => 'operations']))
+            ->assertOk()
+            ->assertSee('Shopify 产品上架与正式落地页')
+            ->assertSee('Shopify 产品或正式落地页链接');
     }
 
     public function test_website_operations_can_create_a_landing_page_with_price_specs_and_skus(): void
@@ -52,15 +57,9 @@ class LandingPageTest extends TestCase
             'owner_user_id' => $user->id,
             'created_by' => $user->id,
         ]);
-        $source = ProductSource::create([
-            'product_project_id' => $project->id,
-            'supplier_url' => 'https://detail.1688.com/offer/1073153738003.html',
-            'currency' => 'CNY',
-            'created_by' => $user->id,
-        ]);
         $sku = ProductSku::create([
             'product_project_id' => $project->id,
-            'product_source_id' => $source->id,
+            'product_source_id' => null,
             'sku_code' => 'NC03342609026143',
             'variant_name' => '夜灯+3影片',
             'sku_status' => 'imported',
@@ -88,6 +87,13 @@ class LandingPageTest extends TestCase
         ]);
         $this->assertDatabaseHas('landing_page_skus', ['product_sku_id' => $sku->id]);
         $this->assertDatabaseHas('product_skus', ['id' => $sku->id, 'sku_status' => 'used_on_page']);
-        $this->assertDatabaseHas('project_activities', ['product_project_id' => $project->id, 'event' => 'landing_page.created']);
+        $activity = $project->activities()->where('event', 'landing_page.created')->latest()->first();
+        $this->assertNotNull($activity);
+        $this->assertSame([
+            'landing_page_id' => $activity->payload['landing_page_id'],
+            'title' => '星空投影灯 - 美国站详情页',
+            'shopify_product_linked' => true,
+            'sku_count' => 1,
+        ], $activity->payload);
     }
 }

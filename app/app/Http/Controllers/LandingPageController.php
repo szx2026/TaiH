@@ -49,7 +49,12 @@ class LandingPageController extends Controller
 
             $page->skus()->sync($skuIds);
             ProductSku::query()->whereIn('id', $skuIds)->update(['sku_status' => 'used_on_page']);
-            app(RecordProjectActivity::class)->handle($project, $request->user(), 'landing_page.created', ['landing_page_id' => $page->id, 'title' => $page->title]);
+            app(RecordProjectActivity::class)->handle($project, $request->user(), 'landing_page.created', [
+                'landing_page_id' => $page->id,
+                'title' => $page->title,
+                'shopify_product_linked' => true,
+                'sku_count' => $skuIds->count(),
+            ]);
         });
 
         return to_route('projects.workspace', ['project' => $project, 'tab' => 'operations']);
