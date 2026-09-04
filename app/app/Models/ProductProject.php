@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class ProductProject extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'project_code',
+        'product_name',
+        'category',
+        'market',
+        'priority',
+        'current_stage',
+        'status',
+        'owner_department_id',
+        'owner_user_id',
+        'created_by',
+    ];
+
+    public function ownerDepartment(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'owner_department_id');
+    }
+
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_user_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+}
