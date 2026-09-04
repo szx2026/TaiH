@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductProject extends Model
 {
@@ -36,5 +37,15 @@ class ProductProject extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function researchSources(): HasMany
+    {
+        return $this->hasMany(ResearchSource::class);
+    }
+
+    public function workflowTransitions(): HasMany
+    {
+        return $this->hasMany(WorkflowTransition::class);
     }
 }

@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Actions\Projects;
+
+use App\Models\ProductProject;
+use App\Models\User;
+use App\Models\WorkflowTransition;
+use Illuminate\Support\Facades\DB;
+
+class SubmitProjectStage
+{
+    public function handle(ProductProject $project, User $actor, string $targetStage, ?string $note): WorkflowTransition
+    {
+        return DB::transaction(function () use ($project, $actor, $targetStage, $note): WorkflowTransition {
+            $fromStage = $project->current_stage;
+
+            $project->update([
+                'current_stage' => $targetStage,
+                'status' => 'in_progress',
+            ]);
+
+            return WorkflowTransition::create([
+                'product_project_id' => $project->id,
+                'from_stage' => $fromStage,
+                'to_stage' => $targetStage,
+                'action' => 'submit',
+                'note' => $note,
+                'operator_id' => $actor->id,
+            ]);
+        });
+    }
+}
