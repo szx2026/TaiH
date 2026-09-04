@@ -63,4 +63,9 @@ class ProductProject extends Model
     {
         return $this->hasMany(LandingPage::class);
     }
+
+    public function creativeAssets(): HasMany
+    {
+        return $this->hasMany(CreativeAsset::class);
+    }
 }

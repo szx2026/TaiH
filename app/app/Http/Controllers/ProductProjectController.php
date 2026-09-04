@@ -27,7 +27,7 @@ class ProductProjectController extends Controller
     public function show(ProductProject $project): View
     {
         return view('projects.show', [
-            'project' => $project->load(['skus', 'landingPages.skus']),
+            'project' => $project->load(['skus', 'landingPages.skus', 'creativeAssets']),
         ]);
     }
 }

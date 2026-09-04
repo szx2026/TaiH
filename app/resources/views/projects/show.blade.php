@@ -34,6 +34,24 @@
             </section>
         @endif
 
+        @if (auth()->user()?->department?->code === 'content_creative')
+            <section>
+                <h2>上传素材</h2>
+                <form method="post" action="{{ route('projects.creative-assets.store', $project) }}" enctype="multipart/form-data">
+                    @csrf
+                    <p><label>素材名称 <input name="title" required></label></p>
+                    <p><label>素材类型 <select name="asset_type"><option value="video">视频</option><option value="image">图片</option><option value="copy">文案</option></select></label></p>
+                    <p><label>素材来源 <select name="source_type"><option value="original">原创</option><option value="tiktok">TikTok</option><option value="amazon">Amazon</option><option value="other">其他</option></select></label></p>
+                    <p><label>上传文件 <input name="asset_file" type="file"></label></p>
+                    <p><label>外部素材链接 <input name="external_url" type="url"></label></p>
+                    <p><label>文案内容 <textarea name="copy_text"></textarea></label></p>
+                    <p><label>关联落地页 <select name="landing_page_id"><option value="">暂不关联</option>@foreach ($project->landingPages as $page)<option value="{{ $page->id }}">V{{ $page->version }} · {{ $page->title }}</option>@endforeach</select></label></p>
+                    <p><label>创作备注 <textarea name="notes"></textarea></label></p>
+                    <p><button type="submit">保存素材草稿</button></p>
+                </form>
+            </section>
+        @endif
+
         <section>
             <h2>落地页版本</h2>
             <ul>
@@ -41,6 +59,17 @@
                     <li>V{{ $page->version }} · {{ $page->title }} · {{ $page->status }} · <a href="{{ $page->page_url }}" target="_blank" rel="noreferrer">打开页面</a></li>
                 @empty
                     <li>暂未创建落地页版本</li>
+                @endforelse
+            </ul>
+        </section>
+
+        <section>
+            <h2>创意素材</h2>
+            <ul>
+                @forelse ($project->creativeAssets as $asset)
+                    <li>{{ $asset->title }} · {{ $asset->asset_type }} · {{ $asset->source_type }} · {{ $asset->status }}</li>
+                @empty
+                    <li>暂未录入创意素材</li>
                 @endforelse
             </ul>
         </section>
