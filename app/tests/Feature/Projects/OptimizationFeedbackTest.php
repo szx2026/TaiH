@@ -81,5 +81,10 @@ class OptimizationFeedbackTest extends TestCase
             'response_note' => '已将价格调整为 34.99 美元，并增加规格说明。',
             'resolved_by' => $websiteUser->id,
         ]);
+        $this->assertDatabaseHas('project_activities', [
+            'product_project_id' => $project->id,
+            'actor_id' => $websiteUser->id,
+            'event' => 'feedback.resolved',
+        ]);
     }
 }

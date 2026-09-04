@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Activity\RecordProjectActivity;
 use App\Models\OptimizationFeedback;
 use App\Models\ProductProject;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +26,12 @@ class OptimizationFeedbackController extends Controller
             'response_note' => $data['response_note'],
             'resolved_by' => $data['status'] === 'resolved' ? $request->user()->id : null,
             'resolved_at' => $data['status'] === 'resolved' ? now() : null,
+        ]);
+
+        app(RecordProjectActivity::class)->handle($project, $request->user(), 'feedback.'.$data['status'], [
+            'feedback_id' => $feedback->id,
+            'target_stage' => $feedback->target_stage,
+            'response_note' => $data['response_note'],
         ]);
 
         return to_route('projects.index');
