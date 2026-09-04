@@ -78,4 +78,19 @@ class ProductProject extends Model
     {
         return $this->hasMany(OptimizationFeedback::class);
     }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(ProjectActivity::class)->latest();
+    }
+
+    public function members(): HasMany
+    {
+        return $this->hasMany(ProjectMember::class);
+    }
+
+    public function decisions(): HasMany
+    {
+        return $this->hasMany(ProjectDecision::class)->latest();
+    }
 }
