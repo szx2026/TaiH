@@ -52,5 +52,10 @@ class ProductSourceAndSkuTest extends TestCase
             'variant_name' => '夜灯+3影片',
             'sku_status' => 'imported',
         ]);
+        $this->assertDatabaseHas('project_activities', [
+            'product_project_id' => $project->id,
+            'actor_id' => $user->id,
+            'event' => 'supplier_source.created',
+        ]);
     }
 }

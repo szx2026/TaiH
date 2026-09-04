@@ -46,7 +46,7 @@
         <div class="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-700">全部项目</div>
         <div class="divide-y divide-slate-100">
             @forelse ($projects as $project)
-                <a href="{{ route('projects.show', $project) }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50">
+                <a href="{{ route('projects.workspace', $project) }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50">
                     <div>
                         <p class="font-semibold">{{ $project->product_name }}</p>
                         <p class="mt-1 text-xs text-slate-500">{{ $project->project_code }} · {{ $project->market }} · {{ $project->category ?: '未分类' }}</p>

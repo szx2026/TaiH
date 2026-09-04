@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Activity\RecordProjectActivity;
 use App\Models\ProductProject;
 use App\Models\ProductSource;
 use Illuminate\Http\RedirectResponse;
@@ -45,6 +46,12 @@ class ProductSourceController extends Controller
                     'created_by' => $request->user()->id,
                 ]);
             }
+
+            app(RecordProjectActivity::class)->handle($project, $request->user(), 'supplier_source.created', [
+                'source_id' => $source->id,
+                'supplier_url' => $source->supplier_url,
+                'sku_count' => count($data['skus']),
+            ]);
         });
 
         return to_route('projects.index');

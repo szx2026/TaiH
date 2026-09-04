@@ -10,6 +10,7 @@ use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectWorkflowController;
+use App\Http\Controllers\ProjectWorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => auth()->check() ? to_route('projects.index') : to_route('login'));
@@ -19,6 +20,7 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middlew
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/projects', [ProductProjectController::class, 'index'])->name('projects.index');
+    Route::get('/projects/{project}/workspace', [ProjectWorkspaceController::class, 'show'])->name('projects.workspace');
     Route::get('/projects/{project}', [ProductProjectController::class, 'show'])->name('projects.show');
     Route::post('/projects', [ProductProjectController::class, 'store'])->name('projects.store');
     Route::post('/projects/{project}/submit', [ProjectWorkflowController::class, 'submit'])->name('projects.submit');
