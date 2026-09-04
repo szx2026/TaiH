@@ -9,6 +9,7 @@
     <main>
         <nav>
             <span>{{ auth()->user()->name }}</span>
+            <a href="{{ route('dashboard') }}">工作看板</a>
             @if (auth()->user()->hasRole('administrator'))
                 <a href="{{ route('members.index') }}">成员管理</a>
             @endif

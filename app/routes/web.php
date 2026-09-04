@@ -8,6 +8,7 @@ use App\Http\Controllers\CampaignTestController;
 use App\Http\Controllers\OptimizationFeedbackController;
 use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectWorkflowController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,7 @@ Route::get('/login', [AuthenticatedSessionController::class, 'create'])->middlew
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('guest')->name('login.store');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/projects', [ProductProjectController::class, 'index'])->name('projects.index');
     Route::get('/projects/{project}', [ProductProjectController::class, 'show'])->name('projects.show');
     Route::post('/projects', [ProductProjectController::class, 'store'])->name('projects.store');
