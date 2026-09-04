@@ -35,4 +35,17 @@ class ProjectWorkspaceTest extends TestCase
             ->assertSee('1688 货源')
             ->assertSee('SKU 与落地页');
     }
+
+    public function test_assets_tab_provides_manual_creative_intake_for_content_creative(): void
+    {
+        $department = Department::factory()->create(['code' => 'content_creative']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-ASSET-TAB', 'product_name' => '夜灯', 'market' => 'US', 'priority' => 'high', 'current_stage' => 'content_creative', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+
+        $this->actingAs($user)->get(route('projects.workspace', ['project' => $project, 'tab' => 'assets']))
+            ->assertOk()
+            ->assertSee('素材制作与上传')
+            ->assertSee('外部素材链接')
+            ->assertSee('已有素材');
+    }
 }
