@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int|null $product_source_id
+ */
 class ProductSku extends Model
 {
     protected $fillable = [
