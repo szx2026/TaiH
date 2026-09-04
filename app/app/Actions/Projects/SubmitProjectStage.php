@@ -4,6 +4,7 @@ namespace App\Actions\Projects;
 
 use App\Actions\Activity\RecordProjectActivity;
 use App\Models\ProductProject;
+use App\Models\Department;
 use App\Models\User;
 use App\Models\WorkflowTransition;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ class SubmitProjectStage
             $project->update([
                 'current_stage' => $targetStage,
                 'status' => 'in_progress',
+                'owner_department_id' => Department::query()->where('code', $targetStage)->value('id') ?? $project->owner_department_id,
             ]);
 
             $transition = WorkflowTransition::create([
