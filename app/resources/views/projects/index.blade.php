@@ -7,6 +7,16 @@
 </head>
 <body>
     <main>
+        <nav>
+            <span>{{ auth()->user()->name }}</span>
+            @if (auth()->user()->hasRole('administrator'))
+                <a href="{{ route('members.index') }}">成员管理</a>
+            @endif
+            <form method="post" action="{{ route('logout') }}" style="display:inline">
+                @csrf
+                <button type="submit">退出登录</button>
+            </form>
+        </nav>
         <h1>产品项目池</h1>
         <form method="post" action="{{ route('projects.store') }}">
             @csrf
