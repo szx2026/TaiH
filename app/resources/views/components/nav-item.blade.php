@@ -1,0 +1,2 @@
+@props(['label', 'href' => '#', 'active' => false, 'count' => null])
+<a href="{{ $href }}" @class(['mb-1 flex items-center rounded-lg px-3 py-2.5 text-sm transition', 'bg-blue-600 font-semibold text-white' => $active, 'text-slate-400 hover:bg-slate-900 hover:text-white' => ! $active])><span class="h-2 w-2 rounded-full {{ $active ? 'bg-blue-200' : 'bg-slate-600' }}"></span><span class="ml-3">{{ $label }}</span>@if ($count)<span class="ml-auto rounded bg-slate-800 px-1.5 py-0.5 text-[10px]">{{ $count }}</span>@endif</a>

@@ -9,3 +9,5 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+@layer components { .sidebar-label { @apply mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-600; } }
