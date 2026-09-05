@@ -40,6 +40,20 @@ class ProductCenterTest extends TestCase
             ->assertDontSee('手动创建产品项目');
     }
 
+    public function test_market_research_workspace_displays_selected_product_and_research_work_inline(): void
+    {
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-INLINE', 'product_name' => '内嵌选品项目', 'market' => 'US', 'priority' => 'medium', 'current_stage' => 'market_research', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+
+        $this->actingAs($user)->get("/projects?stage=market_research&project={$project->id}")
+            ->assertOk()
+            ->assertSee('内嵌选品项目')
+            ->assertSee('市场研究部重点工作')
+            ->assertSee('选品证据与内部 SKU')
+            ->assertSee('关联协作摘要');
+    }
+
     private function project(Department $department, User $user, string $code, string $name, string $stage): void
     {
         ProductProject::create([

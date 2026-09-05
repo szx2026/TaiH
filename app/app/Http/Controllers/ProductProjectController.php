@@ -46,17 +46,24 @@ class ProductProjectController extends Controller
         ];
         $departmentWorkspace = $departmentWorkspaces[$filters['stage'] ?? ''] ?? null;
 
-        return view('projects.index', [
-            'projects' => ProductProject::query()
+        $projects = ProductProject::query()
                 ->when($filters['stage'] ?? null, fn ($query, $stage) => $query->where('current_stage', $stage))
                 ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
                 ->when($filters['market'] ?? null, fn ($query, $market) => $query->where('market', $market))
                 ->when($filters['priority'] ?? null, fn ($query, $priority) => $query->where('priority', $priority))
                 ->when($filters['search'] ?? null, fn ($query, $search) => $query->where(fn ($query) => $query->where('product_name', 'like', "%{$search}%")->orWhere('project_code', 'like', "%{$search}%")))
                 ->latest()
-                ->get(),
+                ->get();
+
+        $selectedProject = isset($filters['project'])
+            ? ProductProject::query()->whereKey($filters['project'])->with(['researchSources', 'skus', 'sources', 'landingPages.skus', 'creativeAssets', 'campaignTests', 'optimizationFeedback', 'decisions'])->first()
+            : $projects->first();
+
+        return view('projects.index', [
+            'projects' => $projects,
             'filters' => $filters,
             'departmentWorkspace' => $departmentWorkspace,
+            'selectedProject' => $selectedProject,
         ]);
     }
 

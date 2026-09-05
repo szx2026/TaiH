@@ -46,7 +46,7 @@
         <div class="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-700">{{ $departmentWorkspace['list_label'] ?? '全部项目' }}</div>
         <div class="divide-y divide-slate-100">
             @forelse ($projects as $project)
-                <a href="{{ route('projects.workspace', ['project' => $project, 'return_stage' => $filters['stage'] ?? null]) }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50">
+                <a href="{{ route('projects.index', ['stage' => $filters['stage'] ?? null, 'project' => $project]) }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50">
                     <div>
                         <p class="font-semibold">{{ $project->product_name }}</p>
                         <p class="mt-1 text-xs text-slate-500">{{ $project->project_code }} · {{ $project->market }} · {{ $project->category ?: '未分类' }}</p>
@@ -58,4 +58,14 @@
             @endforelse
         </div>
     </section>
+
+    @if($departmentWorkspace && $selectedProject)
+        @php($focus = ['market_research' => ['市场研究部重点工作', '选品证据与内部 SKU'], 'website_operations' => ['网站运营部重点工作', '1688 货源、网站产品 SKU 与 Shopify'], 'content_creative' => ['内容创意部重点工作', '素材制作与上传'], 'traffic_growth' => ['流量增长部重点工作', '广告投放与数据复盘']][$filters['stage']] ?? null)
+        <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-col justify-between gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-end"><div><p class="text-xs font-semibold text-blue-600">{{ $selectedProject->project_code }}</p><h2 class="mt-1 text-2xl font-bold text-slate-900">{{ $selectedProject->product_name }}</h2><p class="mt-1 text-sm text-slate-500">{{ $selectedProject->market }} · {{ $selectedProject->category ?: '未分类' }} · 负责人：{{ $selectedProject->owner?->name }}</p></div><x-status-badge :status="$selectedProject->status" /></div>
+            <div class="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.55fr)]"><div class="rounded-xl border border-blue-100 bg-blue-50/50 p-5"><p class="text-sm font-semibold text-blue-900">{{ $focus[0] }}</p><h3 class="mt-2 text-lg font-bold text-slate-900">{{ $focus[1] }}</h3>
+                @if(($filters['stage'] ?? '') === 'market_research')<div class="mt-4 grid gap-4 lg:grid-cols-2"><div><p class="text-sm font-semibold">已有选品证据</p><div class="mt-2 space-y-2">@forelse($selectedProject->researchSources as $source)<a href="{{ $source->url }}" class="block rounded-lg bg-white p-3 text-sm text-blue-700">{{ $source->custom_source_name ?: $source->platform }} · {{ $source->evidence_note ?: '查看来源' }}</a>@empty<p class="text-sm text-slate-500">暂无选品证据。</p>@endforelse</div></div><div><p class="text-sm font-semibold">内部 SKU</p><div class="mt-2 space-y-2">@forelse($selectedProject->skus as $sku)<p class="rounded-lg bg-white p-3 text-sm">{{ $sku->sku_code }} · {{ $sku->variant_name }}</p>@empty<p class="text-sm text-slate-500">尚未回填内部 SKU。</p>@endforelse</div></div></div>@else<p class="mt-3 text-sm text-slate-600">该区域将优先展示本部门可处理的数据和操作入口。</p>@endif
+            </div><aside class="rounded-xl border border-slate-200 bg-white p-5"><p class="text-sm font-semibold text-slate-900">关联协作摘要</p><dl class="mt-4 space-y-3 text-sm text-slate-600"><div class="flex justify-between gap-3"><dt>详情页</dt><dd>{{ $selectedProject->landingPages->count() }} 个</dd></div><div class="flex justify-between gap-3"><dt>素材</dt><dd>{{ $selectedProject->creativeAssets->count() }} 个</dd></div><div class="flex justify-between gap-3"><dt>投放记录</dt><dd>{{ $selectedProject->campaignTests->count() }} 条</dd></div><div class="flex justify-between gap-3"><dt>待处理反馈</dt><dd>{{ $selectedProject->optimizationFeedback->where('status', '!=', 'resolved')->count() }} 条</dd></div></dl></aside></div>
+        </section>
+    @endif
 </x-layouts.app>

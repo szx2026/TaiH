@@ -21,6 +21,7 @@ class FilterProductProjectsRequest extends FormRequest
             'market' => ['nullable', 'string', 'max:16'],
             'priority' => ['nullable', Rule::in(['high', 'medium', 'low'])],
             'search' => ['nullable', 'string', 'max:100'],
+            'project' => ['nullable', 'integer', Rule::exists('product_projects', 'id')],
         ];
     }
 }
