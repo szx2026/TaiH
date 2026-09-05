@@ -80,9 +80,9 @@ class LandingPageTest extends TestCase
         $this->assertDatabaseHas('landing_pages', [
             'product_project_id' => $project->id,
             'version' => 1,
-            'title' => '星空投影灯 - 美国站详情页',
+            'title' => '星空投影灯',
             'page_url' => 'https://shop.example.com/products/star-projector',
-            'selling_price' => 39.99,
+            'selling_price' => null,
             'status' => 'draft',
         ]);
         $this->assertDatabaseHas('landing_page_skus', ['product_sku_id' => $sku->id]);
@@ -95,5 +95,18 @@ class LandingPageTest extends TestCase
             'shopify_product_linked' => true,
             'sku_count' => 1,
         ], $activity->payload);
+    }
+
+    public function test_website_operations_uses_product_name_automatically_for_shopify_page_title(): void
+    {
+        $department = Department::factory()->create(['code' => 'website_operations']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-AUTO-TITLE', 'product_name' => '自动命名产品', 'market' => 'US', 'priority' => 'medium', 'current_stage' => 'website_operations', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+        $sku = ProductSku::create(['product_project_id' => $project->id, 'sku_code' => 'AUTO-TITLE-SKU', 'variant_name' => '默认规格', 'sku_status' => 'imported', 'created_by' => $user->id]);
+
+        $this->actingAs($user)->post("/projects/{$project->id}/landing-pages", ['page_url' => 'https://shop.example.com/products/auto-title', 'sku_ids' => [$sku->id]])
+            ->assertRedirect(route('projects.index', ['stage' => 'website_operations', 'project' => $project]));
+
+        $this->assertDatabaseHas('landing_pages', ['product_project_id' => $project->id, 'title' => '自动命名产品']);
     }
 }

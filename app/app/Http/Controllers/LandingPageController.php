@@ -18,11 +18,7 @@ class LandingPageController extends Controller
         abort_unless($request->user()?->department?->code === 'website_operations', 403);
 
         $data = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
             'page_url' => ['required', 'url', 'max:2048'],
-            'selling_price' => ['nullable', 'numeric', 'min:0'],
-            'currency' => ['required', 'string', 'size:3'],
-            'specifications' => ['nullable', 'string'],
             'sku_ids' => ['required', 'array', 'min:1'],
             'sku_ids.*' => ['integer', Rule::exists('product_skus', 'id')],
         ]);
@@ -38,11 +34,11 @@ class LandingPageController extends Controller
             $page = LandingPage::create([
                 'product_project_id' => $project->id,
                 'version' => $version,
-                'title' => $data['title'],
+                'title' => $project->product_name,
                 'page_url' => $data['page_url'],
-                'selling_price' => $data['selling_price'] ?? null,
-                'currency' => strtoupper($data['currency']),
-                'specifications' => $data['specifications'] ?? null,
+                'selling_price' => null,
+                'currency' => 'USD',
+                'specifications' => null,
                 'status' => 'draft',
                 'created_by' => $request->user()->id,
             ]);
