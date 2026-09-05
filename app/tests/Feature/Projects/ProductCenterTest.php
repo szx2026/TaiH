@@ -54,9 +54,20 @@ class ProductCenterTest extends TestCase
             ->assertSee('关联协作摘要');
     }
 
-    private function project(Department $department, User $user, string $code, string $name, string $stage): void
+    public function test_each_department_workspace_prioritizes_its_own_product_work(): void
     {
-        ProductProject::create([
+        $department = Department::factory()->create(['code' => 'website_operations']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = $this->project($department, $user, 'PP-202609-DEPT-FOCUS', '部门重点项目', 'website_operations');
+
+        $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertSee('网站运营部重点工作')->assertSee('货源、SKU 与 Shopify 产品');
+        $this->actingAs($user)->get("/projects?stage=content_creative&project={$project->id}")->assertOk()->assertSee('内容创意部重点工作')->assertSee('素材清单');
+        $this->actingAs($user)->get("/projects?stage=traffic_growth&project={$project->id}")->assertOk()->assertSee('流量增长部重点工作')->assertSee('投放测试与反馈');
+    }
+
+    private function project(Department $department, User $user, string $code, string $name, string $stage): ProductProject
+    {
+        return ProductProject::create([
             'project_code' => $code,
             'product_name' => $name,
             'market' => 'US',
