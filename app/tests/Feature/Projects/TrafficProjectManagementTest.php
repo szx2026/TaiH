@@ -20,6 +20,8 @@ class TrafficProjectManagementTest extends TestCase
 
         $this->actingAs($user)->patch("/projects/{$project->id}/archive")->assertRedirect();
         $this->assertDatabaseHas('product_projects', ['id' => $project->id, 'status' => 'archived']);
+        $this->actingAs($user)->get('/projects?stage=traffic_growth')->assertDontSee('可恢复项目');
+        $this->actingAs($user)->get('/recycle-bin')->assertOk()->assertSee('可恢复项目')->assertSee('恢复产品项目');
 
         $this->actingAs($user)->patch("/projects/{$project->id}/restore")->assertRedirect();
         $this->assertDatabaseHas('product_projects', ['id' => $project->id, 'status' => 'in_progress']);

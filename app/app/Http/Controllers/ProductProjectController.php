@@ -47,6 +47,7 @@ class ProductProjectController extends Controller
         $departmentWorkspace = $departmentWorkspaces[$filters['stage'] ?? ''] ?? null;
 
         $projects = ProductProject::query()
+                ->where('status', '!=', 'archived')
                 // Departments collaborate on the same active product in parallel.
                 // `current_stage` remains a progress indicator, not an access filter.
                 ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
@@ -57,7 +58,7 @@ class ProductProjectController extends Controller
                 ->get();
 
         $selectedProject = isset($filters['project'])
-            ? ProductProject::query()->whereKey($filters['project'])->with(['researchSources', 'skus', 'sources', 'landingPages.skus', 'creativeAssets', 'campaignTests', 'optimizationFeedback', 'decisions'])->first()
+            ? ProductProject::query()->where('status', '!=', 'archived')->whereKey($filters['project'])->with(['researchSources', 'skus', 'sources', 'landingPages.skus', 'creativeAssets', 'campaignTests', 'optimizationFeedback', 'decisions'])->first()
             : $projects->first();
 
         return view('projects.index', [
@@ -79,6 +80,13 @@ class ProductProjectController extends Controller
     {
         return view('projects.show', [
             'project' => $project->load(['skus', 'landingPages.skus', 'creativeAssets', 'campaignTests', 'optimizationFeedback']),
+        ]);
+    }
+
+    public function recycleBin(): View
+    {
+        return view('projects.recycle-bin', [
+            'projects' => ProductProject::query()->where('status', 'archived')->latest()->get(),
         ]);
     }
 

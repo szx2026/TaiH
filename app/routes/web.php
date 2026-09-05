@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/feedback', [FeedbackCenterController::class, 'index'])->name('feedback.index');
     Route::get('/projects', [ProductProjectController::class, 'index'])->name('projects.index');
+    Route::get('/recycle-bin', [ProductProjectController::class, 'recycleBin'])->name('projects.recycle-bin');
     Route::get('/projects/{project}/workspace', [ProjectWorkspaceController::class, 'show'])->name('projects.workspace');
     Route::get('/projects/{project}', [ProductProjectController::class, 'show'])->name('projects.show');
     Route::post('/projects', [ProductProjectController::class, 'store'])->name('projects.store');
