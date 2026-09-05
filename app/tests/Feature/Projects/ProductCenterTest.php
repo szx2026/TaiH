@@ -91,6 +91,18 @@ class ProductCenterTest extends TestCase
             ->assertSee('保存投放测试');
     }
 
+    public function test_traffic_growth_workbench_offers_a_screenshot_paste_area(): void
+    {
+        $department = Department::factory()->create(['code' => 'traffic_growth']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = $this->project($department, $user, 'PP-202609-PASTE', '截图粘贴项目', 'traffic_growth');
+
+        $this->actingAs($user)->get("/projects?stage=traffic_growth&project={$project->id}")
+            ->assertOk()
+            ->assertSee('点击此处后按 Ctrl+V 粘贴截图')
+            ->assertSee('data-paste-upload', false);
+    }
+
     public function test_all_department_workspaces_expose_their_own_manual_entry_actions_inline(): void
     {
         $department = Department::factory()->create(['code' => 'market_research']);
