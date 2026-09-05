@@ -58,7 +58,7 @@ class ProductProjectController extends Controller
                 ->get();
 
         $selectedProject = isset($filters['project'])
-            ? ProductProject::query()->where('status', '!=', 'archived')->whereKey($filters['project'])->with(['researchSources', 'skus', 'sources', 'landingPages.skus', 'creativeAssets', 'campaignTests', 'optimizationFeedback', 'decisions'])->first()
+            ? ProductProject::query()->where('status', '!=', 'archived')->whereKey($filters['project'])->with(['researchSources', 'skus', 'sources', 'landingPages.skus', 'creativeAssets', 'campaignTests.revisions', 'optimizationFeedback', 'decisions'])->first()
             : $projects->first();
 
         return view('projects.index', [

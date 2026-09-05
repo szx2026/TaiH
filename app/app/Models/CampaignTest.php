@@ -33,4 +33,9 @@ class CampaignTest extends Model
     {
         return $this->belongsTo(LandingPage::class);
     }
+
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(CampaignRevision::class)->latest();
+    }
 }

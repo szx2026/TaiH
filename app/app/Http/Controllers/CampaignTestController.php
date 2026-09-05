@@ -13,6 +13,20 @@ use Illuminate\Validation\Rule;
 
 class CampaignTestController extends Controller
 {
+    public function update(Request $request, ProductProject $project, CampaignTest $campaign): RedirectResponse
+    {
+        abort_unless($request->user()?->department?->code === 'traffic_growth' && $campaign->product_project_id === $project->id, 403);
+        $data = $request->validate([
+            'spend' => ['required', 'numeric', 'min:0'], 'cost_per_click' => ['required', 'numeric', 'min:0'],
+            'add_to_cart_conversions' => ['required', 'integer', 'min:0'], 'checkout_conversions' => ['required', 'integer', 'min:0'],
+            'conclusion' => ['required', 'string', 'max:4000'], 'adjustment_items' => ['required', 'string', 'max:4000'],
+        ]);
+        DB::transaction(function () use ($campaign, $data, $request): void {
+            $campaign->update(collect($data)->only(['spend', 'cost_per_click', 'add_to_cart_conversions', 'checkout_conversions'])->all());
+            $campaign->revisions()->create(['metrics' => collect($campaign->only(['spend', 'cost_per_click', 'add_to_cart_conversions', 'checkout_conversions']))->all(), 'conclusion' => $data['conclusion'], 'adjustment_items' => $data['adjustment_items'], 'created_by' => $request->user()->id]);
+        });
+        return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
+    }
     public function store(Request $request, ProductProject $project): RedirectResponse
     {
         abort_unless($request->user()?->department?->code === 'traffic_growth', 403);
