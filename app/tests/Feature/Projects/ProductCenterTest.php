@@ -77,6 +77,17 @@ class ProductCenterTest extends TestCase
             ->assertSee('保存投放测试');
     }
 
+    public function test_all_department_workspaces_expose_their_own_manual_entry_actions_inline(): void
+    {
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = $this->project($department, $user, 'PP-202609-ALL-INLINE', '全链路编辑项目', 'market_research');
+
+        $this->actingAs($user)->get("/projects?stage=market_research&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/research-sources", false)->assertSee("/projects/{$project->id}/skus", false);
+        $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/sources", false)->assertSee("/projects/{$project->id}/landing-pages", false);
+        $this->actingAs($user)->get("/projects?stage=content_creative&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/creative-assets", false);
+    }
+
     private function project(Department $department, User $user, string $code, string $name, string $stage): ProductProject
     {
         return ProductProject::create([

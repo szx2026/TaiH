@@ -39,6 +39,6 @@ class ProductSourceController extends Controller
             'supplier_url' => $source->supplier_url,
         ]);
 
-        return to_route('projects.workspace', ['project' => $project, 'tab' => 'operations']);
+        return to_route('projects.index', ['stage' => 'website_operations', 'project' => $project]);
     }
 }

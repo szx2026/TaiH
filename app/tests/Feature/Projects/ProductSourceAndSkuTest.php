@@ -37,7 +37,7 @@ class ProductSourceAndSkuTest extends TestCase
                 'weight_g' => 93,
                 'notes' => '确认 3 / 6 / 12 影片版本可供货。',
             ])
-            ->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'operations']));
+            ->assertRedirect(route('projects.index', ['stage' => 'website_operations', 'project' => $project]));
 
         $this->assertDatabaseHas('product_sources', [
             'product_project_id' => $project->id,

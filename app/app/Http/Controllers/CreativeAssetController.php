@@ -52,6 +52,6 @@ class CreativeAssetController extends Controller
         ]);
         app(RecordProjectActivity::class)->handle($project, $request->user(), 'creative_asset.created', ['asset_id' => $asset->id, 'title' => $asset->title]);
 
-        return to_route('projects.index');
+        return to_route('projects.index', ['stage' => 'content_creative', 'project' => $project]);
     }
 }

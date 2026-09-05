@@ -83,7 +83,7 @@ class CampaignTestTest extends TestCase
                 'creative_asset_id' => $video->id,
                 'landing_page_id' => $landingPage->id,
             ])
-            ->assertRedirect("/projects/{$project->id}/workspace?tab=campaigns");
+            ->assertRedirect(route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]));
 
         $this->assertDatabaseHas('campaign_tests', [
             'product_project_id' => $project->id,
@@ -205,7 +205,7 @@ class CampaignTestTest extends TestCase
                 'feedback_target_stages' => ['market_research', 'website_operations', 'content_creative'],
                 'feedback_note' => '请分别检查产品、页面和视频表现。',
             ])
-            ->assertRedirect("/projects/{$project->id}/workspace?tab=campaigns");
+            ->assertRedirect(route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]));
 
         $campaignId = CampaignTest::query()->where('product_project_id', $project->id)->value('id');
 

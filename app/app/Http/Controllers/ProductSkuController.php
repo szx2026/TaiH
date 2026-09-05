@@ -43,6 +43,6 @@ class ProductSkuController extends Controller
             'sku_code' => $sku->sku_code,
         ]);
 
-        return to_route('projects.workspace', ['project' => $project, 'tab' => 'research']);
+        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 }

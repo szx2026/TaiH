@@ -22,7 +22,7 @@ class ResearchSourceIntakeTest extends TestCase
             'platform' => 'tiktok',
             'url' => 'https://www.tiktok.com/@example/video/123',
             'evidence_note' => '多个卖家持续投放，视频展示效果强。',
-        ])->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'research']));
+        ])->assertRedirect(route('projects.index', ['stage' => 'market_research', 'project' => $project]));
 
         $this->assertDatabaseHas('research_sources', ['product_project_id' => $project->id, 'platform' => 'tiktok']);
         $this->assertDatabaseHas('project_activities', ['product_project_id' => $project->id, 'event' => 'research_source.created']);

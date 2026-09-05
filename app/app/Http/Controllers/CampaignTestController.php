@@ -87,6 +87,6 @@ class CampaignTestController extends Controller
             ]);
         });
 
-        return to_route('projects.workspace', ['project' => $project, 'tab' => 'campaigns']);
+        return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
     }
 }

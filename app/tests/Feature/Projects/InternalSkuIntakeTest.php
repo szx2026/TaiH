@@ -23,7 +23,7 @@ class InternalSkuIntakeTest extends TestCase
                 'sku_code' => 'NC03342609026143',
                 'variant_name' => '夜灯 + 3 影片',
             ])
-            ->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'research']));
+            ->assertRedirect(route('projects.index', ['stage' => 'market_research', 'project' => $project]));
 
         $this->assertDatabaseHas('product_skus', [
             'product_project_id' => $project->id,
@@ -132,7 +132,7 @@ class InternalSkuIntakeTest extends TestCase
                 'sku_code' => 'NC03342609026143',
                 'variant_name' => '夜灯 + 3 影片',
             ])
-            ->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'research']));
+            ->assertRedirect(route('projects.index', ['stage' => 'market_research', 'project' => $project]));
 
         $this->assertDatabaseHas('product_skus', [
             'product_project_id' => $project->id,

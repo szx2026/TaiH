@@ -64,7 +64,7 @@ class CreativeAssetTest extends TestCase
                 'asset_file' => $file,
                 'notes' => '突出夜间投影效果。',
             ])
-            ->assertRedirect('/projects');
+            ->assertRedirect(route('projects.index', ['stage' => 'content_creative', 'project' => $project]));
 
         $this->assertDatabaseHas('creative_assets', [
             'product_project_id' => $project->id,

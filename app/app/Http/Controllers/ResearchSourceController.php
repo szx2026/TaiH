@@ -35,6 +35,6 @@ class ResearchSourceController extends Controller
             'url' => $source->url,
         ]);
 
-        return to_route('projects.workspace', ['project' => $project, 'tab' => 'research']);
+        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 }
