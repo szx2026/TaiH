@@ -3,17 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProductProject;
-use App\Queries\ProjectWorkspaceQuery;
+use App\Support\ProjectStage;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class ProjectWorkspaceController extends Controller
 {
-    public function show(Request $request, ProductProject $project, ProjectWorkspaceQuery $workspaceQuery): View
+    public function show(Request $request, ProductProject $project): RedirectResponse
     {
-        $tab = $request->string('tab', 'overview')->value();
-        abort_unless(in_array($tab, ['overview', 'research', 'operations', 'assets', 'campaigns', 'feedback'], true), 404);
+        $requestedStage = $request->string('return_stage')->value();
+        $stage = in_array($requestedStage, ProjectStage::ordered(), true)
+            ? $requestedStage
+            : $project->current_stage;
 
-        return view('projects.workspace', ['project' => $workspaceQuery->for($project), 'tab' => $tab]);
+        return to_route('projects.index', ['stage' => $stage, 'project' => $project]);
     }
 }

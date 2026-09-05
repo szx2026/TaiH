@@ -49,7 +49,7 @@ class ApplicationShellTest extends TestCase
         $this->actingAs($user)
             ->get('/projects?stage=market_research')
             ->assertOk()
-            ->assertSee("/projects/{$project->id}/workspace?return_stage=market_research", false);
+            ->assertSee("/projects?stage=market_research&amp;project={$project->id}", false);
     }
 
     public function test_workspace_back_link_returns_to_the_department_workspace_or_project_index(): void
@@ -70,12 +70,10 @@ class ApplicationShellTest extends TestCase
 
         $this->actingAs($user)
             ->get("/projects/{$project->id}/workspace?return_stage=market_research")
-            ->assertOk()
-            ->assertSee('href="'.url('/projects?stage=market_research').'" class="text-sm font-semibold text-blue-600">← 返回部门工作台', false);
+            ->assertRedirect("/projects?stage=market_research&project={$project->id}");
 
         $this->actingAs($user)
             ->get("/projects/{$project->id}/workspace")
-            ->assertOk()
-            ->assertSee('href="'.url('/projects').'" class="text-sm font-semibold text-blue-600">← 返回项目列表', false);
+            ->assertRedirect("/projects?stage=market_research&project={$project->id}");
     }
 }

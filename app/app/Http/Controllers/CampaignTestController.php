@@ -21,9 +21,13 @@ class CampaignTestController extends Controller
             'platform' => ['required', Rule::in(['facebook', 'tiktok', 'other'])],
             'campaign_name' => ['required', 'string', 'max:255'],
             'spend' => ['required', 'numeric', 'min:0'],
-            'impressions' => ['required', 'integer', 'min:0'],
-            'clicks' => ['required', 'integer', 'min:0'],
-            'conversions' => ['required', 'integer', 'min:0'],
+            'cost_per_click' => ['nullable', 'numeric', 'min:0'],
+            'add_to_cart_conversions' => ['nullable', 'integer', 'min:0'],
+            'checkout_conversions' => ['nullable', 'integer', 'min:0'],
+            'impressions' => ['nullable', 'integer', 'min:0'],
+            'clicks' => ['nullable', 'integer', 'min:0'],
+            'conversions' => ['nullable', 'integer', 'min:0'],
+            'detail_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'creative_asset_id' => [
                 'required',
                 Rule::exists('creative_assets', 'id')->where(fn ($query) => $query
@@ -44,15 +48,24 @@ class CampaignTestController extends Controller
         }
 
         DB::transaction(function () use ($data, $project, $request): void {
-            $ctr = $data['impressions'] === 0 ? 0 : round(($data['clicks'] / $data['impressions']) * 100, 2);
+            $detailImagePath = $request->file('detail_image')?->store('campaign-details/'.$project->id, 'local');
+            $impressions = (int) ($data['impressions'] ?? 0);
+            $clicks = (int) ($data['clicks'] ?? 0);
+            $checkoutConversions = (int) ($data['checkout_conversions'] ?? $data['conversions'] ?? 0);
+            $ctr = $impressions === 0 ? 0 : round(($clicks / $impressions) * 100, 2);
             $campaign = CampaignTest::create([
                 'product_project_id' => $project->id,
                 'platform' => $data['platform'],
                 'campaign_name' => $data['campaign_name'],
                 'spend' => $data['spend'],
-                'impressions' => $data['impressions'],
-                'clicks' => $data['clicks'],
-                'conversions' => $data['conversions'],
+                // Legacy columns stay populated for historical compatibility.
+                'impressions' => $impressions,
+                'clicks' => $clicks,
+                'conversions' => $checkoutConversions,
+                'cost_per_click' => $data['cost_per_click'] ?? ($clicks > 0 ? round($data['spend'] / $clicks, 2) : null),
+                'add_to_cart_conversions' => $data['add_to_cart_conversions'] ?? null,
+                'checkout_conversions' => $checkoutConversions,
+                'detail_image_path' => $detailImagePath,
                 'ctr' => $ctr,
                 'creative_asset_id' => $data['creative_asset_id'],
                 'landing_page_id' => $data['landing_page_id'],
@@ -79,7 +92,9 @@ class CampaignTestController extends Controller
             app(RecordProjectActivity::class)->handle($project, $request->user(), 'campaign_test.created', [
                 'campaign_test_id' => $campaign->id,
                 'campaign_name' => $campaign->campaign_name,
-                'ctr' => $campaign->ctr,
+                'cost_per_click' => $campaign->cost_per_click,
+                'add_to_cart_conversions' => $campaign->add_to_cart_conversions,
+                'checkout_conversions' => $campaign->checkout_conversions,
                 'creative_asset_id' => $campaign->creative_asset_id,
                 'creative_asset_title' => $campaign->creativeAsset->title,
                 'landing_page_id' => $campaign->landing_page_id,

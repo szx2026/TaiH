@@ -10,7 +10,8 @@ class CampaignTest extends Model
 {
     protected $fillable = [
         'product_project_id', 'creative_asset_id', 'landing_page_id', 'platform', 'campaign_name',
-        'spend', 'impressions', 'clicks', 'conversions', 'ctr', 'status', 'created_by',
+        'spend', 'impressions', 'clicks', 'conversions', 'cost_per_click', 'add_to_cart_conversions',
+        'checkout_conversions', 'detail_image_path', 'ctr', 'status', 'created_by',
     ];
 
     public function project(): BelongsTo

@@ -47,7 +47,8 @@ class ProductProjectController extends Controller
         $departmentWorkspace = $departmentWorkspaces[$filters['stage'] ?? ''] ?? null;
 
         $projects = ProductProject::query()
-                ->when($filters['stage'] ?? null, fn ($query, $stage) => $query->where('current_stage', $stage))
+                // Departments collaborate on the same active product in parallel.
+                // `current_stage` remains a progress indicator, not an access filter.
                 ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
                 ->when($filters['market'] ?? null, fn ($query, $market) => $query->where('market', $market))
                 ->when($filters['priority'] ?? null, fn ($query, $priority) => $query->where('priority', $priority))

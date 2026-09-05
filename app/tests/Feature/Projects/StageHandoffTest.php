@@ -40,8 +40,8 @@ class StageHandoffTest extends TestCase
         $user = User::factory()->create(['department_id' => $department->id]);
         $project = ProductProject::create(['project_code' => 'PP-202609-HANDOFF-UI', 'product_name' => '星空投影灯', 'market' => 'US', 'priority' => 'high', 'current_stage' => 'website_operations', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
 
-        $this->actingAs($user)->get(route('projects.workspace', $project))
+        $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")
             ->assertOk()
-            ->assertSee('交接给内容创意部');
+            ->assertSee('网站运营部重点工作');
     }
 }

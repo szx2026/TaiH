@@ -10,6 +10,8 @@ use App\Models\ProjectActivity;
 use App\Models\ProductProject;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class CampaignTestTest extends TestCase
@@ -104,12 +106,37 @@ class CampaignTestTest extends TestCase
         $this->assertSame([
             'campaign_test_id' => CampaignTest::query()->where('product_project_id', $project->id)->value('id'),
             'campaign_name' => 'US 星空投影灯 · V1',
-            'ctr' => 3.2,
+            'cost_per_click' => 2.52,
+            'add_to_cart_conversions' => null,
+            'checkout_conversions' => 1,
             'creative_asset_id' => $video->id,
             'creative_asset_title' => '星空投影演示视频',
             'landing_page_id' => $landingPage->id,
             'landing_page_title' => '星空投影灯 Shopify 页面',
         ], $activity->payload);
+    }
+
+    public function test_traffic_growth_can_record_requested_metrics_and_ad_detail_image(): void
+    {
+        Storage::fake('local');
+        $department = Department::factory()->create(['code' => 'traffic_growth']);
+        $user = User::factory()->create(['department_id' => $department->id, 'role' => 'member']);
+        $project = ProductProject::create(['project_code' => 'PP-202609-NEW-METRICS', 'product_name' => '测试产品', 'market' => 'US', 'priority' => 'high', 'current_stage' => 'traffic_growth', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+        $video = CreativeAsset::create(['product_project_id' => $project->id, 'title' => '投放视频', 'asset_type' => 'video', 'source_type' => 'other', 'status' => 'draft', 'created_by' => $user->id]);
+        $page = LandingPage::create(['product_project_id' => $project->id, 'version' => 1, 'title' => '测试产品', 'page_url' => 'https://shop.example.com/test', 'currency' => 'USD', 'status' => 'draft', 'created_by' => $user->id]);
+
+        $this->actingAs($user)->post("/projects/{$project->id}/campaign-tests", [
+            'platform' => 'facebook', 'campaign_name' => '新指标测试', 'spend' => 23.50,
+            'cost_per_click' => 0.75, 'add_to_cart_conversions' => 8, 'checkout_conversions' => 3,
+            'creative_asset_id' => $video->id, 'landing_page_id' => $page->id,
+            'detail_image' => UploadedFile::fake()->create('facebook-detail.png', 20, 'image/png'),
+        ])->assertRedirect();
+
+        $campaign = CampaignTest::query()->where('campaign_name', '新指标测试')->firstOrFail();
+        $this->assertSame('0.75', number_format((float) $campaign->cost_per_click, 2, '.', ''));
+        $this->assertSame(8, $campaign->add_to_cart_conversions);
+        $this->assertSame(3, $campaign->checkout_conversions);
+        Storage::disk('local')->assertExists($campaign->detail_image_path);
     }
 
     public function test_traffic_growth_cannot_use_a_video_from_another_project(): void
@@ -170,10 +197,10 @@ class CampaignTestTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get("/projects/{$project->id}/workspace?tab=campaigns")
+            ->get("/projects?stage=traffic_growth&project={$project->id}")
             ->assertOk()
-            ->assertSee('投放视频素材')
-            ->assertSee('Shopify 产品/正式落地页')
+            ->assertSee('选择投放视频')
+            ->assertSee('选择 Shopify 页面')
             ->assertSee('当前项目视频')
             ->assertSee('当前项目 Shopify 页面')
             ->assertDontSee('当前项目图片');

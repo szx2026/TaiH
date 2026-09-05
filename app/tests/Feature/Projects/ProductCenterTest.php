@@ -65,6 +65,20 @@ class ProductCenterTest extends TestCase
         $this->actingAs($user)->get("/projects?stage=traffic_growth&project={$project->id}")->assertOk()->assertSee('流量增长部重点工作')->assertSee('投放测试与反馈');
     }
 
+    public function test_department_workbenches_show_active_products_in_parallel(): void
+    {
+        $department = Department::factory()->create(['code' => 'content_creative']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = $this->project($department, $user, 'PP-202609-PARALLEL', '并联协作项目', 'market_research');
+
+        $this->actingAs($user)->get('/projects?stage=content_creative')
+            ->assertOk()
+            ->assertSee('并联协作项目');
+        $this->actingAs($user)->get("/projects?stage=content_creative&project={$project->id}")
+            ->assertOk()
+            ->assertSee('内容创意部重点工作');
+    }
+
     public function test_department_workspace_keeps_the_current_departments_edit_form_inline(): void
     {
         $department = Department::factory()->create(['code' => 'traffic_growth']);
@@ -84,8 +98,12 @@ class ProductCenterTest extends TestCase
         $project = $this->project($department, $user, 'PP-202609-ALL-INLINE', '全链路编辑项目', 'market_research');
 
         $this->actingAs($user)->get("/projects?stage=market_research&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/research-sources", false)->assertSee("/projects/{$project->id}/skus", false);
-        $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/sources", false)->assertSee("/projects/{$project->id}/landing-pages", false);
-        $this->actingAs($user)->get("/projects?stage=content_creative&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/creative-assets", false);
+        $websiteDepartment = Department::factory()->create(['code' => 'website_operations']);
+        $websiteUser = User::factory()->create(['department_id' => $websiteDepartment->id]);
+        $creativeDepartment = Department::factory()->create(['code' => 'content_creative']);
+        $creativeUser = User::factory()->create(['department_id' => $creativeDepartment->id]);
+        $this->actingAs($websiteUser)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/sources", false)->assertSee("/projects/{$project->id}/landing-pages", false);
+        $this->actingAs($creativeUser)->get("/projects?stage=content_creative&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/creative-assets", false);
     }
 
     private function project(Department $department, User $user, string $code, string $name, string $stage): ProductProject

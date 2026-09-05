@@ -30,16 +30,10 @@ class LandingPageTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get("/projects/{$project->id}")
+            ->get("/projects?stage=website_operations&project={$project->id}")
             ->assertOk()
-            ->assertSee('新建落地页版本')
-            ->assertSee('关联 SKU');
-
-        $this->actingAs($user)
-            ->get(route('projects.workspace', ['project' => $project, 'tab' => 'operations']))
-            ->assertOk()
-            ->assertSee('Shopify 产品上架与正式落地页')
-            ->assertSee('Shopify 产品或正式落地页链接');
+            ->assertSee('货源、SKU 与 Shopify 产品')
+            ->assertSee('Shopify 产品或落地页链接');
     }
 
     public function test_website_operations_can_create_a_landing_page_with_price_specs_and_skus(): void
