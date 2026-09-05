@@ -10,6 +10,7 @@ class ResearchSource extends Model
     protected $fillable = [
         'product_project_id',
         'platform',
+        'custom_source_name',
         'url',
         'evidence_note',
         'captured_at',

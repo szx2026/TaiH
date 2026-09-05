@@ -16,7 +16,8 @@ class ResearchSourceController extends Controller
         abort_unless($request->user()?->department?->code === 'market_research' || $request->user()?->hasRole('administrator'), 403);
 
         $data = $request->validate([
-            'platform' => ['required', Rule::in(['tiktok', 'facebook_ads', 'amazon', 'shopify', 'lightanda', 'easy', 'other'])],
+            'platform' => ['required', Rule::in(['tiktok', 'facebook_ads', 'amazon', 'independent_store', 'other'])],
+            'custom_source_name' => ['nullable', 'required_if:platform,other', 'string', 'max:255'],
             'url' => ['required', 'url', 'max:2048'],
             'evidence_note' => ['nullable', 'string', 'max:4000'],
         ]);
