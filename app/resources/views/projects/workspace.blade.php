@@ -1,6 +1,6 @@
 <x-layouts.app :title="$project->product_name.' · 项目协作空间'">
     @php($departmentLabels = ['market_research' => '市场研究部', 'website_operations' => '网站运营部', 'content_creative' => '内容创意部', 'traffic_growth' => '流量增长部'])
-    <a href="{{ route('projects.index') }}" class="text-sm font-semibold text-blue-600">← 返回产品中心</a>
+    <a href="{{ request()->filled('return_stage') ? route('projects.index', ['stage' => request('return_stage')]) : route('projects.index') }}" class="text-sm font-semibold text-blue-600">← {{ request()->filled('return_stage') ? '返回部门工作台' : '返回项目列表' }}</a>
     <div class="mt-4 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 lg:flex-row lg:items-end"><div><p class="text-sm font-semibold text-blue-600">{{ $project->project_code }}</p><h1 class="mt-1 text-3xl font-bold">{{ $project->product_name }}</h1><p class="mt-2 text-sm text-slate-500">{{ $project->market }} · {{ $project->category ?: '未分类' }} · 负责人：{{ $project->owner?->name }}</p></div><x-status-badge :status="$project->status" /></div>
     @php($nextStages = ['market_research' => ['website_operations', '网站运营部'], 'website_operations' => ['content_creative', '内容创意部'], 'content_creative' => ['traffic_growth', '流量增长部']])
     @if(isset($nextStages[$project->current_stage]) && auth()->user()?->department?->code === $project->current_stage)
