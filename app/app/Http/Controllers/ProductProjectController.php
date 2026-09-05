@@ -81,4 +81,20 @@ class ProductProjectController extends Controller
             'project' => $project->load(['skus', 'landingPages.skus', 'creativeAssets', 'campaignTests', 'optimizationFeedback']),
         ]);
     }
+
+    public function archive(\Illuminate\Http\Request $request, ProductProject $project): RedirectResponse
+    {
+        abort_unless($request->user()?->department?->code === 'traffic_growth' || $request->user()?->hasRole('administrator'), 403);
+        $project->update(['status' => 'archived']);
+
+        return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
+    }
+
+    public function restore(\Illuminate\Http\Request $request, ProductProject $project): RedirectResponse
+    {
+        abort_unless($request->user()?->department?->code === 'traffic_growth' || $request->user()?->hasRole('administrator'), 403);
+        $project->update(['status' => 'in_progress']);
+
+        return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
+    }
 }
