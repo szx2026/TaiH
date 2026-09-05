@@ -19,8 +19,12 @@ class ApplicationShellTest extends TestCase
             ->assertOk()
             ->assertSee('工作台')
             ->assertSee('产品中心')
-            ->assertSee('素材中心')
-            ->assertSee('投放中心')
+            ->assertSee('市场研究部')
+            ->assertSee('网站运营部')
+            ->assertSee('内容创意部')
+            ->assertSee('流量增长部')
+            ->assertSee('/projects?stage=market_research', false)
+            ->assertSee('/projects?stage=website_operations', false)
             ->assertSee('反馈中心');
     }
 }

@@ -22,10 +22,11 @@
             <nav class="space-y-1" aria-label="主导航">
                 <x-nav-item label="工作台" :href="route('dashboard')" :active="request()->routeIs('dashboard')" />
                 <x-nav-item label="产品中心" :href="route('projects.index')" :active="request()->routeIs('projects.*')" />
-                <x-nav-item label="素材中心" />
-                <x-nav-item label="投放中心" />
+                <x-nav-item label="市场研究部" :href="route('projects.index', ['stage' => 'market_research'])" :active="request('stage') === 'market_research'" />
+                <x-nav-item label="网站运营部" :href="route('projects.index', ['stage' => 'website_operations'])" :active="request('stage') === 'website_operations'" />
+                <x-nav-item label="内容创意部" :href="route('projects.index', ['stage' => 'content_creative'])" :active="request('stage') === 'content_creative'" />
+                <x-nav-item label="流量增长部" :href="route('projects.index', ['stage' => 'traffic_growth'])" :active="request('stage') === 'traffic_growth'" />
                 <x-nav-item label="反馈中心" :href="route('feedback.index')" :active="request()->routeIs('feedback.*')" />
-                <x-nav-item label="活动" />
             </nav>
 
             <div class="my-7 border-t border-slate-800"></div>
