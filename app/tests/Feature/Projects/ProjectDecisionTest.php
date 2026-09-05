@@ -23,7 +23,7 @@ class ProjectDecisionTest extends TestCase
             'requested_from_stage' => 'website_operations',
             'title' => '请确认夜灯 + 12 影片 SKU 是否开通',
             'details' => 'TikTok 视频展示该规格，建议与 3/6 影片一起测试。',
-        ])->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'operations']));
+        ])->assertRedirect(route('projects.index', ['stage' => 'market_research', 'project' => $project]));
 
         $this->assertDatabaseHas('project_decisions', ['product_project_id' => $project->id, 'decision_type' => 'sku', 'requested_from_stage' => 'website_operations', 'status' => 'open']);
         $this->assertDatabaseHas('project_activities', ['product_project_id' => $project->id, 'event' => 'decision.created']);
@@ -40,7 +40,7 @@ class ProjectDecisionTest extends TestCase
             'requested_from_stage' => 'market_research',
             'title' => '请开通夜灯 + 12 影片 SKU',
             'details' => '落地页需要 3 / 6 / 12 影片三档规格用于价格测试。',
-        ])->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'operations']));
+        ])->assertRedirect(route('projects.index', ['stage' => 'website_operations', 'project' => $project]));
 
         $this->assertDatabaseHas('project_decisions', [
             'product_project_id' => $project->id,

@@ -47,6 +47,6 @@ class ProjectDecisionController extends Controller
             'title' => $decision->title,
         ]);
 
-        return to_route('projects.workspace', ['project' => $project, 'tab' => 'operations']);
+        return to_route('projects.index', ['stage' => $department, 'project' => $project]);
     }
 }
