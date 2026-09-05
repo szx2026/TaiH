@@ -65,6 +65,18 @@ class ProductCenterTest extends TestCase
         $this->actingAs($user)->get("/projects?stage=traffic_growth&project={$project->id}")->assertOk()->assertSee('流量增长部重点工作')->assertSee('投放测试与反馈');
     }
 
+    public function test_department_workspace_keeps_the_current_departments_edit_form_inline(): void
+    {
+        $department = Department::factory()->create(['code' => 'traffic_growth']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = $this->project($department, $user, 'PP-202609-EDIT-INLINE', '可编辑项目', 'traffic_growth');
+
+        $this->actingAs($user)->get("/projects?stage=traffic_growth&project={$project->id}")
+            ->assertOk()
+            ->assertSee("/projects/{$project->id}/campaign-tests", false)
+            ->assertSee('保存投放测试');
+    }
+
     private function project(Department $department, User $user, string $code, string $name, string $stage): ProductProject
     {
         return ProductProject::create([
