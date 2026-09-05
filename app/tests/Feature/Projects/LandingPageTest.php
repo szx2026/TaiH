@@ -91,7 +91,7 @@ class LandingPageTest extends TestCase
         $this->assertNotNull($activity);
         $this->assertSame([
             'landing_page_id' => $activity->payload['landing_page_id'],
-            'title' => '星空投影灯 - 美国站详情页',
+            'title' => '星空投影灯',
             'shopify_product_linked' => true,
             'sku_count' => 1,
         ], $activity->payload);
