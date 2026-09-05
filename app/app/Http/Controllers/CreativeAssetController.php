@@ -17,8 +17,9 @@ class CreativeAssetController extends Controller
 
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'asset_type' => ['required', Rule::in(['video', 'image', 'copy'])],
-            'source_type' => ['required', Rule::in(['tiktok', 'amazon', 'original', 'other'])],
+            'asset_types' => ['required', 'array', 'min:1'],
+            'asset_types.*' => ['required', 'distinct', Rule::in(['video', 'image', 'gif', 'copy'])],
+            'source_type' => ['required', Rule::in(['tiktok', 'youtube', 'other'])],
             'landing_page_id' => ['nullable', 'integer', Rule::exists('landing_pages', 'id')],
             'asset_file' => ['nullable', 'file', 'max:102400'],
             'external_url' => ['nullable', 'url', 'max:2048'],
@@ -39,7 +40,8 @@ class CreativeAssetController extends Controller
         $asset = CreativeAsset::create([
             'product_project_id' => $project->id,
             'title' => $data['title'],
-            'asset_type' => $data['asset_type'],
+            'asset_type' => $data['asset_types'][0],
+            'asset_types' => $data['asset_types'],
             'source_type' => $data['source_type'],
             'landing_page_id' => $data['landing_page_id'] ?? null,
             'external_url' => $data['external_url'] ?? null,

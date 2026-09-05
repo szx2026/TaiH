@@ -59,8 +59,8 @@ class CreativeAssetTest extends TestCase
         $this->actingAs($user)
             ->post("/projects/{$project->id}/creative-assets", [
                 'title' => '投影效果演示 V1',
-                'asset_type' => 'video',
-                'source_type' => 'original',
+                'asset_types' => ['video'],
+                'source_type' => 'tiktok',
                 'asset_file' => $file,
                 'notes' => '突出夜间投影效果。',
             ])
@@ -70,12 +70,24 @@ class CreativeAssetTest extends TestCase
             'product_project_id' => $project->id,
             'title' => '投影效果演示 V1',
             'asset_type' => 'video',
-            'source_type' => 'original',
+            'source_type' => 'tiktok',
             'status' => 'draft',
             'storage_disk' => 'local',
         ]);
         $storedPath = DB::table('creative_assets')->where('product_project_id', $project->id)->value('storage_path');
         Storage::disk('local')->assertExists($storedPath);
         $this->assertDatabaseHas('project_activities', ['product_project_id' => $project->id, 'event' => 'creative_asset.created']);
+    }
+
+    public function test_content_creative_can_save_multiple_asset_types_including_gif_and_youtube_reference(): void
+    {
+        $department = Department::factory()->create(['code' => 'content_creative']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-GIF', 'product_name' => '动图素材产品', 'market' => 'US', 'priority' => 'medium', 'current_stage' => 'content_creative', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+
+        $this->actingAs($user)->post("/projects/{$project->id}/creative-assets", ['title' => '视频与动图素材 V1', 'asset_types' => ['video', 'gif'], 'source_type' => 'youtube', 'external_url' => 'https://youtube.com/watch?v=demo'])
+            ->assertRedirect(route('projects.index', ['stage' => 'content_creative', 'project' => $project]));
+
+        $this->assertDatabaseHas('creative_assets', ['product_project_id' => $project->id, 'asset_type' => 'video', 'source_type' => 'youtube']);
     }
 }

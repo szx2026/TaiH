@@ -8,9 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class CreativeAsset extends Model
 {
     protected $fillable = [
-        'product_project_id', 'landing_page_id', 'title', 'asset_type', 'source_type',
+        'product_project_id', 'landing_page_id', 'title', 'asset_type', 'asset_types', 'source_type',
         'external_url', 'storage_disk', 'storage_path', 'copy_text', 'notes', 'status', 'created_by',
     ];
+
+    protected function casts(): array
+    {
+        return ['asset_types' => 'array'];
+    }
 
     public function project(): BelongsTo
     {
