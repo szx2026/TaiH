@@ -1,14 +1,14 @@
-<x-layouts.app title="产品中心 · 跨境产品 ERP">
+<x-layouts.app :title="($departmentWorkspace['title'] ?? '产品中心').' · 跨境产品 ERP'">
     <div class="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-            <p class="text-sm font-semibold text-blue-600">产品中心</p>
-            <h1 class="mt-1 text-3xl font-bold tracking-tight">产品项目池</h1>
-            <p class="mt-2 text-sm text-slate-500">统一查看项目进度、负责人和当前协作环节。</p>
+            <p class="text-sm font-semibold text-blue-600">{{ $departmentWorkspace['eyebrow'] ?? '产品中心' }}</p>
+            <h1 class="mt-1 text-3xl font-bold tracking-tight">{{ $departmentWorkspace['title'] ?? '产品项目池' }}</h1>
+            <p class="mt-2 text-sm text-slate-500">{{ $departmentWorkspace['description'] ?? '统一查看项目进度、负责人和当前协作环节。' }}</p>
         </div>
-        <a href="#create-project" class="rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-blue-700">＋ 新建产品项目</a>
+        @if(! $departmentWorkspace || $departmentWorkspace['allows_create'])<a href="#create-project" class="rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-blue-700">＋ 新建产品项目</a>@endif
     </div>
 
-    <details id="create-project" class="mb-6 rounded-xl border border-blue-100 bg-blue-50/50 p-5" @if ($errors->any()) open @endif>
+    @if(! $departmentWorkspace || $departmentWorkspace['allows_create'])<details id="create-project" class="mb-6 rounded-xl border border-blue-100 bg-blue-50/50 p-5" @if ($errors->any()) open @endif>
         <summary class="cursor-pointer text-sm font-semibold text-blue-800">手动创建产品项目</summary>
         <form method="POST" action="{{ route('projects.store') }}" class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             @csrf
@@ -33,7 +33,7 @@
                 <button type="submit" class="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">创建并开始选品研究</button>
             </div>
         </form>
-    </details>
+    </details>@endif
 
     <form method="GET" class="mb-4 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-5">
         <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="搜索产品名称或项目编号" class="rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 lg:col-span-2">
@@ -43,7 +43,7 @@
     </form>
 
     <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div class="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-700">全部项目</div>
+        <div class="border-b border-slate-100 px-5 py-4 text-sm font-semibold text-slate-700">{{ $departmentWorkspace['list_label'] ?? '全部项目' }}</div>
         <div class="divide-y divide-slate-100">
             @forelse ($projects as $project)
                 <a href="{{ route('projects.workspace', $project) }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50">
@@ -54,7 +54,7 @@
                     <x-status-badge :status="$project->status" />
                 </a>
             @empty
-                <div class="px-5 py-14 text-center text-sm text-slate-500">还没有产品项目。请从市场研究部创建第一个选品项目。</div>
+                <div class="px-5 py-14 text-center text-sm text-slate-500">{{ $departmentWorkspace ? '当前没有待处理项目。项目推进到本部门后会显示在这里。' : '还没有产品项目。请从市场研究部创建第一个选品项目。' }}</div>
             @endforelse
         </div>
     </section>
