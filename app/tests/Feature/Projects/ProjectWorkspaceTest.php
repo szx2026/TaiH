@@ -3,6 +3,7 @@
 namespace Tests\Feature\Projects;
 
 use App\Models\Department;
+use App\Models\OptimizationFeedback;
 use App\Models\ProductProject;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -77,5 +78,18 @@ class ProjectWorkspaceTest extends TestCase
             ->assertSee('项目优化反馈')
             ->assertSee('处理状态')
             ->assertSee('暂无待处理反馈');
+    }
+
+    public function test_feedback_tab_displays_target_department_name_in_chinese(): void
+    {
+        $department = Department::factory()->create(['code' => 'website_operations']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-FEEDBACK-LABEL', 'product_name' => '夜灯', 'market' => 'US', 'priority' => 'high', 'current_stage' => 'website_operations', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+        OptimizationFeedback::create(['product_project_id' => $project->id, 'target_stage' => 'market_research', 'note' => '请评估新增 SKU。', 'status' => 'open', 'created_by' => $user->id]);
+
+        $this->actingAs($user)->get(route('projects.workspace', ['project' => $project, 'tab' => 'feedback']))
+            ->assertOk()
+            ->assertSee('发送给 市场研究部')
+            ->assertDontSee('发送给 market_research');
     }
 }
