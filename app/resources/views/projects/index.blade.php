@@ -38,11 +38,43 @@
                 <div class="rounded-lg bg-slate-50 p-3"><p class="font-medium">流量部</p><p class="mt-1 text-slate-600">投放 {{ $selectedProject->campaignTests->count() }} 条 · 待处理反馈 {{ $selectedProject->optimizationFeedback->where('status', '!=', 'resolved')->count() }} 条</p></div>
             </div>
         </section>
-        @php($videos = $selectedProject->creativeAssets->filter(fn ($asset) => in_array('video', $asset->asset_types ?? [$asset->asset_type], true)))
-        @php($incoming = $selectedProject->decisions->where('requested_from_stage', $stage)->where('status', 'open'))
-        @php($openSpecificationDecision = $incoming->first(fn ($decision) => $decision->decision_type === 'specification'))
-        @php($pendingOperationsSpecifications = $selectedProject->decisions->where('decision_type', 'specification')->where('requested_from_stage', 'website_operations')->where('status', 'resolved')->flatMap(fn ($decision) => data_get($decision->details, 'requested_specifications', []))->map(fn ($specification) => trim((string) $specification))->filter()->unique()->reject(fn ($specification) => $selectedProject->skus->contains(fn ($sku) => $sku->variant_name === $specification))->values())
-            <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><div class="flex justify-between gap-3 border-b border-slate-100 pb-5"><div><p class="text-xs font-semibold dept-text-{{ $stage }}">{{ $selectedProject->project_code }}@if($selectedProject->released_at) · 发布于 {{ $selectedProject->released_at->format('Y-m-d') }}@endif</p><h2 class="mt-1 text-2xl font-bold">{{ $selectedProject->product_name }}</h2><p class="mt-1 text-sm text-slate-500">当前推进：{{ $labels[$selectedProject->current_stage] ?? $selectedProject->current_stage }}</p></div>@if($selectedProject->product_image_path)<img src="{{ asset('storage/'.$selectedProject->product_image_path) }}" alt="{{ $selectedProject->product_name }} 产品主图" class="size-16 rounded-lg object-cover">@endif<x-status-badge :status="$selectedProject->status" /></div>
+        @php
+            $videos = $selectedProject->creativeAssets->filter(fn ($asset) => in_array('video', $asset->asset_types ?? [$asset->asset_type], true));
+            $incoming = $selectedProject->decisions->where('requested_from_stage', $stage)->where('status', 'open');
+            $openSpecificationDecision = $incoming->first(fn ($decision) => $decision->decision_type === 'specification');
+            $pendingOperationsSpecifications = $selectedProject->decisions->where('decision_type', 'specification')->where('requested_from_stage', 'website_operations')->where('status', 'resolved')->flatMap(fn ($decision) => data_get($decision->details, 'requested_specifications', []))->map(fn ($specification) => trim((string) $specification))->filter()->unique()->reject(fn ($specification) => $selectedProject->skus->contains(fn ($sku) => $sku->variant_name === $specification))->values();
+        @endphp
+            @php
+                $projectStages = [
+                    'market_research' => ['label' => '产品部', 'description' => '选品、产品规格与货源信息确认'],
+                    'website_operations' => ['label' => '运营部', 'description' => '货源核验、Shopify 页面与产品信息完善'],
+                    'content_creative' => ['label' => '创意部', 'description' => '视频素材与详情页动图制作'],
+                    'traffic_growth' => ['label' => '流量部', 'description' => '广告投放、数据复盘与协作反馈'],
+                ];
+                $currentStageIndex = array_search($selectedProject->current_stage, array_keys($projectStages), true);
+            @endphp
+            <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <header class="project-summary-header border-b border-slate-100 pb-5">
+                    <div class="project-summary-title">
+                        <p class="text-xs font-semibold dept-text-{{ $stage }}">{{ $selectedProject->project_code }}@if($selectedProject->released_at) · 发布于 {{ $selectedProject->released_at->format('Y-m-d') }}@endif</p>
+                        <div class="mt-2 flex items-center gap-3">
+                            @if($selectedProject->product_image_path)<img src="{{ asset('storage/'.$selectedProject->product_image_path) }}" alt="{{ $selectedProject->product_name }} 产品主图" class="size-12 shrink-0 rounded-lg object-cover">@endif
+                            <div><h2 class="text-2xl font-bold">{{ $selectedProject->product_name }}</h2><p class="mt-1 text-sm text-slate-500">当前环节：{{ $labels[$selectedProject->current_stage] ?? $selectedProject->current_stage }}</p></div>
+                        </div>
+                    </div>
+                    <section class="project-progress-rail" data-project-stage-progress aria-label="项目进程">
+                        <div class="project-progress-meta"><p>项目进程</p><x-status-badge :status="$selectedProject->status" /></div>
+                        <div class="project-progress-steps" role="list">
+                            @foreach($projectStages as $stageCode => $stageMeta)
+                                @php $stageIndex = array_search($stageCode, array_keys($projectStages), true); @endphp
+                                <button type="button" role="listitem" data-project-stage-item data-stage-label="{{ $stageMeta['label'] }}" data-stage-description="{{ $stageMeta['description'] }}" aria-pressed="{{ $stageCode === $selectedProject->current_stage ? 'true' : 'false' }}" @class(['project-progress-step', 'is-complete' => $stageIndex < $currentStageIndex, 'is-current' => $stageCode === $selectedProject->current_stage])>
+                                    <span class="project-progress-dot">{{ $stageIndex + 1 }}</span><span>{{ $stageMeta['label'] }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                        <p class="project-progress-detail" data-project-stage-description>当前环节：{{ $labels[$selectedProject->current_stage] ?? $selectedProject->current_stage }} · {{ data_get($projectStages, $selectedProject->current_stage.'.description') }}</p>
+                    </section>
+                </header>
             @if(! $canEdit)<p class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">当前以 {{ $labels[$userStage] ?? '其他部门' }} 身份查看；本部门工作与待处理事项会优先显示，完整项目资料见下方。</p>@endif
             <div class="mt-5"><div class="w-full rounded-xl border dept-panel-{{ $stage }} p-5">
                 @if($stage === 'market_research')
@@ -50,7 +82,7 @@
                     @if($canEdit)<div class="mt-4 grid gap-3 lg:grid-cols-3"><form method="POST" action="{{ route('projects.research-sources.store', $selectedProject) }}" class="space-y-2 rounded-lg border border-orange-200 bg-white p-3">@csrf<p class="text-sm font-semibold">添加选品证据</p><label class="field-label">来源平台 <span>*</span><select name="platform" required class="field-input"><option value="tiktok">TikTok</option><option value="facebook_ads">Facebook 广告库</option><option value="amazon">Amazon</option><option value="independent_store">独立站</option></select></label><label class="field-label">证据链接 <span>*</span><input name="url" required placeholder="粘贴可验证的链接" class="field-input"></label><label class="field-label">选品理由 <span>*</span><textarea name="evidence_note" required placeholder="说明需求、价格、竞争或广告信号" class="field-input"></textarea></label><button class="rounded bg-orange-700 px-3 py-2 text-sm font-semibold text-white">添加选品证据</button></form><form method="POST" action="{{ route('projects.skus.store', $selectedProject) }}" class="space-y-2 rounded-lg border border-orange-200 bg-white p-3">@csrf<p class="text-sm font-semibold">开发公司内部 SKU</p><p class="text-xs text-slate-500">先录入 1688 货源和产品规格，再从公司内部系统生成 SKU。</p><label class="field-label">公司内部 SKU <span>*</span><input name="sku_code" required placeholder="例如：SKU-US-001" class="field-input"></label><label class="field-label">产品规格 <span>*</span><input name="variant_name" required placeholder="例如：单件 / 两件套" class="field-input"></label><button class="rounded bg-orange-700 px-3 py-2 text-sm font-semibold text-white">回填内部 SKU</button></form><form method="POST" action="{{ route('projects.sources.store', $selectedProject) }}" class="space-y-2 rounded-lg border border-orange-200 bg-white p-3">@csrf<p class="text-sm font-semibold">录入 1688 货源与对应产品规格</p><label class="field-label">1688 货源链接 <span>*</span><input name="supplier_url" required placeholder="粘贴 1688 商品链接" class="field-input"></label><label class="field-label">供应商 / 产品名称 <span>*</span><input name="supplier_name" required placeholder="用于定位货源" class="field-input"></label><label class="field-label">公司内部 SKU <span>*</span><input name="sku_code" required placeholder="根据产品规格从公司内部系统生成" class="field-input"></label><label class="field-label">产品规格 <span>*</span><input name="variant_name" required placeholder="例如：单件 / 两件套 / 尺寸版本" class="field-input"></label><label class="field-label">采购价（CNY）<input name="purchase_price" type="number" step="0.01" min="0" placeholder="可后补" class="field-input"></label><input name="currency" value="CNY" type="hidden"><label class="field-label">货源说明 <span>*</span><textarea name="notes" required placeholder="供货、起订量、尺寸或注意事项" class="field-input"></textarea></label><button class="rounded bg-orange-700 px-3 py-2 text-sm font-semibold text-white">保存货源、规格与内部 SKU</button></form></div>@endif
                     @if($canEdit)<section class="mt-4 rounded-xl border border-orange-300 bg-white p-4"><p class="text-sm font-semibold text-orange-900">产品部执行顺序</p><h4 class="mt-1 font-semibold">1. 录入 1688 货源与产品规格　→　2. 回填公司内部 SKU　→　3. 发送运营部确认</h4><p class="mt-1 text-sm text-slate-600">先从 1688 核对货源与规格；根据规格在公司内部系统生成 SKU 后填写。保存后即可将确认需求发送给运营部。</p><form method="POST" action="{{ route('projects.sources.store', $selectedProject) }}" class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">@csrf<label class="field-label xl:col-span-2">1688 货源链接 <span>*</span><input name="supplier_url" type="url" required placeholder="粘贴 1688 商品链接" class="field-input"></label><label class="field-label">供应商 / 产品名称 <span>*</span><input name="supplier_name" required placeholder="用于定位货源" class="field-input"></label><label class="field-label">产品规格 <span>*</span><input name="variant_name" required placeholder="例如：单件 / 两件套 / 尺寸版本" class="field-input"></label><label class="field-label">公司内部 SKU <span>*</span><input name="sku_code" required placeholder="根据产品规格从公司内部系统生成" class="field-input"></label><label class="field-label">采购价（CNY）<input name="purchase_price" type="number" step="0.01" min="0" placeholder="例如：19.90" class="field-input"></label><label class="field-label">重量（g）<input name="weight_g" type="number" min="0" placeholder="例如：350" class="field-input"></label><input name="currency" value="CNY" type="hidden"><label class="field-label md:col-span-2 xl:col-span-3">货源说明 <span>*</span><textarea name="notes" required rows="2" placeholder="填写供货、起订量、尺寸或注意事项" class="field-input"></textarea></label><div class="xl:col-span-3"><button class="rounded bg-orange-700 px-4 py-2 text-sm font-semibold text-white">保存货源、规格与内部 SKU</button></div></form>@if($selectedProject->skus->isNotEmpty())<form method="POST" action="{{ route('projects.decisions.store', $selectedProject) }}" class="mt-4 grid gap-3 border-t border-orange-200 pt-4 md:grid-cols-[1fr_2fr_auto]">@csrf<input type="hidden" name="decision_type" value="specification"><input type="hidden" name="requested_from_stage" value="website_operations"><input name="title" required value="确认路西法产品规格" placeholder="请运营部确认的事项" class="field-input mt-0"><input name="details" required placeholder="说明内部 SKU、产品规格及需确认的问题" class="field-input mt-0"><button class="rounded bg-orange-700 px-3 py-2 text-sm font-semibold text-white">发送运营部确认</button></form>@else<p class="mt-4 rounded-lg bg-orange-50 p-3 text-sm text-orange-900">完成第 1、2 步后，这里会出现“发送运营部确认”入口。</p>@endif</section>@endif
                 @if($canEdit)
-                    @php($productSource = $selectedProject->sources->first())
+                    @php $productSource = $selectedProject->sources->first(); @endphp
                     <section data-product-source-editor class="mt-4 rounded-xl border border-orange-300 bg-white p-5">
                         <p class="text-sm font-semibold text-orange-800">1688 货源与产品规格</p>
                         <h4 class="mt-1 text-lg font-bold">货源信息与多规格录入</h4>
@@ -160,13 +192,15 @@
                 <p class="mt-1 text-sm text-violet-900">基于花费、展示、点击、加车、结账、购买数和购买金额自动换算。</p>
                 <div class="mt-3 space-y-2">
                     @forelse($selectedProject->campaignTests as $campaign)
-                        @php($clicks = (int) $campaign->clicks)
-                        @php($atc = (int) ($campaign->add_to_cart_conversions ?? 0))
-                        @php($checkout = (int) ($campaign->checkout_conversions ?? 0))
-                        @php($purchases = (int) ($campaign->purchase_conversions ?? $checkout))
-                        @php($resultMetric = $campaign->result_metric ?? 'purchase')
-                        @php($resultLabel = ['purchase' => '购买', 'checkout' => '结账', 'add_to_cart' => '加车', 'click' => '链接点击'][$resultMetric] ?? '购买')
-                        @php($resultCount = ['purchase' => $purchases, 'checkout' => $checkout, 'add_to_cart' => $atc, 'click' => $clicks][$resultMetric] ?? $purchases)
+                        @php
+                            $clicks = (int) $campaign->clicks;
+                            $atc = (int) ($campaign->add_to_cart_conversions ?? 0);
+                            $checkout = (int) ($campaign->checkout_conversions ?? 0);
+                            $purchases = (int) ($campaign->purchase_conversions ?? $checkout);
+                            $resultMetric = $campaign->result_metric ?? 'purchase';
+                            $resultLabel = ['purchase' => '购买', 'checkout' => '结账', 'add_to_cart' => '加车', 'click' => '链接点击'][$resultMetric] ?? '购买';
+                            $resultCount = ['purchase' => $purchases, 'checkout' => $checkout, 'add_to_cart' => $atc, 'click' => $clicks][$resultMetric] ?? $purchases;
+                        @endphp
                         <div class="rounded-lg bg-white p-3 text-sm"><p class="font-medium">{{ $campaign->campaign_name }}</p><p class="mt-1 text-slate-700">加车率 {{ $clicks ? number_format($atc / $clicks * 100, 2) : '—' }}% · 结账率 {{ $atc ? number_format($checkout / $atc * 100, 2) : '—' }}% · 购买转化率 {{ $clicks ? number_format($purchases / $clicks * 100, 2) : '—' }}%</p><p class="mt-1 text-slate-700">CPA ${{ $purchases ? number_format((float) $campaign->spend / $purchases, 2) : '—' }} · ROAS {{ $campaign->spend > 0 ? number_format((float) ($campaign->purchase_value ?? 0) / $campaign->spend, 2) : '—' }} · 购买金额 ${{ number_format((float) ($campaign->purchase_value ?? 0), 2) }}</p><p class="mt-1 font-medium text-violet-900">CPR（{{ $resultLabel }}） ${{ $resultCount ? number_format((float) $campaign->spend / $resultCount, 2) : '—' }}</p>@if($stage === 'traffic_growth' && $canEdit)<details class="mt-3 border-t border-violet-100 pt-3"><summary class="cursor-pointer font-medium text-violet-900">更新本次投放数据</summary><form method="POST" action="{{ route('projects.campaign-tests.update', [$selectedProject, $campaign]) }}" class="mt-3 grid gap-2 md:grid-cols-2">@csrf @method('PATCH')<input name="spend" required type="number" min="0" step="0.01" value="{{ $campaign->spend }}" class="field-input"><input name="cost_per_click" required type="number" min="0" step="0.01" value="{{ $campaign->cost_per_click }}" class="field-input"><input name="add_to_cart_conversions" required type="number" min="0" value="{{ $campaign->add_to_cart_conversions }}" class="field-input"><input name="checkout_conversions" required type="number" min="0" value="{{ $campaign->checkout_conversions }}" class="field-input"><input name="purchase_conversions" required type="number" min="0" value="{{ $campaign->purchase_conversions ?? $campaign->checkout_conversions }}" class="field-input"><input name="purchase_value" required type="number" min="0" step="0.01" value="{{ $campaign->purchase_value ?? 0 }}" class="field-input"><textarea name="conclusion" required placeholder="新的投放结论" class="field-input md:col-span-2"></textarea><textarea name="adjustment_items" required placeholder="需要调整的产品、页面、素材或规格" class="field-input md:col-span-2"></textarea><button class="rounded bg-violet-700 px-3 py-2 text-sm font-semibold text-white md:col-span-2">保存新版本</button></form></details>@endif</div>
                     @empty <p class="text-sm text-violet-900">暂无可计算的投放记录。</p>
                     @endforelse
@@ -175,7 +209,7 @@
         </section>
     @endif
     @if($departmentWorkspace && $selectedProject)
-        @php($outcomeLabels = ['scale' => '继续放量', 'retest' => '继续测试', 'adjust_retest' => '调整后复测', 'pause' => '暂停', 'reject' => '淘汰', 'complete' => '已完成'])
+        @php $outcomeLabels = ['scale' => '继续放量', 'retest' => '继续测试', 'adjust_retest' => '调整后复测', 'pause' => '暂停', 'reject' => '淘汰', 'complete' => '已完成']; @endphp
         <section class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-5"><h3 class="font-semibold text-emerald-900">项目最终结论</h3>
             @if($selectedProject->outcome)<p class="mt-2 font-medium">{{ $outcomeLabels[$selectedProject->outcome] }}</p><p class="mt-1 text-sm">结论依据：{{ $selectedProject->outcome_reason }}</p><p class="mt-1 text-sm">下一步：{{ $selectedProject->next_action }}</p>@else<p class="mt-2 text-sm text-emerald-800">尚未形成最终结论。</p>@endif
             @if($stage === 'traffic_growth' && $canEdit)<form method="POST" action="{{ route('projects.outcome', $selectedProject) }}" class="mt-4 grid gap-2 md:grid-cols-2">@csrf @method('PATCH')<select name="outcome" required class="rounded border-emerald-200 text-sm"><option value="">选择最终结论</option>@foreach($outcomeLabels as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach</select><input name="outcome_reason" required placeholder="结论依据：关键数据与判断" class="rounded border-emerald-200 text-sm"><textarea name="next_action" required placeholder="下一步安排" class="rounded border-emerald-200 text-sm md:col-span-2"></textarea><div><button class="rounded bg-emerald-700 px-4 py-2 text-sm font-semibold text-white">保存项目结论</button></div></form>@endif
@@ -670,5 +704,15 @@ addCategoryButton?.addEventListener('click', async (event) => {
     });
     if (response.ok || response.redirected) window.location.assign(response.url || window.location.href);
     else { addCategoryButton.disabled = false; window.alert('添加失败：类目名称可能已存在。'); }
+});
+
+const projectStageProgress = document.querySelector('[data-project-stage-progress]');
+const projectStageDescription = projectStageProgress?.querySelector('[data-project-stage-description]');
+projectStageProgress?.querySelectorAll('[data-project-stage-item]').forEach((item) => {
+    item.addEventListener('click', () => {
+        projectStageProgress.querySelectorAll('[data-project-stage-item]').forEach((stageItem) => stageItem.setAttribute('aria-pressed', 'false'));
+        item.setAttribute('aria-pressed', 'true');
+        projectStageDescription.textContent = `查看：${item.dataset.stageLabel} · ${item.dataset.stageDescription}`;
+    });
 });
 </script>

@@ -83,6 +83,20 @@ class ProductCenterTest extends TestCase
             ->assertSee('关联协作摘要');
     }
 
+    public function test_selected_project_displays_a_compact_stage_progress_indicator(): void
+    {
+        $department = Department::factory()->create(['code' => 'website_operations']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = $this->project($department, $user, 'PP-202609-PROGRESS', '进程展示项目', 'website_operations');
+
+        $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")
+            ->assertOk()
+            ->assertSee('项目进程')
+            ->assertSee('data-project-stage-progress', false)
+            ->assertSee('当前环节：运营部')
+            ->assertSeeInOrder(['产品部', '运营部', '创意部', '流量部']);
+    }
+
     public function test_each_department_workspace_prioritizes_its_own_product_work(): void
     {
         $department = Department::factory()->create(['code' => 'website_operations']);
