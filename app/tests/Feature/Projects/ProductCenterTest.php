@@ -131,6 +131,29 @@ class ProductCenterTest extends TestCase
             ->assertSee('产品部录入的 1688 货源');
     }
 
+    public function test_every_department_includes_shared_creative_downloads_and_facebook_metrics_inside_project_shared_materials(): void
+    {
+        $department = Department::factory()->create(['code' => 'website_operations']);
+        $user = User::factory()->create(['department_id' => $department->id, 'role' => 'administrator']);
+        $project = $this->project($department, $user, 'PP-202609-SHARED-ALL', '全员共享资料项目', 'website_operations');
+
+        foreach (['market_research', 'website_operations', 'content_creative', 'traffic_growth'] as $stage) {
+            $content = $this->actingAs($user)
+                ->get("/projects?stage={$stage}&project={$project->id}")
+                ->assertOk()
+                ->getContent();
+            $this->assertStringContainsString('sharedMaterialsGrid.append', $content);
+            $this->assertStringContainsString('standaloneSharedMaterials?.remove', $content);
+            $this->assertStringContainsString('sharedCampaignFeedbackPanel?.remove', $content);
+            $this->assertStringContainsString('trafficSharedMaterials', $content);
+            $this->assertStringContainsString('sharedCampaignFeedbackPanel', $content);
+            $this->assertStringContainsString('creativeDownloadActions', $content);
+            $this->assertStringContainsString('hasPendingFeedback', $content);
+            $this->assertStringContainsString('pendingFeedbackPanel?.remove', $content);
+            $this->assertStringContainsString('sharedDepartmentCardPalette', $content);
+        }
+    }
+
     public function test_department_workspace_keeps_the_current_departments_edit_form_inline(): void
     {
         $department = Department::factory()->create(['code' => 'traffic_growth']);

@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2026-09-07",
+    "scope": "component",
+    "macrostructure": "Split Threshold",
+    "theme": "custom",
+    "theme_axes": "warm-paper / compact-display / teal-accent",
+    "enrichment": "Tier-A CSS grid",
+    "brief": "NC ERP sign-in workspace redesign"
+  }
+]

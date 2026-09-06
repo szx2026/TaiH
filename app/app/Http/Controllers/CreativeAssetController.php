@@ -7,13 +7,13 @@ use App\Models\CreativeAsset;
 use App\Models\ProductProject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class CreativeAssetController extends Controller
 {
-    public function download(Request $request, ProductProject $project, CreativeAsset $asset): BinaryFileResponse
+    public function download(Request $request, ProductProject $project, CreativeAsset $asset): StreamedResponse
     {
         abort_unless($asset->product_project_id === $project->id, 404);
         abort_unless($asset->storage_path && $asset->storage_disk, 404);
@@ -28,18 +28,15 @@ class CreativeAssetController extends Controller
         $data = $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
             'asset_types' => ['required', 'array', 'min:1'],
-            'asset_types.*' => ['required', 'distinct', Rule::in(['video', 'image', 'gif', 'copy'])],
+            'asset_types.*' => ['required', 'distinct', Rule::in(['video', 'gif'])],
             'source_type' => ['required', Rule::in(['tiktok', 'youtube', 'other'])],
             'landing_page_id' => ['nullable', 'integer', Rule::exists('landing_pages', 'id')],
             'asset_file' => ['nullable', 'file', 'max:102400'],
-            'external_url' => ['nullable', 'url', 'max:2048'],
-            'copy_text' => ['nullable', 'string'],
+            'reference_urls' => ['required', 'array', 'min:1'],
+            'reference_urls.*' => ['required', 'distinct', 'url', 'max:2048'],
+            'copy_text' => ['required', 'string'],
             'notes' => ['nullable', 'string'],
         ]);
-
-        if (! $request->hasFile('asset_file') && empty($data['external_url']) && empty($data['copy_text'])) {
-            return back()->withErrors(['asset_file' => '请上传文件、填写素材链接或录入文案。']);
-        }
 
         if (! empty($data['landing_page_id'])) {
             abort_unless($project->landingPages()->whereKey($data['landing_page_id'])->exists(), 422);
@@ -54,7 +51,8 @@ class CreativeAssetController extends Controller
             'asset_types' => $data['asset_types'],
             'source_type' => $data['source_type'],
             'landing_page_id' => $data['landing_page_id'] ?? null,
-            'external_url' => $data['external_url'] ?? null,
+            'external_url' => $data['reference_urls'][0],
+            'reference_urls' => array_values($data['reference_urls']),
             'storage_disk' => $path ? 'local' : null,
             'storage_path' => $path,
             'copy_text' => $data['copy_text'] ?? null,

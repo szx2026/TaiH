@@ -1,4 +1,4 @@
-<x-layouts.app title="工作台 · 跨境产品 ERP">
+<x-layouts.app title="工作台 · NC ERP">
     <div class="mb-7">
         <p class="text-sm font-semibold text-black">工作台</p>
         <h1 class="mt-1 text-3xl font-bold tracking-tight">{{ $isAdministrator ? '全局工作看板' : '我的工作看板' }}</h1>
@@ -46,7 +46,7 @@
                 <div class="border-b border-slate-100 px-5 py-4"><h2 class="text-sm font-semibold text-slate-800">待处理优化反馈</h2></div>
                 <div class="divide-y divide-slate-100">
                     @forelse ($feedback as $item)
-                        <div class="px-5 py-4"><p class="text-sm font-semibold">{{ $item->project->product_name }}</p><p class="mt-1 text-sm text-slate-600">{{ $item->note }}</p><p class="mt-2 text-xs text-slate-400">目标：{{ $item->target_stage }}</p></div>
+                        <div class="px-5 py-4"><p class="text-sm font-semibold">{{ $item->project->product_name }}</p><p class="mt-1 text-sm text-slate-600">{{ $item->note }}</p><p class="mt-2 text-xs text-slate-400">目标：{{ $stageLabels[$item->target_stage] ?? $item->target_stage }}</p></div>
                     @empty
                         <p class="px-5 py-10 text-center text-sm text-slate-500">当前没有待处理反馈。</p>
                     @endforelse

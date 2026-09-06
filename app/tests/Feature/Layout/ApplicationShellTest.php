@@ -53,6 +53,17 @@ class ApplicationShellTest extends TestCase
             ->assertSee('返回部门项目');
     }
 
+    public function test_operations_member_without_projects_can_open_the_workspace(): void
+    {
+        $department = Department::factory()->create(['code' => 'website_operations']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+
+        $this->actingAs($user)
+            ->get('/projects?stage=website_operations')
+            ->assertOk()
+            ->assertSee('当前没有可处理项目。');
+    }
+
     public function test_workspace_back_link_returns_to_the_department_workspace_or_project_index(): void
     {
         $department = Department::factory()->create(['code' => 'market_research']);

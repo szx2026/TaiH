@@ -36,6 +36,11 @@ class CreativeAssetTest extends TestCase
             ->get("/projects?stage=content_creative&project={$project->id}")
             ->assertOk()
             ->assertSee('创意部重点工作')
+            ->assertSee('参考素材链接')
+            ->assertSee('脚本或核心卖点')
+            ->assertSee('视频（广告投放）')
+            ->assertSee('动图（详情页）')
+            ->assertDontSee('value="image"', false)
             ->assertSee('保存素材');
     }
 
@@ -63,6 +68,8 @@ class CreativeAssetTest extends TestCase
                 'asset_types' => ['video'],
                 'source_type' => 'tiktok',
                 'asset_file' => $file,
+                'reference_urls' => ['https://tiktok.com/@example/video/1'],
+                'copy_text' => '突出夜间投影效果与使用场景。',
                 'notes' => '突出夜间投影效果。',
             ])
             ->assertRedirect(route('projects.index', ['stage' => 'content_creative', 'project' => $project]));
@@ -91,9 +98,56 @@ class CreativeAssetTest extends TestCase
         $user = User::factory()->create(['department_id' => $department->id]);
         $project = ProductProject::create(['project_code' => 'PP-202609-GIF', 'product_name' => '动图素材产品', 'market' => 'US', 'priority' => 'medium', 'current_stage' => 'content_creative', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
 
-        $this->actingAs($user)->post("/projects/{$project->id}/creative-assets", ['title' => '视频与动图素材 V1', 'asset_types' => ['video', 'gif'], 'source_type' => 'youtube', 'external_url' => 'https://youtube.com/watch?v=demo'])
+        $this->actingAs($user)->post("/projects/{$project->id}/creative-assets", ['title' => '视频与动图素材 V1', 'asset_types' => ['video', 'gif'], 'source_type' => 'youtube', 'reference_urls' => ['https://youtube.com/watch?v=demo'], 'copy_text' => '突出动图节奏与产品卖点。'])
             ->assertRedirect(route('projects.index', ['stage' => 'content_creative', 'project' => $project]));
 
         $this->assertDatabaseHas('creative_assets', ['product_project_id' => $project->id, 'asset_type' => 'video', 'source_type' => 'youtube']);
+    }
+
+    public function test_content_creative_requires_script_and_one_or_more_reference_links(): void
+    {
+        $department = Department::factory()->create(['code' => 'content_creative']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-REFERENCES', 'product_name' => '参考素材产品', 'market' => 'US', 'priority' => 'medium', 'current_stage' => 'content_creative', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+
+        $this->actingAs($user)
+            ->from("/projects?stage=content_creative&project={$project->id}")
+            ->post("/projects/{$project->id}/creative-assets", ['asset_types' => ['gif'], 'source_type' => 'tiktok'])
+            ->assertSessionHasErrors(['reference_urls', 'copy_text']);
+    }
+
+    public function test_content_creative_only_accepts_video_or_gif_asset_types(): void
+    {
+        $department = Department::factory()->create(['code' => 'content_creative']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-CREATIVE-TYPES', 'product_name' => '素材类型产品', 'market' => 'US', 'priority' => 'medium', 'current_stage' => 'content_creative', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+
+        $this->actingAs($user)
+            ->from("/projects?stage=content_creative&project={$project->id}")
+            ->post("/projects/{$project->id}/creative-assets", [
+                'asset_types' => ['image'],
+                'source_type' => 'tiktok',
+                'reference_urls' => ['https://tiktok.com/@example/video/1'],
+                'copy_text' => '不应接受图片类型。',
+            ])
+            ->assertSessionHasErrors(['asset_types.0']);
+    }
+
+    public function test_content_creative_saves_multiple_reference_links_for_one_asset(): void
+    {
+        $department = Department::factory()->create(['code' => 'content_creative']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-MULTI-REFERENCES', 'product_name' => '多参考链接产品', 'market' => 'US', 'priority' => 'medium', 'current_stage' => 'content_creative', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+
+        $this->actingAs($user)->post("/projects/{$project->id}/creative-assets", [
+            'asset_types' => ['gif'],
+            'source_type' => 'tiktok',
+            'reference_urls' => ['https://tiktok.com/@example/video/1', 'https://youtube.com/watch?v=example'],
+            'copy_text' => '突出产品使用前后对比与核心卖点。',
+        ])->assertRedirect(route('projects.index', ['stage' => 'content_creative', 'project' => $project]));
+
+        $asset = CreativeAsset::query()->where('product_project_id', $project->id)->firstOrFail();
+        $this->assertSame(['https://tiktok.com/@example/video/1', 'https://youtube.com/watch?v=example'], $asset->reference_urls);
+        $this->assertSame('突出产品使用前后对比与核心卖点。', $asset->copy_text);
     }
 }

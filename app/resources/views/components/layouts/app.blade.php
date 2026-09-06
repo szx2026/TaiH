@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title ?? '跨境产品 ERP' }}</title>
+    <title>{{ $title ?? 'NC ERP' }}</title>
     @unless (app()->environment('testing'))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endunless
@@ -12,9 +12,14 @@
     <div class="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
         <aside data-app-sidebar class="border-b border-zinc-800 bg-black px-4 py-3 text-zinc-200 lg:border-r lg:border-b-0 lg:border-zinc-200 lg:px-4 lg:py-5">
             <a href="{{ route('dashboard') }}" class="mb-3 flex items-center gap-3 px-2 lg:mb-8">
-                <span class="grid size-9 place-items-center rounded-xl bg-white text-sm font-black text-black">N</span>
+                <span aria-label="NC 标志" class="grid size-10 place-items-center rounded-xl bg-white shadow-sm">
+                    <span aria-hidden="true" class="flex items-baseline gap-px leading-none">
+                        <span class="text-[17px] font-black tracking-[-0.08em] text-zinc-950">N</span>
+                        <span class="text-[16px] font-semibold tracking-[-0.08em] text-zinc-500">C</span>
+                    </span>
+                </span>
                 <span>
-                    <span class="block text-sm font-bold tracking-tight text-white">NORTHSTAR ERP</span>
+                    <span class="block text-sm font-bold tracking-tight text-white">NC ERP</span>
                     <span class="block text-[11px] text-zinc-400">跨境产品增长协作系统</span>
                 </span>
             </a>

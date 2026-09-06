@@ -9,12 +9,12 @@ class CreativeAsset extends Model
 {
     protected $fillable = [
         'product_project_id', 'landing_page_id', 'title', 'asset_type', 'asset_types', 'source_type',
-        'external_url', 'storage_disk', 'storage_path', 'copy_text', 'notes', 'status', 'created_by',
+        'external_url', 'reference_urls', 'storage_disk', 'storage_path', 'copy_text', 'notes', 'status', 'created_by',
     ];
 
     protected function casts(): array
     {
-        return ['asset_types' => 'array'];
+        return ['asset_types' => 'array', 'reference_urls' => 'array'];
     }
 
     public function project(): BelongsTo

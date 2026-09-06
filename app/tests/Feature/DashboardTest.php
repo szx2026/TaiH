@@ -35,12 +35,25 @@ class DashboardTest extends TestCase
             'status' => 'open',
             'created_by' => $user->id,
         ]);
+        ProductProject::create([
+            'project_code' => 'PP-202609-ARCHIVED',
+            'product_name' => '不应显示的归档项目',
+            'market' => 'US',
+            'priority' => 'high',
+            'current_stage' => 'website_operations',
+            'status' => 'archived',
+            'owner_department_id' => $department->id,
+            'owner_user_id' => $user->id,
+            'created_by' => $user->id,
+        ]);
 
         $this->actingAs($user)
             ->get('/dashboard')
             ->assertOk()
             ->assertSee('我的工作看板')
             ->assertSee('星空投影灯')
-            ->assertSee('请检查落地页规格。');
+            ->assertSee('请检查落地页规格。')
+            ->assertSee('目标：运营部')
+            ->assertDontSee('不应显示的归档项目');
     }
 }

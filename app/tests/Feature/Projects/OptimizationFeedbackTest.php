@@ -37,10 +37,12 @@ class OptimizationFeedbackTest extends TestCase
         ]);
 
         $this->actingAs($user)
+            ->followingRedirects()
             ->get("/projects/{$project->id}")
             ->assertOk()
-            ->assertSee('处理反馈')
-            ->assertSee('处理说明');
+            ->assertSee('本部门待处理投放反馈')
+            ->assertSee('请检查价格和规格。')
+            ->assertSee('填写处理结果');
     }
 
     public function test_the_target_department_can_resolve_feedback_with_a_response(): void

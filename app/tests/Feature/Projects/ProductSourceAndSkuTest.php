@@ -107,6 +107,30 @@ class ProductSourceAndSkuTest extends TestCase
         $this->assertDatabaseHas('product_skus', ['sku_code' => 'SKU-US-002', 'variant_name' => '两件套', 'purchase_price' => 18, 'weight_g' => 180]);
     }
 
+    public function test_product_department_can_add_alternative_supplier_names_and_source_urls_for_the_same_product(): void
+    {
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-ALTERNATIVE-SOURCES', 'product_name' => '多商家产品', 'market' => 'US', 'priority' => 'medium', 'current_stage' => 'market_research', 'status' => 'draft', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+
+        $this->actingAs($user)->post("/projects/{$project->id}/sources", [
+            'supplier_url' => 'https://detail.1688.com/offer/main-source.html',
+            'supplier_name' => '主供应商',
+            'product_name' => '多商家产品',
+            'currency' => 'CNY',
+            'notes' => '用于比较同款供应商。',
+            'specifications' => [['sku_code' => 'MULTI-SOURCE-01', 'variant_name' => '单件', 'purchase_price' => 12, 'weight_g' => 100]],
+            'alternative_sources' => [
+                ['supplier_name' => '备选供应商 A', 'supplier_url' => 'https://detail.1688.com/offer/alternative-a.html'],
+                ['supplier_name' => '备选供应商 B', 'supplier_url' => 'https://detail.1688.com/offer/alternative-b.html'],
+            ],
+        ])->assertRedirect();
+
+        $this->assertDatabaseCount('product_sources', 3);
+        $this->assertDatabaseHas('product_sources', ['product_project_id' => $project->id, 'supplier_name' => '备选供应商 A', 'supplier_url' => 'https://detail.1688.com/offer/alternative-a.html']);
+        $this->assertDatabaseHas('product_sources', ['product_project_id' => $project->id, 'supplier_name' => '备选供应商 B', 'supplier_url' => 'https://detail.1688.com/offer/alternative-b.html']);
+    }
+
     public function test_operations_cannot_add_an_1688_source(): void
     {
         $productDepartment = Department::factory()->create(['code' => 'market_research']);

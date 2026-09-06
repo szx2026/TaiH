@@ -3,6 +3,7 @@
 namespace App\Queries;
 
 use App\Models\CampaignTest;
+use App\Models\Department;
 use App\Models\OptimizationFeedback;
 use App\Models\ProductProject;
 use App\Models\ProjectActivity;
@@ -17,9 +18,12 @@ class DashboardQuery
 
         $projects = ProductProject::query()
             ->with(['owner', 'ownerDepartment'])
+            ->where('status', '!=', 'archived')
             ->when(! $isAdministrator, fn ($query) => $query->where('current_stage', $departmentCode))
             ->latest()
             ->get();
+
+        $stageLabels = Department::query()->pluck('name', 'code')->all();
 
         $feedback = OptimizationFeedback::query()
             ->with('project')
@@ -49,6 +53,6 @@ class DashboardQuery
             ->withCount(['researchSources', 'skus', 'sources', 'landingPages', 'creativeAssets', 'campaignTests'])
             ->get();
 
-        return compact('projects', 'feedback', 'metrics', 'activities', 'isAdministrator', 'collaborationOverview');
+        return compact('projects', 'feedback', 'metrics', 'activities', 'isAdministrator', 'collaborationOverview', 'stageLabels');
     }
 }

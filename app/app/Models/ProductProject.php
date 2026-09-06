@@ -19,6 +19,9 @@ class ProductProject extends Model
         'priority',
         'current_stage',
         'status',
+        'ad_delivery_status',
+        'ad_started_at',
+        'ad_delivery_status_updated_at',
         'owner_department_id',
         'owner_user_id',
         'created_by',
@@ -27,7 +30,7 @@ class ProductProject extends Model
 
     protected function casts(): array
     {
-        return ['released_at' => 'datetime'];
+        return ['released_at' => 'datetime', 'ad_started_at' => 'datetime', 'ad_delivery_status_updated_at' => 'datetime'];
     }
 
     public function ownerDepartment(): BelongsTo

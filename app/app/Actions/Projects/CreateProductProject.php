@@ -9,13 +9,13 @@ use Illuminate\Support\Str;
 
 class CreateProductProject
 {
-    /** @param array{product_name: string, category?: string|null, priority: string, product_image: UploadedFile} $data */
+    /** @param array{product_name: string, category?: string|null, priority: string, created_at_business?: string|null, product_image: UploadedFile} $data */
     public function handle(User $actor, array $data): ProductProject
     {
         return ProductProject::create([
             'project_code' => $this->nextProjectCode(),
             'product_name' => $data['product_name'],
-            'released_at' => now(),
+            'released_at' => $data['created_at_business'] ?? now(),
             'product_image_path' => $data['product_image']->store('product-projects', 'public'),
             'category' => $data['category'] ?? null,
             'market' => 'US',

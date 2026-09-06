@@ -57,7 +57,9 @@ class ProductProjectController extends Controller
                 ->when($filters['category'] ?? null, fn ($query, $category) => $query->where('category', $category))
                 ->when($filters['priority'] ?? null, fn ($query, $priority) => $query->where('priority', $priority))
                 ->when($filters['search'] ?? null, fn ($query, $search) => $query->where(fn ($query) => $query->where('product_name', 'like', "%{$search}%")->orWhere('project_code', 'like', "%{$search}%")))
-                ->latest()
+                ->when($filters['created_from'] ?? null, fn ($query, $date) => $query->whereDate('released_at', '>=', $date))
+                ->when($filters['created_to'] ?? null, fn ($query, $date) => $query->whereDate('released_at', '<=', $date))
+                ->latest('released_at')
                 ->get();
 
         $projectTags = ProductProject::query()->where('status', '!=', 'archived');
@@ -76,7 +78,7 @@ class ProductProjectController extends Controller
         if ($selectedProject
             && $selectedProject->sources->isNotEmpty()
             && $selectedProject->skus->isNotEmpty()
-            && ! $selectedProject->decisions()->where('decision_type', 'specification')->where('requested_from_stage', 'website_operations')->exists()
+            && ! $selectedProject->decisions()->where('decision_type', 'specification')->where('requested_from_stage', 'website_operations')->where('status', 'open')->exists()
         ) {
             ProjectDecision::create([
                 'product_project_id' => $selectedProject->id,
@@ -176,6 +178,20 @@ class ProductProjectController extends Controller
         abort_unless($request->user()?->department?->code === 'traffic_growth' || $request->user()?->hasRole('administrator'), 403);
         $data = $request->validate(['outcome' => ['required', \Illuminate\Validation\Rule::in(['scale', 'retest', 'adjust_retest', 'pause', 'reject', 'complete'])], 'outcome_reason' => ['required', 'string', 'max:4000'], 'next_action' => ['required', 'string', 'max:4000']]);
         $project->update([...$data, 'outcome_recorded_at' => now(), 'outcome_recorded_by' => $request->user()->id]);
+        return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
+    }
+
+    public function updateAdDeliveryStatus(\Illuminate\Http\Request $request, ProductProject $project): RedirectResponse
+    {
+        abort_unless($request->user()?->department?->code === 'traffic_growth' || $request->user()?->hasRole('administrator'), 403);
+
+        $data = $request->validate([
+            'ad_delivery_status' => ['required', \Illuminate\Validation\Rule::in(['not_started', 'active', 'paused', 'ended'])],
+            'ad_started_at' => ['nullable', 'date', 'required_unless:ad_delivery_status,not_started'],
+        ]);
+
+        $project->update([...$data, 'ad_delivery_status_updated_at' => now()]);
+
         return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
     }
 }

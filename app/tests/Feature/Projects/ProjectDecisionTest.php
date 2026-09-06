@@ -137,5 +137,13 @@ class ProjectDecisionTest extends TestCase
 
         $this->assertDatabaseHas('product_skus', ['id' => $sku->id, 'sku_code' => 'INTERNAL-ADOPT-001', 'variant_name' => '单件装']);
         $this->assertDatabaseHas('project_decisions', ['id' => $decision->id, 'status' => 'resolved', 'response_note' => '运营部确认采用产品部初步规格。']);
+
+        $this->actingAs($operationsUser)
+            ->get("/projects?stage=website_operations&project={$project->id}")
+            ->assertOk()
+            ->assertSee('产品规格与内部 SKU')
+            ->assertSee('INTERNAL-ADOPT-001')
+            ->assertSee('确认采用并反馈产品部')
+            ->assertSee('需要新增规格');
     }
 }

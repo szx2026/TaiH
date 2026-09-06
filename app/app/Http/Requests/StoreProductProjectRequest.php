@@ -20,6 +20,7 @@ class StoreProductProjectRequest extends FormRequest
             'category' => ['required', 'string', 'max:100'],
             'market' => ['nullable', Rule::in(['US'])],
             'priority' => ['required', Rule::in(['initial_screening', 'market_new', 'historical_winner'])],
+            'created_at_business' => ['nullable', 'date'],
             'product_image' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }

@@ -21,6 +21,8 @@ class FilterProductProjectsRequest extends FormRequest
             'category' => ['nullable', 'string', 'max:100'],
             'priority' => ['nullable', Rule::in(['initial_screening', 'market_new', 'historical_winner', 'high', 'medium', 'low'])],
             'search' => ['nullable', 'string', 'max:100'],
+            'created_from' => ['nullable', 'date_format:Y-m-d'],
+            'created_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:created_from'],
             'project' => ['nullable', 'integer', Rule::exists('product_projects', 'id')],
         ];
     }

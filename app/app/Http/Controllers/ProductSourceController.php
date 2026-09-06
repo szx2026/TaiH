@@ -24,6 +24,9 @@ class ProductSourceController extends Controller
             'currency' => ['required', 'string', 'size:3'],
             'notes' => ['required', 'string', 'max:4000'],
             'product_name' => ['required', 'string', 'max:255'],
+            'alternative_sources' => ['nullable', 'array'],
+            'alternative_sources.*.supplier_url' => ['required', 'url', 'max:2048'],
+            'alternative_sources.*.supplier_name' => ['required', 'string', 'max:255'],
             'specifications' => ['required', 'array', 'min:1'],
             'specifications.*.sku_code' => ['required', 'string', 'max:100', Rule::unique('product_skus')->where('product_project_id', $project->id)],
             'specifications.*.variant_name' => ['required', 'string', 'max:255'],
@@ -46,6 +49,26 @@ class ProductSourceController extends Controller
                 'currency' => strtoupper($data['currency']),
                 'notes' => $data['notes'],
             ]);
+            foreach ($data['alternative_sources'] ?? [] as $alternativeSource) {
+                $alternative = ProductSource::firstOrCreate(
+                    [
+                        'product_project_id' => $project->id,
+                        'supplier_url' => $alternativeSource['supplier_url'],
+                        'supplier_name' => $alternativeSource['supplier_name'],
+                    ],
+                    [
+                        'currency' => strtoupper($data['currency']),
+                        'product_name' => $data['product_name'],
+                        'notes' => $data['notes'],
+                        'created_by' => $request->user()->id,
+                    ],
+                );
+                $alternative->update([
+                    'product_name' => $data['product_name'],
+                    'currency' => strtoupper($data['currency']),
+                    'notes' => $data['notes'],
+                ]);
+            }
             foreach ($data['specifications'] as $specification) {
                 ProductSku::create([
                     'product_project_id' => $project->id,

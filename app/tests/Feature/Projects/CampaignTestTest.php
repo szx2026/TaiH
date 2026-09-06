@@ -38,7 +38,33 @@ class CampaignTestTest extends TestCase
             ->get("/projects?stage=traffic_growth&project={$project->id}")
             ->assertOk()
             ->assertSee('流量部重点工作')
+            ->assertSee('每日 16:00 更新')
             ->assertSee('保存投放测试与反馈');
+    }
+
+    public function test_traffic_growth_can_set_a_project_level_ad_delivery_status_without_creating_feedback(): void
+    {
+        $department = Department::factory()->create(['code' => 'traffic_growth']);
+        $user = User::factory()->create(['department_id' => $department->id, 'role' => 'member']);
+        $project = ProductProject::create([
+            'project_code' => 'PP-202609-AD-STATUS', 'product_name' => '广告状态测试产品', 'market' => 'US',
+            'priority' => 'high', 'current_stage' => 'traffic_growth', 'status' => 'in_progress',
+            'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->patch("/projects/{$project->id}/ad-delivery-status", [
+                'ad_delivery_status' => 'active',
+                'ad_started_at' => '2026-09-06T09:30',
+            ])
+            ->assertRedirect(route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]));
+
+        $this->assertDatabaseHas('product_projects', [
+            'id' => $project->id,
+            'ad_delivery_status' => 'active',
+            'ad_started_at' => '2026-09-06 09:30:00',
+        ]);
+        $this->assertDatabaseCount('optimization_feedback', 0);
     }
 
     public function test_traffic_growth_can_record_facebook_results_with_the_project_video_and_landing_page(): void
@@ -154,15 +180,35 @@ class CampaignTestTest extends TestCase
             'purchase_conversions' => 2, 'purchase_value' => 79.80,
             'creative_asset_id' => $video->id, 'landing_page_id' => $page->id,
             'detail_image' => UploadedFile::fake()->create('facebook-detail.png', 20, 'image/png'),
-        ])->assertRedirect();
+        ])->assertSessionHasNoErrors()->assertRedirect();
 
-        $campaign = CampaignTest::query()->where('campaign_name', '新指标测试')->firstOrFail();
+        $campaign = CampaignTest::query()->where('product_project_id', $project->id)->firstOrFail();
         $this->assertSame('0.75', number_format((float) $campaign->cost_per_click, 2, '.', ''));
         $this->assertSame(8, $campaign->add_to_cart_conversions);
         $this->assertSame(3, $campaign->checkout_conversions);
         $this->assertSame(2, $campaign->purchase_conversions);
         $this->assertSame('79.80', number_format((float) $campaign->purchase_value, 2, '.', ''));
         Storage::disk('local')->assertExists($campaign->detail_image_path);
+    }
+
+    public function test_traffic_growth_records_the_selected_result_metric_and_calculates_cpr(): void
+    {
+        $department = Department::factory()->create(['code' => 'traffic_growth']);
+        $user = User::factory()->create(['department_id' => $department->id, 'role' => 'member']);
+        $project = ProductProject::create(['project_code' => 'PP-202609-CPR', 'product_name' => 'CPR 测试产品', 'market' => 'US', 'priority' => 'high', 'current_stage' => 'traffic_growth', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+        $video = CreativeAsset::create(['product_project_id' => $project->id, 'title' => 'CPR 测试视频', 'asset_type' => 'video', 'source_type' => 'original', 'status' => 'draft', 'created_by' => $user->id]);
+        $page = LandingPage::create(['product_project_id' => $project->id, 'version' => 1, 'title' => 'CPR 测试产品', 'page_url' => 'https://shop.example.com/cpr', 'currency' => 'USD', 'status' => 'draft', 'created_by' => $user->id]);
+
+        $this->actingAs($user)->post("/projects/{$project->id}/campaign-tests", [
+            'platform' => 'facebook', 'spend' => 60, 'impressions' => 1000, 'clicks' => 50,
+            'add_to_cart_conversions' => 10, 'checkout_conversions' => 5, 'purchase_conversions' => 2,
+            'purchase_value' => 120, 'result_metric' => 'checkout',
+            'creative_asset_id' => $video->id, 'landing_page_id' => $page->id,
+        ])->assertSessionHasNoErrors();
+
+        $campaign = CampaignTest::query()->where('product_project_id', $project->id)->firstOrFail();
+        $this->assertSame('checkout', $campaign->result_metric);
+        $this->assertSame(12.0, round((float) $campaign->spend / $campaign->checkout_conversions, 2));
     }
 
     public function test_traffic_growth_cannot_use_a_video_from_another_project(): void
@@ -225,7 +271,8 @@ class CampaignTestTest extends TestCase
         $this->actingAs($user)
             ->get("/projects?stage=traffic_growth&project={$project->id}")
             ->assertOk()
-            ->assertSee('选择投放视频')
+            ->assertSee('本次投放使用的创意部视频素材')
+            ->assertSee('选择创意部视频素材')
             ->assertSee('选择 Shopify 页面')
             ->assertSee('当前项目视频')
             ->assertSee('当前项目 Shopify 页面')
@@ -288,6 +335,6 @@ class CampaignTestTest extends TestCase
             'creative_asset_id' => $video->id, 'landing_page_id' => $page->id,
         ])->assertRedirect(route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]));
 
-        $this->assertDatabaseHas('campaign_tests', ['product_project_id' => $project->id, 'campaign_name' => '管理员手动录入']);
+        $this->assertDatabaseHas('campaign_tests', ['product_project_id' => $project->id, 'campaign_name' => '管理员投放项目']);
     }
 }

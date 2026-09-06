@@ -13,7 +13,7 @@ class ProjectFeedbackCenterTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_target_department_only_sees_its_open_feedback_in_feedback_center(): void
+    public function test_feedback_center_redirects_to_the_project_workspace_with_actionable_feedback(): void
     {
         $department = Department::factory()->create(['code' => 'website_operations']);
         $user = User::factory()->create(['department_id' => $department->id]);
@@ -21,6 +21,13 @@ class ProjectFeedbackCenterTest extends TestCase
         OptimizationFeedback::create(['product_project_id' => $project->id, 'target_stage' => 'website_operations', 'note' => '请检查落地页规格。', 'status' => 'open', 'created_by' => $user->id]);
         OptimizationFeedback::create(['product_project_id' => $project->id, 'target_stage' => 'content_creative', 'note' => '请更新视频钩子。', 'status' => 'open', 'created_by' => $user->id]);
 
-        $this->actingAs($user)->get('/feedback')->assertOk()->assertSee('请检查落地页规格。')->assertDontSee('请更新视频钩子。')->assertSee('>1<', false);
+        $this->actingAs($user)
+            ->followingRedirects()
+            ->get('/feedback')
+            ->assertOk()
+            ->assertSee('本部门待处理投放反馈')
+            ->assertSee('请检查落地页规格。')
+            ->assertSee('请更新视频钩子。')
+            ->assertSee('填写处理结果');
     }
 }
