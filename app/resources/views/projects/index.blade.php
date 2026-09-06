@@ -15,6 +15,15 @@
     <form method="GET" class="mb-5 rounded-xl border border-slate-200 bg-white p-4"><input type="hidden" name="stage" value="{{ $stage }}"><input type="hidden" name="search" value="{{ $filters['search'] ?? '' }}"><input type="hidden" name="priority" value="{{ $filters['priority'] ?? '' }}"><label class="block text-sm font-semibold text-slate-700">产品项目<select name="project" onchange="this.form.submit()" class="mt-2 w-full rounded-lg border-slate-300 text-sm"><option value="">选择一个产品项目</option>@foreach($projects as $project)<option value="{{ $project->id }}" @selected($selectedProject?->id === $project->id)>{{ $project->product_name }} · {{ $project->project_code }}</option>@endforeach</select></label>@if($projects->isEmpty())<p class="mt-2 text-sm text-slate-500">当前没有可处理项目。</p>@endif</form>
 
     @if($departmentWorkspace && $selectedProject)
+        <section class="mt-5 rounded-xl border border-slate-200 bg-white p-5">
+            <h3 class="font-semibold">项目四部门总览</h3>
+            <div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4 text-sm">
+                <div class="rounded-lg bg-slate-50 p-3"><p class="font-medium">市场研究部</p><p class="mt-1 text-slate-600">选品证据 {{ $selectedProject->researchSources->count() }} 条 · SKU {{ $selectedProject->skus->count() }} 个</p></div>
+                <div class="rounded-lg bg-slate-50 p-3"><p class="font-medium">网站运营部</p><p class="mt-1 text-slate-600">1688 货源 {{ $selectedProject->sources->count() }} 条 · Shopify {{ $selectedProject->landingPages->count() }} 页</p></div>
+                <div class="rounded-lg bg-slate-50 p-3"><p class="font-medium">内容创意部</p><p class="mt-1 text-slate-600">素材 {{ $selectedProject->creativeAssets->count() }} 个</p></div>
+                <div class="rounded-lg bg-slate-50 p-3"><p class="font-medium">流量增长部</p><p class="mt-1 text-slate-600">投放 {{ $selectedProject->campaignTests->count() }} 条 · 待处理反馈 {{ $selectedProject->optimizationFeedback->where('status', '!=', 'resolved')->count() }} 条</p></div>
+            </div>
+        </section>
         @php($videos = $selectedProject->creativeAssets->filter(fn ($asset) => in_array('video', $asset->asset_types ?? [$asset->asset_type], true)))
         @php($incoming = $selectedProject->decisions->where('requested_from_stage', $stage)->where('status', 'open'))
         <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><div class="flex justify-between gap-3 border-b border-slate-100 pb-5"><div><p class="text-xs font-semibold text-blue-600">{{ $selectedProject->project_code }}</p><h2 class="mt-1 text-2xl font-bold">{{ $selectedProject->product_name }}</h2><p class="mt-1 text-sm text-slate-500">{{ $selectedProject->market }} · 当前推进：{{ $labels[$selectedProject->current_stage] ?? $selectedProject->current_stage }}</p></div><x-status-badge :status="$selectedProject->status" /></div>
