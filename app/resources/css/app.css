@@ -50,6 +50,7 @@
     main > section.mt-6 > div:first-child > img { display: none; }
     /* Evidence intake is integrated beside the product image, not repeated below it. */
     main > section.mt-6 .dept-panel-market_research > div[class*="lg:grid-cols-3"] { display: none !important; }
+    main > section.mt-6 .dept-panel-market_research > section:has(> p.text-orange-900) { display: none; }
 
     [data-app-sidebar] { align-self: start; }
     @media (min-width: 1024px) {

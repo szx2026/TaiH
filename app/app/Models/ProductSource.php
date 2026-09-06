@@ -15,6 +15,7 @@ class ProductSource extends Model
         'currency',
         'weight_g',
         'supplier_name',
+        'product_name',
         'notes',
         'created_by',
     ];

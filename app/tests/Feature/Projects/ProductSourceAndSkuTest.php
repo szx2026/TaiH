@@ -32,11 +32,15 @@ class ProductSourceAndSkuTest extends TestCase
             ->post("/projects/{$project->id}/sources", [
                 'supplier_url' => 'https://detail.1688.com/offer/1073153738003.html',
                 'supplier_name' => '义乌夜灯源头工厂',
-                'purchase_price' => 22.00,
+                'product_name' => '星空投影灯',
                 'currency' => 'CNY',
-                'weight_g' => 93,
                 'notes' => '确认 3 / 6 / 12 影片版本可供货。',
-                'variant_name' => '12 影片版本',
+                'specifications' => [[
+                    'sku_code' => 'SUP-LAMP-12',
+                    'variant_name' => '12 影片版本',
+                    'purchase_price' => 22.00,
+                    'weight_g' => 93,
+                ]],
             ])
             ->assertRedirect(route('projects.index', ['stage' => 'market_research', 'project' => $project]));
 
@@ -44,17 +48,16 @@ class ProductSourceAndSkuTest extends TestCase
             'product_project_id' => $project->id,
             'supplier_url' => 'https://detail.1688.com/offer/1073153738003.html',
             'supplier_name' => '义乌夜灯源头工厂',
-            'purchase_price' => 22,
-            'weight_g' => 93,
+            'product_name' => '星空投影灯',
             'notes' => '确认 3 / 6 / 12 影片版本可供货。',
         ]);
         $this->assertDatabaseHas('product_skus', [
             'product_project_id' => $project->id,
-            'sku_code' => null,
+            'sku_code' => 'SUP-LAMP-12',
             'variant_name' => '12 影片版本',
             'purchase_price' => 22,
             'weight_g' => 93,
-            'sku_status' => 'source_recorded',
+            'sku_status' => 'internal_confirmed',
         ]);
         $this->assertDatabaseHas('project_activities', [
             'product_project_id' => $project->id,
@@ -75,8 +78,11 @@ class ProductSourceAndSkuTest extends TestCase
 
         $this->actingAs($user)->post("/projects/{$project->id}/sources", [
             'supplier_url' => 'https://detail.1688.com/offer/1073153738003.html',
+            'supplier_name' => '测试供应商',
+            'product_name' => '测试产品',
+            'notes' => '测试货源。',
             'currency' => 'CNY',
-        ])->assertSessionHasErrors(['variant_name']);
+        ])->assertSessionHasErrors(['specifications']);
     }
 
     public function test_multiple_product_specifications_can_share_one_supplier_source(): void
@@ -84,13 +90,15 @@ class ProductSourceAndSkuTest extends TestCase
         $department = Department::factory()->create(['code' => 'market_research']);
         $user = User::factory()->create(['department_id' => $department->id]);
         $project = ProductProject::create(['project_code' => 'PP-202609-TEST05', 'product_name' => '共享货源产品', 'market' => 'US', 'priority' => 'market_new', 'current_stage' => 'market_research', 'status' => 'draft', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
-        $source = ['supplier_url' => 'https://detail.1688.com/offer/shared-source.html', 'supplier_name' => '共享货源工厂', 'currency' => 'CNY', 'notes' => '同一货源下有多个规格。'];
+        $source = ['supplier_url' => 'https://detail.1688.com/offer/shared-source.html', 'supplier_name' => '共享货源工厂', 'product_name' => '共享货源产品', 'currency' => 'CNY', 'notes' => '同一货源下有多个规格。'];
 
-        $this->actingAs($user)->post("/projects/{$project->id}/sources", [...$source, 'variant_name' => '单件', 'purchase_price' => 10, 'weight_g' => 100])->assertRedirect();
-        $this->actingAs($user)->post("/projects/{$project->id}/sources", [...$source, 'variant_name' => '两件套', 'purchase_price' => 18, 'weight_g' => 180])->assertRedirect();
+        $this->actingAs($user)->post("/projects/{$project->id}/sources", [...$source, 'specifications' => [
+            ['sku_code' => 'SKU-US-001', 'variant_name' => '单件', 'purchase_price' => 10, 'weight_g' => 100],
+            ['sku_code' => 'SKU-US-002', 'variant_name' => '两件套', 'purchase_price' => 18, 'weight_g' => 180],
+        ]])->assertRedirect();
 
         $this->assertDatabaseCount('product_sources', 1);
-        $this->assertDatabaseHas('product_skus', ['sku_code' => null, 'variant_name' => '两件套', 'purchase_price' => 18, 'weight_g' => 180]);
+        $this->assertDatabaseHas('product_skus', ['sku_code' => 'SKU-US-002', 'variant_name' => '两件套', 'purchase_price' => 18, 'weight_g' => 180]);
     }
 
     public function test_operations_cannot_add_an_1688_source(): void
