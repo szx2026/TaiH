@@ -3,7 +3,10 @@
 namespace Tests\Feature\Projects;
 
 use App\Models\Department;
+use App\Models\LandingPage;
 use App\Models\ProductProject;
+use App\Models\ProductSku;
+use App\Models\ProductSource;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -155,5 +158,24 @@ class ProductSourceAndSkuTest extends TestCase
                 'currency' => 'CNY',
             ])
             ->assertForbidden();
+    }
+
+    public function test_product_department_can_delete_a_specification_and_remove_its_shared_landing_page_reference(): void
+    {
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-DELETE-SKU', 'product_name' => '删除规格产品', 'market' => 'US', 'priority' => 'medium', 'current_stage' => 'market_research', 'status' => 'draft', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+        $source = ProductSource::create(['product_project_id' => $project->id, 'supplier_url' => 'https://detail.1688.com/offer/delete-spec.html', 'supplier_name' => '删除测试工厂', 'product_name' => '删除规格产品', 'currency' => 'CNY', 'notes' => '用于删除规格测试。', 'created_by' => $user->id]);
+        $sku = ProductSku::create(['product_project_id' => $project->id, 'product_source_id' => $source->id, 'sku_code' => 'DELETE-SKU-01', 'variant_name' => '不再销售的规格', 'sku_status' => 'used_on_page', 'created_by' => $user->id]);
+        $page = LandingPage::create(['product_project_id' => $project->id, 'version' => 1, 'title' => '删除关联页面', 'page_url' => 'https://example.com/products/delete-spec', 'detail_image_path' => 'landing-pages/delete-spec.png', 'currency' => 'USD', 'status' => 'draft', 'created_by' => $user->id]);
+        $page->skus()->attach($sku);
+
+        $this->actingAs($user)
+            ->delete("/projects/{$project->id}/skus/{$sku->id}")
+            ->assertRedirect(route('projects.index', ['stage' => 'market_research', 'project' => $project]));
+
+        $this->assertDatabaseMissing('product_skus', ['id' => $sku->id]);
+        $this->assertDatabaseMissing('landing_page_skus', ['landing_page_id' => $page->id, 'product_sku_id' => $sku->id]);
+        $this->assertDatabaseHas('project_activities', ['product_project_id' => $project->id, 'actor_id' => $user->id, 'event' => 'sku.deleted']);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property int|null $product_source_id
@@ -29,5 +30,10 @@ class ProductSku extends Model
     public function source(): BelongsTo
     {
         return $this->belongsTo(ProductSource::class, 'product_source_id');
+    }
+
+    public function landingPages(): BelongsToMany
+    {
+        return $this->belongsToMany(LandingPage::class, 'landing_page_skus');
     }
 }

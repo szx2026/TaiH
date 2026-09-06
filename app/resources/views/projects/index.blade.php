@@ -93,7 +93,7 @@
                                 <div class="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                                     @foreach($selectedProject->skus as $sku)
                                         <article class="rounded-lg border border-slate-200 bg-white p-3 text-sm">
-                                            <p class="font-semibold text-slate-950">{{ $sku->variant_name }}</p>
+                                            <div class="flex items-start justify-between gap-3"><p class="font-semibold text-slate-950">{{ $sku->variant_name }}</p><form method="POST" action="{{ route('projects.skus.destroy', [$selectedProject, $sku]) }}" onsubmit="return confirm('确认删除“{{ $sku->variant_name }}”吗？该规格会同时从项目共享资料和 Shopify 页面关联中移除。');">@csrf @method('DELETE')<button class="rounded border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50">删除规格</button></form></div>
                                             <p class="mt-1 text-slate-600">内部 SKU：{{ $sku->sku_code ?: '待生成' }}</p>
                                             <p class="mt-1 text-slate-500">采购价 ¥{{ $sku->purchase_price ?? '待补' }} · 重量 {{ $sku->weight_g ?? '待补' }}g</p>
                                         </article>

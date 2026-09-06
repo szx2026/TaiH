@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/projects/{project}/decisions/{decision}', [ProjectDecisionController::class, 'respond'])->name('projects.decisions.respond');
     Route::post('/projects/{project}/sources', [ProductSourceController::class, 'store'])->name('projects.sources.store');
     Route::post('/projects/{project}/skus', [ProductSkuController::class, 'store'])->name('projects.skus.store');
+    Route::delete('/projects/{project}/skus/{sku}', [ProductSkuController::class, 'destroy'])->name('projects.skus.destroy');
     Route::post('/projects/{project}/landing-pages', [LandingPageController::class, 'store'])->name('projects.landing-pages.store');
     Route::post('/projects/{project}/creative-assets', [CreativeAssetController::class, 'store'])->name('projects.creative-assets.store');
     Route::get('/projects/{project}/creative-assets/{asset}/download', [CreativeAssetController::class, 'download'])->name('projects.creative-assets.download');

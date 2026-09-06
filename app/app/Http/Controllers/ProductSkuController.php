@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Actions\Activity\RecordProjectActivity;
 use App\Models\ProductProject;
+use App\Models\ProductSku;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ProductSkuController extends Controller
@@ -48,6 +50,31 @@ class ProductSkuController extends Controller
             'sku_id' => $sku->id,
             'sku_code' => $sku->sku_code,
         ]);
+
+        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
+    }
+
+    public function destroy(Request $request, ProductProject $project, ProductSku $sku): RedirectResponse
+    {
+        abort_unless(
+            $request->user()?->department?->code === 'market_research'
+                || $request->user()?->hasRole('administrator'),
+            403,
+        );
+        abort_unless($sku->product_project_id === $project->id, 404);
+
+        DB::transaction(function () use ($project, $request, $sku): void {
+            $sku->load('source');
+            $sku->landingPages()->detach();
+
+            app(RecordProjectActivity::class)->handle($project, $request->user(), 'sku.deleted', [
+                'sku_id' => $sku->id,
+                'sku_code' => $sku->sku_code,
+                'variant_name' => $sku->variant_name,
+            ]);
+
+            $sku->delete();
+        });
 
         return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
     }

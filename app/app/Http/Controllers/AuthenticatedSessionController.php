@@ -27,6 +27,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+
+        if (! $user?->hasRole('administrator') && $user?->department?->code) {
+            return to_route('projects.index', ['stage' => $user->department->code]);
+        }
+
         return to_route('projects.index');
     }
 
