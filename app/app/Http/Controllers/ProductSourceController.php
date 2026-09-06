@@ -12,7 +12,7 @@ class ProductSourceController extends Controller
 {
     public function store(Request $request, ProductProject $project): RedirectResponse
     {
-        abort_unless($request->user()?->department?->code === 'website_operations' || $request->user()?->hasRole('administrator'), 403);
+        abort_unless($request->user()?->department?->code === 'market_research' || $request->user()?->hasRole('administrator'), 403);
 
         $data = $request->validate([
             'supplier_url' => ['required', 'url', 'max:2048'],
@@ -39,6 +39,6 @@ class ProductSourceController extends Controller
             'supplier_url' => $source->supplier_url,
         ]);
 
-        return to_route('projects.index', ['stage' => 'website_operations', 'project' => $project]);
+        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 }

@@ -32,7 +32,7 @@ class LandingPageTest extends TestCase
         $this->actingAs($user)
             ->get("/projects?stage=website_operations&project={$project->id}")
             ->assertOk()
-            ->assertSee('货源、SKU 与 Shopify 产品')
+            ->assertSee('SKU 与 Shopify 产品')
             ->assertSee('Shopify 产品或落地页链接');
     }
 

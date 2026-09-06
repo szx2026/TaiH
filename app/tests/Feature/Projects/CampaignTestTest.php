@@ -226,7 +226,7 @@ class CampaignTestTest extends TestCase
             ->assertSee('选择 Shopify 页面')
             ->assertSee('当前项目视频')
             ->assertSee('当前项目 Shopify 页面')
-            ->assertDontSee('当前项目图片');
+            ->assertSee('当前项目图片');
     }
 
     public function test_traffic_growth_can_send_one_campaign_feedback_to_all_three_departments(): void

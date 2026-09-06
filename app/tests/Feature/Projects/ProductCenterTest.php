@@ -4,6 +4,7 @@ namespace Tests\Feature\Projects;
 
 use App\Models\Department;
 use App\Models\ProductProject;
+use App\Models\ProductSource;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -78,7 +79,7 @@ class ProductCenterTest extends TestCase
             ->assertOk()
             ->assertSee('内嵌选品项目')
             ->assertSee('产品部重点工作')
-            ->assertSee('选品证据与内部 SKU')
+            ->assertSee('选品、SKU 与货源产品信息')
             ->assertSee('关联协作摘要');
     }
 
@@ -88,7 +89,7 @@ class ProductCenterTest extends TestCase
         $user = User::factory()->create(['department_id' => $department->id]);
         $project = $this->project($department, $user, 'PP-202609-DEPT-FOCUS', '部门重点项目', 'website_operations');
 
-        $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertSee('运营部重点工作')->assertSee('货源、SKU 与 Shopify 产品');
+        $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertSee('运营部重点工作')->assertSee('SKU 与 Shopify 产品');
         $this->actingAs($user)->get("/projects?stage=content_creative&project={$project->id}")->assertOk()->assertSee('创意部重点工作')->assertSee('素材清单');
         $this->actingAs($user)->get("/projects?stage=traffic_growth&project={$project->id}")->assertOk()->assertSee('流量部重点工作')->assertSee('投放测试与反馈');
     }
@@ -105,6 +106,29 @@ class ProductCenterTest extends TestCase
         $this->actingAs($user)->get("/projects?stage=content_creative&project={$project->id}")
             ->assertOk()
             ->assertSee('创意部重点工作');
+    }
+
+    public function test_creative_department_can_review_complete_product_information_after_its_own_work(): void
+    {
+        $productDepartment = Department::factory()->create(['code' => 'market_research']);
+        $creativeDepartment = Department::factory()->create(['code' => 'content_creative']);
+        $productUser = User::factory()->create(['department_id' => $productDepartment->id]);
+        $creativeUser = User::factory()->create(['department_id' => $creativeDepartment->id]);
+        $project = $this->project($productDepartment, $productUser, 'PP-202609-SHARED-INFO', '共享资料项目', 'market_research');
+        ProductSource::create([
+            'product_project_id' => $project->id,
+            'supplier_url' => 'https://detail.1688.com/offer/shared-product.html',
+            'supplier_name' => '产品部录入的 1688 货源',
+            'currency' => 'CNY',
+            'created_by' => $productUser->id,
+        ]);
+
+        $this->actingAs($creativeUser)
+            ->get("/projects?stage=content_creative&project={$project->id}")
+            ->assertOk()
+            ->assertSeeInOrder(['创意部重点工作', '项目共享资料'])
+            ->assertSee('产品部资料')
+            ->assertSee('产品部录入的 1688 货源');
     }
 
     public function test_department_workspace_keeps_the_current_departments_edit_form_inline(): void
@@ -137,12 +161,12 @@ class ProductCenterTest extends TestCase
         $user = User::factory()->create(['department_id' => $department->id]);
         $project = $this->project($department, $user, 'PP-202609-ALL-INLINE', '全链路编辑项目', 'market_research');
 
-        $this->actingAs($user)->get("/projects?stage=market_research&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/research-sources", false)->assertSee("/projects/{$project->id}/skus", false);
+        $this->actingAs($user)->get("/projects?stage=market_research&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/research-sources", false)->assertSee("/projects/{$project->id}/skus", false)->assertSee("/projects/{$project->id}/sources", false);
         $websiteDepartment = Department::factory()->create(['code' => 'website_operations']);
         $websiteUser = User::factory()->create(['department_id' => $websiteDepartment->id]);
         $creativeDepartment = Department::factory()->create(['code' => 'content_creative']);
         $creativeUser = User::factory()->create(['department_id' => $creativeDepartment->id]);
-        $this->actingAs($websiteUser)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/sources", false)->assertSee("/projects/{$project->id}/landing-pages", false);
+        $this->actingAs($websiteUser)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertDontSee("/projects/{$project->id}/sources", false)->assertSee("/projects/{$project->id}/landing-pages", false);
         $this->actingAs($creativeUser)->get("/projects?stage=content_creative&project={$project->id}")->assertOk()->assertSee("/projects/{$project->id}/creative-assets", false);
     }
 
