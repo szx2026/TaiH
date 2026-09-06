@@ -21,6 +21,6 @@ class ProjectFeedbackCenterTest extends TestCase
         OptimizationFeedback::create(['product_project_id' => $project->id, 'target_stage' => 'website_operations', 'note' => '请检查落地页规格。', 'status' => 'open', 'created_by' => $user->id]);
         OptimizationFeedback::create(['product_project_id' => $project->id, 'target_stage' => 'content_creative', 'note' => '请更新视频钩子。', 'status' => 'open', 'created_by' => $user->id]);
 
-        $this->actingAs($user)->get('/feedback')->assertOk()->assertSee('请检查落地页规格。')->assertDontSee('请更新视频钩子。');
+        $this->actingAs($user)->get('/feedback')->assertOk()->assertSee('请检查落地页规格。')->assertDontSee('请更新视频钩子。')->assertSee('>1<', false);
     }
 }

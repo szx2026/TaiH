@@ -30,7 +30,7 @@ class ApplicationShellTest extends TestCase
             ->assertSee('反馈中心');
     }
 
-    public function test_department_project_links_preserve_the_department_return_stage(): void
+    public function test_department_workspace_uses_a_project_selector(): void
     {
         $department = Department::factory()->create(['code' => 'market_research']);
         $user = User::factory()->create(['department_id' => $department->id]);
@@ -49,7 +49,9 @@ class ApplicationShellTest extends TestCase
         $this->actingAs($user)
             ->get('/projects?stage=market_research')
             ->assertOk()
-            ->assertSee("/projects?stage=market_research&amp;project={$project->id}", false);
+            ->assertSee('产品项目')
+            ->assertSee("<option value=\"{$project->id}\"", false)
+            ->assertSee('返回部门项目');
     }
 
     public function test_workspace_back_link_returns_to_the_department_workspace_or_project_index(): void
