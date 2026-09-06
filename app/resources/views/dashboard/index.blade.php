@@ -1,6 +1,6 @@
 <x-layouts.app title="工作台 · 跨境产品 ERP">
     <div class="mb-7">
-        <p class="text-sm font-semibold text-blue-600">工作台</p>
+        <p class="text-sm font-semibold text-black">工作台</p>
         <h1 class="mt-1 text-3xl font-bold tracking-tight">{{ $isAdministrator ? '全局工作看板' : '我的工作看板' }}</h1>
         <p class="mt-2 text-sm text-slate-500">聚焦当前环节的产品任务、优化反馈与投放表现。</p>
     </div>
@@ -27,7 +27,7 @@
         <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
                 <h2 class="text-sm font-semibold text-slate-800">当前环节项目</h2>
-                <a href="{{ route('projects.index') }}" class="text-xs font-semibold text-blue-600">查看全部</a>
+                <a href="{{ route('projects.index') }}" class="text-xs font-semibold text-black underline-offset-4 hover:underline">查看全部</a>
             </div>
             <div class="divide-y divide-slate-100">
                 @forelse ($projects as $project)

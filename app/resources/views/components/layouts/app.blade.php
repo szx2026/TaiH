@@ -8,14 +8,14 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endunless
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+<body class="min-h-screen bg-zinc-50 text-zinc-950 antialiased">
     <div class="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
-        <aside data-app-sidebar class="border-b border-slate-800 bg-slate-950 px-4 py-3 text-slate-200 lg:border-r lg:border-b-0 lg:border-slate-200 lg:px-4 lg:py-5">
+        <aside data-app-sidebar class="border-b border-zinc-800 bg-black px-4 py-3 text-zinc-200 lg:border-r lg:border-b-0 lg:border-zinc-200 lg:px-4 lg:py-5">
             <a href="{{ route('dashboard') }}" class="mb-3 flex items-center gap-3 px-2 lg:mb-8">
-                <span class="grid size-9 place-items-center rounded-xl bg-blue-500 text-sm font-black text-white">N</span>
+                <span class="grid size-9 place-items-center rounded-xl bg-white text-sm font-black text-black">N</span>
                 <span>
                     <span class="block text-sm font-bold tracking-tight text-white">NORTHSTAR ERP</span>
-                    <span class="block text-[11px] text-slate-400">跨境产品增长协作系统</span>
+                    <span class="block text-[11px] text-zinc-400">跨境产品增长协作系统</span>
                 </span>
             </a>
 
@@ -28,7 +28,7 @@
                 <x-nav-item label="回收站" :href="route('projects.recycle-bin')" :active="request()->routeIs('projects.recycle-bin')" />
             </nav>
 
-            <div class="my-3 border-t border-slate-800 lg:my-7"></div>
+            <div class="my-3 border-t border-zinc-800 lg:my-7"></div>
             <p class="sidebar-label">系统管理</p>
             <nav class="space-y-1" aria-label="系统管理">
                 <x-nav-item label="成员与权限" :href="route('members.index')" :active="request()->routeIs('members.*')" />
@@ -37,16 +37,16 @@
         </aside>
 
         <div class="min-w-0">
-            <header class="flex min-h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-8">
-                <div class="text-sm text-slate-500">产品从研究、开发到测试的统一协作空间</div>
+            <header class="flex min-h-16 items-center justify-between border-b border-zinc-200 bg-white px-4 sm:px-8">
+                <div class="text-sm text-zinc-500">产品从研究、开发到测试的统一协作空间</div>
                 <div class="flex items-center gap-3">
                     <div class="hidden text-right sm:block">
-                        <p class="text-sm font-semibold text-slate-800">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-slate-500">{{ auth()->user()->department?->name ?? '管理员' }}</p>
+                        <p class="text-sm font-semibold text-zinc-900">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-zinc-500">{{ auth()->user()->department?->name ?? '管理员' }}</p>
                     </div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50">退出</button>
+                        <button class="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50">退出</button>
                     </form>
                 </div>
             </header>
