@@ -152,11 +152,21 @@ const categorySelect = document.querySelector('#project-category');
 const categoryManager = document.querySelector('#category-manager');
 const categoryEndpoints = @json($managedCategories->mapWithKeys(fn ($category) => [$category->name => route('product-categories.destroy', $category)]));
 const csrfToken = document.querySelector('input[name="_token"]')?.value;
+if (categoryManager && !categoryManager.querySelector('[data-close-category-manager]')) {
+    categoryManager.insertAdjacentHTML('afterbegin', '<div class="mb-2 flex justify-end"><button type="button" data-close-category-manager class="rounded border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 hover:bg-orange-50">完成并关闭</button></div>');
+}
 categorySelect?.addEventListener('change', () => {
-    if (categorySelect.value !== '__manage__') return;
+    if (categorySelect.value !== '__manage__') {
+        categoryManager.hidden = true;
+        return;
+    }
     categoryManager.hidden = false;
     categorySelect.value = '';
     categoryManager.querySelector('input[name="name"]')?.focus();
+});
+categoryManager?.querySelector('[data-close-category-manager]')?.addEventListener('click', () => {
+    categoryManager.hidden = true;
+    categorySelect?.focus();
 });
 categoryManager?.querySelectorAll('button[aria-label^="删除 "]').forEach((button) => {
     button.type = 'button';
