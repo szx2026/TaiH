@@ -117,6 +117,28 @@
     @endif
 </x-layouts.app>
 <script>
+const createProjectForm = document.querySelector('#create-project form');
+const createProjectError = document.createElement('p');
+createProjectError.className = 'mt-3 hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-800';
+createProjectForm?.append(createProjectError);
+createProjectForm?.addEventListener('invalid', (event) => {
+    const field = event.target;
+    const messages = {
+        product_name: '请填写产品名称。',
+        category: '请选择产品类目。',
+        priority: '请先选择产品阶段，再创建产品项目。',
+        product_image: '请上传一张 PNG、JPG 或 WebP 格式的产品主图。',
+    };
+    const message = messages[field.name];
+    if (!message) return;
+    field.setCustomValidity(message);
+    createProjectError.textContent = message;
+    createProjectError.classList.remove('hidden');
+}, true);
+createProjectForm?.querySelectorAll('input, select').forEach((field) => {
+    field.addEventListener('input', () => field.setCustomValidity(''));
+    field.addEventListener('change', () => field.setCustomValidity(''));
+});
 document.querySelectorAll('form[action*="/campaign-tests"]:not([action$="update"])').forEach((form) => {
     const checkout = form.querySelector('input[name="checkout_conversions"]');
     if (!checkout || form.querySelector('input[name="purchase_conversions"]')) return;
