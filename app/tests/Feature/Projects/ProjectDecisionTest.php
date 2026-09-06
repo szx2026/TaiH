@@ -108,6 +108,13 @@ class ProjectDecisionTest extends TestCase
 
         $this->assertDatabaseHas('product_skus', ['id' => $sku->id, 'sku_code' => 'INTERNAL-001', 'variant_name' => '单件装']);
         $this->assertDatabaseHas('project_decisions', ['id' => $decision->id, 'status' => 'resolved', 'response_note' => '运营部新增产品规格：两件套；礼盒装']);
+
+        $this->actingAs($productUser)
+            ->get("/projects?stage=market_research&project={$project->id}")
+            ->assertOk()
+            ->assertSee('运营部新增规格待开发')
+            ->assertSee('两件套')
+            ->assertSee('礼盒装');
     }
 
     public function test_operations_can_confirm_product_departments_initial_specifications_without_adding_new_requirements(): void

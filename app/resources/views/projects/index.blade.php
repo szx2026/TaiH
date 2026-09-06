@@ -39,6 +39,7 @@
         </section>
         @php($videos = $selectedProject->creativeAssets->filter(fn ($asset) => in_array('video', $asset->asset_types ?? [$asset->asset_type], true)))
         @php($incoming = $selectedProject->decisions->where('requested_from_stage', $stage)->where('status', 'open'))
+        @php($pendingOperationsSpecifications = $selectedProject->decisions->where('decision_type', 'specification')->where('requested_from_stage', 'website_operations')->where('status', 'resolved')->flatMap(fn ($decision) => data_get($decision->details, 'requested_specifications', []))->map(fn ($specification) => trim((string) $specification))->filter()->unique()->reject(fn ($specification) => $selectedProject->skus->contains(fn ($sku) => $sku->variant_name === $specification))->values())
             <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><div class="flex justify-between gap-3 border-b border-slate-100 pb-5"><div><p class="text-xs font-semibold dept-text-{{ $stage }}">{{ $selectedProject->project_code }}@if($selectedProject->released_at) · 发布于 {{ $selectedProject->released_at->format('Y-m-d') }}@endif</p><h2 class="mt-1 text-2xl font-bold">{{ $selectedProject->product_name }}</h2><p class="mt-1 text-sm text-slate-500">当前推进：{{ $labels[$selectedProject->current_stage] ?? $selectedProject->current_stage }}</p></div>@if($selectedProject->product_image_path)<img src="{{ asset('storage/'.$selectedProject->product_image_path) }}" alt="{{ $selectedProject->product_name }} 产品主图" class="size-16 rounded-lg object-cover">@endif<x-status-badge :status="$selectedProject->status" /></div>
             @if(! $canEdit)<p class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">当前以 {{ $labels[$userStage] ?? '其他部门' }} 身份查看；本部门工作与待处理事项会优先显示，完整项目资料见下方。</p>@endif
             <div class="mt-5"><div class="w-full rounded-xl border dept-panel-{{ $stage }} p-5">
@@ -154,6 +155,7 @@ const createProjectForm = document.querySelector('#create-project form');
 const currentProductName = @json(optional($selectedProject)->product_name);
 const hasPendingInternalSku = @json(optional($selectedProject)->skus?->whereNull('sku_code')->isNotEmpty() ?? false);
 const pendingInternalSkus = @json(optional($selectedProject)->skus?->whereNull('sku_code')->map(fn ($sku) => ['id' => $sku->id, 'name' => $sku->variant_name])->values() ?? []);
+const pendingOperationsSpecifications = @json($pendingOperationsSpecifications);
 const internalSkuEndpoint = @json($selectedProject ? route('projects.skus.store', $selectedProject) : null);
 document.querySelectorAll('form[action*="/sources"] input[name="sku_code"]').forEach((field) => {
     field.disabled = true;
@@ -161,6 +163,28 @@ document.querySelectorAll('form[action*="/sources"] input[name="sku_code"]').for
     field.closest('label')?.classList.add('hidden');
     field.form?.querySelector('button')?.replaceChildren('保存货源与产品规格');
 });
+if (pendingOperationsSpecifications.length) {
+    const productPanel = Array.from(document.querySelectorAll('h3')).find((heading) => heading.textContent.trim() === '选品、产品规格与货源产品信息')?.closest('.dept-panel-market_research');
+    const sourceEditor = productPanel?.querySelector('[data-product-source-editor]');
+    const handoff = document.createElement('section');
+    handoff.className = 'mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4';
+    const title = document.createElement('p');
+    title.className = 'font-semibold text-amber-950';
+    title.textContent = '运营部新增规格待开发';
+    const description = document.createElement('p');
+    description.className = 'mt-1 text-sm text-amber-900';
+    description.textContent = '请在下方“1688 货源与产品规格”中，为每项需求新增规格并回填公司内部 SKU。完成后本提示会自动消失。';
+    const list = document.createElement('ul');
+    list.className = 'mt-3 flex flex-wrap gap-2';
+    pendingOperationsSpecifications.forEach((specification) => {
+        const item = document.createElement('li');
+        item.className = 'rounded-full border border-amber-300 bg-white px-3 py-1 text-sm font-medium text-amber-950';
+        item.textContent = specification;
+        list.append(item);
+    });
+    handoff.append(title, description, list);
+    sourceEditor?.before(handoff);
+}
 const specificationList = document.querySelector('[data-specification-list]');
 const addSpecificationButton = document.querySelector('[data-add-specification]');
 const addSpecification = () => {
