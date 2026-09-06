@@ -20,7 +20,7 @@
             </div>
             <div class="divide-y divide-slate-100">
                 @forelse ($projects as $project)
-                    <a href="{{ route('projects.show', $project) }}" class="block px-5 py-4 transition hover:bg-slate-50">
+                    <a href="{{ route('projects.index', ['stage' => $project->current_stage, 'project' => $project]) }}" class="block px-5 py-4 transition hover:bg-slate-50">
                         <div class="flex items-start justify-between gap-4"><div><p class="font-semibold">{{ $project->product_name }}</p><p class="mt-1 text-xs text-slate-500">{{ $project->project_code }} · {{ $project->market }} · {{ $project->owner?->name }}</p></div><x-status-badge :status="$project->status" /></div>
                         <div class="mt-3"><x-stage-rail :stage="$project->current_stage" /></div>
                     </a>

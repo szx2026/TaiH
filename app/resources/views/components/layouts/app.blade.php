@@ -33,7 +33,7 @@
             <p class="sidebar-label">系统管理</p>
             <nav class="space-y-1" aria-label="系统管理">
                 <x-nav-item label="成员与权限" :href="route('members.index')" :active="request()->routeIs('members.*')" />
-                <x-nav-item label="数据接入" />
+                <x-nav-item label="数据接入" :href="route('integrations.index')" :active="request()->routeIs('integrations.*')" />
             </nav>
         </aside>
 
