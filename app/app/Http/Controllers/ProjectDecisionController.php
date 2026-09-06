@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Activity\RecordProjectActivity;
 use App\Models\ProductProject;
+use App\Models\ProductSku;
 use App\Models\ProjectDecision;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -66,17 +67,54 @@ class ProjectDecisionController extends Controller
             403,
         );
 
-        $data = $request->validate(['response_note' => ['required', 'string', 'max:4000']]);
+        $data = $request->validate([
+            'response_note' => ['nullable', 'string', 'max:4000'],
+            'final_specifications' => ['nullable', 'array', 'min:1'],
+            'final_specifications.*.sku_id' => ['required_with:final_specifications', 'integer'],
+            'final_specifications.*.variant_name' => ['required_with:final_specifications', 'string', 'max:255'],
+        ]);
+
+        $details = $decision->details ?? [];
+        $responseNote = $data['response_note'] ?? null;
+
+        if ($decision->decision_type === 'specification') {
+            abort_unless(! empty($data['final_specifications']), 422, '请逐条确认每个内部 SKU 对应的最终产品规格。');
+
+            $specificationRows = collect($data['final_specifications'])->values();
+            $skus = ProductSku::query()
+                ->where('product_project_id', $project->id)
+                ->whereIn('id', $specificationRows->pluck('sku_id'))
+                ->get()
+                ->keyBy('id');
+            abort_unless($skus->count() === $specificationRows->pluck('sku_id')->unique()->count(), 422);
+
+            $finalSpecifications = $specificationRows->map(function (array $specification) use ($skus): array {
+                $sku = $skus->get($specification['sku_id']);
+
+                return [
+                    'sku_id' => $sku->id,
+                    'sku_code' => $sku->sku_code,
+                    'variant_name' => $specification['variant_name'],
+                ];
+            })->all();
+            $details['final_specifications'] = $finalSpecifications;
+            $responseNote = '最终产品规格：'.collect($finalSpecifications)
+                ->map(fn (array $specification) => "{$specification['sku_code']} · {$specification['variant_name']}")
+                ->implode('；');
+        }
+
+        abort_unless(filled($responseNote), 422, '请填写运营部回复。');
         $decision->update([
             'status' => 'resolved',
-            'response_note' => $data['response_note'],
+            'details' => $details,
+            'response_note' => $responseNote,
             'responded_by' => $request->user()->id,
             'responded_at' => now(),
         ]);
 
         app(RecordProjectActivity::class)->handle($project, $request->user(), 'decision.resolved', [
             'decision_id' => $decision->id,
-            'response_note' => $data['response_note'],
+            'response_note' => $responseNote,
         ]);
 
         return to_route('projects.index', ['stage' => $request->user()?->department?->code, 'project' => $project]);

@@ -69,7 +69,7 @@ class CreativeAssetTest extends TestCase
 
         $this->assertDatabaseHas('creative_assets', [
             'product_project_id' => $project->id,
-            'title' => '投影效果演示 V1',
+            'title' => '星空投影灯',
             'asset_type' => 'video',
             'source_type' => 'tiktok',
             'status' => 'draft',

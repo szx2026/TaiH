@@ -72,12 +72,17 @@ class ProductSourceController extends Controller
             [
                 'title' => "确认「{$project->product_name}」初步产品规格",
                 'details' => [
-                    'initial_specifications' => collect($data['specifications'])->map(fn (array $specification) => [
-                        'sku_code' => $specification['sku_code'],
-                        'variant_name' => $specification['variant_name'],
-                        'purchase_price' => $specification['purchase_price'] ?? null,
-                        'weight_g' => $specification['weight_g'] ?? null,
-                    ])->values()->all(),
+                    'initial_specifications' => ProductSku::query()
+                        ->where('product_project_id', $project->id)
+                        ->whereIn('sku_code', collect($data['specifications'])->pluck('sku_code'))
+                        ->get()
+                        ->map(fn (ProductSku $sku) => [
+                            'sku_id' => $sku->id,
+                            'sku_code' => $sku->sku_code,
+                            'variant_name' => $sku->variant_name,
+                            'purchase_price' => $sku->purchase_price,
+                            'weight_g' => $sku->weight_g,
+                        ])->values()->all(),
                 ],
                 'created_by' => $request->user()->id,
             ],

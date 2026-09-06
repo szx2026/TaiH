@@ -26,7 +26,7 @@ class CreativeAssetController extends Controller
         abort_unless($request->user()?->department?->code === 'content_creative' || $request->user()?->hasRole('administrator'), 403);
 
         $data = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
+            'title' => ['nullable', 'string', 'max:255'],
             'asset_types' => ['required', 'array', 'min:1'],
             'asset_types.*' => ['required', 'distinct', Rule::in(['video', 'image', 'gif', 'copy'])],
             'source_type' => ['required', Rule::in(['tiktok', 'youtube', 'other'])],
@@ -49,7 +49,7 @@ class CreativeAssetController extends Controller
 
         $asset = CreativeAsset::create([
             'product_project_id' => $project->id,
-            'title' => $data['title'],
+            'title' => $project->product_name,
             'asset_type' => $data['asset_types'][0],
             'asset_types' => $data['asset_types'],
             'source_type' => $data['source_type'],

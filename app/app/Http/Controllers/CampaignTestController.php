@@ -38,7 +38,7 @@ class CampaignTestController extends Controller
 
         $data = $request->validate([
             'platform' => ['required', Rule::in(['facebook'])],
-            'campaign_name' => ['required', 'string', 'max:255'],
+            'campaign_name' => ['nullable', 'string', 'max:255'],
             'spend' => ['required', 'numeric', 'min:0'],
             'cost_per_click' => ['nullable', 'numeric', 'min:0'],
             'add_to_cart_conversions' => ['nullable', 'integer', 'min:0'],
@@ -73,7 +73,7 @@ class CampaignTestController extends Controller
             $campaign = CampaignTest::create([
                 'product_project_id' => $project->id,
                 'platform' => $data['platform'],
-                'campaign_name' => $data['campaign_name'],
+                'campaign_name' => $project->product_name,
                 'spend' => $data['spend'],
                 // Legacy columns stay populated for historical compatibility.
                 'impressions' => $impressions,

@@ -86,6 +86,7 @@ class ProductProjectController extends Controller
                 'status' => 'open',
                 'details' => [
                     'initial_specifications' => $selectedProject->skus->map(fn ($sku) => [
+                        'sku_id' => $sku->id,
                         'sku_code' => $sku->sku_code,
                         'variant_name' => $sku->variant_name,
                         'purchase_price' => $sku->purchase_price,

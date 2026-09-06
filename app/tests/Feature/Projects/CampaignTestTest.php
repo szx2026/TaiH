@@ -90,7 +90,7 @@ class CampaignTestTest extends TestCase
         $this->assertDatabaseHas('campaign_tests', [
             'product_project_id' => $project->id,
             'platform' => 'facebook',
-            'campaign_name' => 'US 星空投影灯 · V1',
+            'campaign_name' => '星空投影灯',
             'spend' => 80.50,
             'impressions' => 1000,
             'clicks' => 32,
@@ -105,7 +105,7 @@ class CampaignTestTest extends TestCase
 
         $this->assertSame([
             'campaign_test_id' => CampaignTest::query()->where('product_project_id', $project->id)->value('id'),
-            'campaign_name' => 'US 星空投影灯 · V1',
+            'campaign_name' => '星空投影灯',
             'cost_per_click' => 2.52,
             'add_to_cart_conversions' => null,
             'checkout_conversions' => 1,

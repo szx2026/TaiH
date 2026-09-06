@@ -7,6 +7,9 @@
         $feedbackTargetStage = auth()->user()?->hasRole('administrator') ? $stage : $userStage;
         $labels = ['market_research' => '产品部', 'website_operations' => '运营部', 'content_creative' => '创意部', 'traffic_growth' => '流量部'];
         $sourceLabels = ['tiktok' => 'TikTok', 'facebook_ads' => 'Facebook 广告库', 'amazon' => 'Amazon', 'independent_store' => '独立站'];
+        $projectSpecificationRows = $selectedProject?->skus->map(function ($sku) {
+            return ['id' => $sku->id, 'sku_code' => $sku->sku_code, 'variant_name' => $sku->variant_name];
+        })->values() ?? collect();
     @endphp
     <div class="mb-7"><p class="text-sm font-semibold dept-text-{{ $stage }}">{{ $departmentWorkspace['eyebrow'] ?? '产品项目' }}</p><h1 class="mt-1 text-3xl font-bold">{{ $departmentWorkspace['title'] ?? '产品项目池' }}</h1><p class="mt-2 text-sm text-slate-500">{{ $departmentWorkspace['description'] ?? '统一查看产品与协作进度。' }}</p></div>
 
@@ -262,6 +265,7 @@ if (mainImageFigure && @json($stage === 'market_research' && $canEdit) && !mainI
 
 const shouldShowSpecificationConfirmation = @json($stage === 'website_operations');
 const pendingSpecificationDecisions = @json($incoming->where('decision_type', 'specification')->values());
+const projectSpecificationRows = @json($projectSpecificationRows);
 pendingSpecificationDecisions.forEach((decision) => {
     if (!shouldShowSpecificationConfirmation) return;
     const form = document.querySelector(`form[action$="/decisions/${decision.id}"]`);
@@ -287,6 +291,69 @@ pendingSpecificationDecisions.forEach((decision) => {
     if (responseInput && !responseInput.value) {
         responseInput.value = `采用产品部初步规格：${initialSpecifications.map((specification) => `${specification.sku_code} ${specification.variant_name}`).join('；')}`;
     }
+
+    const specifications = initialSpecifications.map((specification) => ({
+        ...specification,
+        sku_id: specification.sku_id || projectSpecificationRows.find((sku) => sku.sku_code === specification.sku_code)?.id,
+    })).filter((specification) => specification.sku_id);
+    if (!specifications.length || form.dataset.finalSpecificationForm) return;
+    form.dataset.finalSpecificationForm = 'true';
+    form.className = 'mt-3 grid gap-3 rounded-lg border border-blue-200 bg-white p-4';
+    form.querySelector('input[name="response_note"]')?.remove();
+    const instruction = document.createElement('p');
+    instruction.className = 'text-sm text-blue-900';
+    instruction.textContent = '内部 SKU 由产品部系统生成并保持不变；请只确认或修改对应的最终产品规格。';
+    form.prepend(instruction);
+    specifications.forEach((specification, index) => {
+        const row = document.createElement('div');
+        row.className = 'grid gap-3 md:grid-cols-2';
+        const skuLabel = document.createElement('label');
+        skuLabel.className = 'field-label';
+        skuLabel.append('公司内部 SKU（不可修改）');
+        const skuInput = document.createElement('input');
+        skuInput.value = specification.sku_code;
+        skuInput.readOnly = true;
+        skuInput.className = 'field-input bg-slate-100 text-slate-500';
+        skuLabel.append(skuInput);
+        const variantLabel = document.createElement('label');
+        variantLabel.className = 'field-label';
+        variantLabel.append('最终产品规格 *');
+        const variantInput = document.createElement('input');
+        variantInput.name = `final_specifications[${index}][variant_name]`;
+        variantInput.required = true;
+        variantInput.value = specification.variant_name;
+        variantInput.className = 'field-input';
+        variantLabel.append(variantInput);
+        const skuId = document.createElement('input');
+        skuId.type = 'hidden';
+        skuId.name = `final_specifications[${index}][sku_id]`;
+        skuId.value = specification.sku_id;
+        row.append(skuLabel, variantLabel, skuId);
+        form.append(row);
+    });
+    const submit = form.querySelector('button');
+    submit?.classList.remove('shrink-0');
+    if (submit) {
+        submit.textContent = '确认最终规格并反馈产品部';
+        form.append(submit);
+    }
+});
+
+const operationsHeading = Array.from(document.querySelectorAll('h3')).find((heading) => heading.textContent.trim() === '最终产品规格与 Shopify 产品');
+const operationsPanel = operationsHeading?.closest('.dept-panel-website_operations');
+const specificationConfirmation = Array.from(document.querySelectorAll('section')).find((section) => section.querySelector('h3')?.textContent.trim() === '待确认的初步产品规格');
+if (operationsPanel && specificationConfirmation && shouldShowSpecificationConfirmation) {
+    const shopifyForm = operationsPanel.querySelector('form[action*="/landing-pages"]');
+    operationsPanel.insertBefore(specificationConfirmation, shopifyForm?.parentElement || null);
+    specificationConfirmation.classList.remove('mt-5');
+    specificationConfirmation.classList.add('mt-4');
+}
+
+document.querySelectorAll('form[action*="/creative-assets"] input[name="title"], form[action*="/campaign-tests"] input[name="campaign_name"]').forEach((input) => {
+    input.value = currentProductName;
+    input.readOnly = true;
+    input.classList.add('bg-slate-100', 'text-slate-500');
+    input.closest('label')?.querySelector('span')?.remove();
 });
 
 const categorySelect = document.querySelector('#project-category');
