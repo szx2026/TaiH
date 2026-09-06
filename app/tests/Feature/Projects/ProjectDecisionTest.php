@@ -112,6 +112,7 @@ class ProjectDecisionTest extends TestCase
         $this->actingAs($productUser)
             ->get("/projects?stage=market_research&project={$project->id}")
             ->assertOk()
+            ->assertSee('当前已录入的产品规格')
             ->assertSee('运营部新增规格待开发')
             ->assertSee('两件套')
             ->assertSee('礼盒装');

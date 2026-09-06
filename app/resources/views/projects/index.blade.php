@@ -40,6 +40,7 @@
         @php($videos = $selectedProject->creativeAssets->filter(fn ($asset) => in_array('video', $asset->asset_types ?? [$asset->asset_type], true)))
         @php($incoming = $selectedProject->decisions->where('requested_from_stage', $stage)->where('status', 'open'))
         @php($pendingOperationsSpecifications = $selectedProject->decisions->where('decision_type', 'specification')->where('requested_from_stage', 'website_operations')->where('status', 'resolved')->flatMap(fn ($decision) => data_get($decision->details, 'requested_specifications', []))->map(fn ($specification) => trim((string) $specification))->filter()->unique()->reject(fn ($specification) => $selectedProject->skus->contains(fn ($sku) => $sku->variant_name === $specification))->values())
+        @php($savedProductSpecifications = $selectedProject->skus->map(fn ($sku) => ['sku_code' => $sku->sku_code, 'variant_name' => $sku->variant_name, 'purchase_price' => $sku->purchase_price, 'weight_g' => $sku->weight_g])->values())
             <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"><div class="flex justify-between gap-3 border-b border-slate-100 pb-5"><div><p class="text-xs font-semibold dept-text-{{ $stage }}">{{ $selectedProject->project_code }}@if($selectedProject->released_at) · 发布于 {{ $selectedProject->released_at->format('Y-m-d') }}@endif</p><h2 class="mt-1 text-2xl font-bold">{{ $selectedProject->product_name }}</h2><p class="mt-1 text-sm text-slate-500">当前推进：{{ $labels[$selectedProject->current_stage] ?? $selectedProject->current_stage }}</p></div>@if($selectedProject->product_image_path)<img src="{{ asset('storage/'.$selectedProject->product_image_path) }}" alt="{{ $selectedProject->product_name }} 产品主图" class="size-16 rounded-lg object-cover">@endif<x-status-badge :status="$selectedProject->status" /></div>
             @if(! $canEdit)<p class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">当前以 {{ $labels[$userStage] ?? '其他部门' }} 身份查看；本部门工作与待处理事项会优先显示，完整项目资料见下方。</p>@endif
             <div class="mt-5"><div class="w-full rounded-xl border dept-panel-{{ $stage }} p-5">
@@ -156,6 +157,7 @@ const currentProductName = @json(optional($selectedProject)->product_name);
 const hasPendingInternalSku = @json(optional($selectedProject)->skus?->whereNull('sku_code')->isNotEmpty() ?? false);
 const pendingInternalSkus = @json(optional($selectedProject)->skus?->whereNull('sku_code')->map(fn ($sku) => ['id' => $sku->id, 'name' => $sku->variant_name])->values() ?? []);
 const pendingOperationsSpecifications = @json($pendingOperationsSpecifications);
+const savedProductSpecifications = @json($savedProductSpecifications);
 const internalSkuEndpoint = @json($selectedProject ? route('projects.skus.store', $selectedProject) : null);
 document.querySelectorAll('form[action*="/sources"] input[name="sku_code"]').forEach((field) => {
     field.disabled = true;
@@ -163,9 +165,36 @@ document.querySelectorAll('form[action*="/sources"] input[name="sku_code"]').for
     field.closest('label')?.classList.add('hidden');
     field.form?.querySelector('button')?.replaceChildren('保存货源与产品规格');
 });
-if (pendingOperationsSpecifications.length) {
-    const productPanel = Array.from(document.querySelectorAll('h3')).find((heading) => heading.textContent.trim() === '选品、产品规格与货源产品信息')?.closest('.dept-panel-market_research');
-    const sourceEditor = productPanel?.querySelector('[data-product-source-editor]');
+const productPanel = Array.from(document.querySelectorAll('h3')).find((heading) => heading.textContent.trim() === '选品、产品规格与货源产品信息')?.closest('.dept-panel-market_research');
+const sourceEditor = productPanel?.querySelector('[data-product-source-editor]');
+const sourceEditorForm = sourceEditor?.querySelector('form');
+if (sourceEditorForm && savedProductSpecifications.length) {
+    const saved = document.createElement('section');
+    saved.className = 'mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4';
+    const title = document.createElement('p');
+    title.className = 'font-semibold text-slate-950';
+    title.textContent = '当前已录入的产品规格';
+    const list = document.createElement('div');
+    list.className = 'mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3';
+    savedProductSpecifications.forEach((specification) => {
+        const item = document.createElement('article');
+        item.className = 'rounded-lg border border-slate-200 bg-white p-3 text-sm';
+        const name = document.createElement('p');
+        name.className = 'font-semibold text-slate-950';
+        name.textContent = specification.variant_name;
+        const sku = document.createElement('p');
+        sku.className = 'mt-1 text-slate-600';
+        sku.textContent = `内部 SKU：${specification.sku_code || '待生成'}`;
+        const procurement = document.createElement('p');
+        procurement.className = 'mt-1 text-slate-500';
+        procurement.textContent = `采购价 ¥${specification.purchase_price ?? '待补'} · 重量 ${specification.weight_g ?? '待补'}g`;
+        item.append(name, sku, procurement);
+        list.append(item);
+    });
+    saved.append(title, list);
+    sourceEditorForm.before(saved);
+}
+if (pendingOperationsSpecifications.length && sourceEditorForm) {
     const handoff = document.createElement('section');
     handoff.className = 'mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4';
     const title = document.createElement('p');
@@ -183,7 +212,7 @@ if (pendingOperationsSpecifications.length) {
         list.append(item);
     });
     handoff.append(title, description, list);
-    sourceEditor?.before(handoff);
+    sourceEditorForm.before(handoff);
 }
 const specificationList = document.querySelector('[data-specification-list]');
 const addSpecificationButton = document.querySelector('[data-add-specification]');
