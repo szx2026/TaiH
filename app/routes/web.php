@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/projects/{project}/workspace', [ProjectWorkspaceController::class, 'show'])->name('projects.workspace');
     Route::get('/projects/{project}', [ProductProjectController::class, 'show'])->name('projects.show');
     Route::post('/projects', [ProductProjectController::class, 'store'])->name('projects.store');
+    Route::patch('/projects/{project}/image', [ProductProjectController::class, 'updateImage'])->name('projects.image.update');
     Route::post('/product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.store');
     Route::delete('/product-categories/{category}', [ProductCategoryController::class, 'destroy'])->name('product-categories.destroy');
     Route::patch('/projects/{project}/archive', [ProductProjectController::class, 'archive'])->name('projects.archive');

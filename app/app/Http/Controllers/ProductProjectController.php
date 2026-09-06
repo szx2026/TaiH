@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Projects\CreateProductProject;
+use App\Actions\Activity\RecordProjectActivity;
 use App\Http\Requests\FilterProductProjectsRequest;
 use App\Http\Requests\StoreProductProjectRequest;
 use App\Models\ProductProject;
@@ -86,6 +87,25 @@ class ProductProjectController extends Controller
             'stage' => 'market_research',
             'project' => $project,
         ]);
+    }
+
+    public function updateImage(\Illuminate\Http\Request $request, ProductProject $project): RedirectResponse
+    {
+        abort_unless($request->user()?->department?->code === 'market_research' || $request->user()?->hasRole('administrator'), 403);
+
+        $data = $request->validate([
+            'product_image' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+
+        $project->update([
+            'product_image_path' => $data['product_image']->store('product-projects', 'public'),
+        ]);
+
+        app(RecordProjectActivity::class)->handle($project, $request->user(), 'product_image.updated', [
+            'product_image_path' => $project->product_image_path,
+        ]);
+
+        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 
     public function show(ProductProject $project): RedirectResponse

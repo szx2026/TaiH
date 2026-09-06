@@ -248,6 +248,18 @@ document.querySelectorAll('form:has(input[name="search"]), form:has(select[name=
     });
 });
 
+const mainImageFigure = document.querySelector('.dept-panel-market_research figure');
+if (mainImageFigure && @json($stage === 'market_research' && $canEdit) && !mainImageFigure.querySelector('[data-product-image-update]')) {
+    const imageUpdateForm = document.createElement('form');
+    imageUpdateForm.dataset.productImageUpdate = 'true';
+    imageUpdateForm.method = 'POST';
+    imageUpdateForm.enctype = 'multipart/form-data';
+    imageUpdateForm.action = '{{ route('projects.image.update', $selectedProject) }}';
+    imageUpdateForm.className = 'mt-3 border-t border-orange-100 pt-3';
+    imageUpdateForm.innerHTML = `<input type="hidden" name="_token" value="{{ csrf_token() }}"><input type="hidden" name="_method" value="PATCH"><label class="field-label">更换产品主图 <span>*</span><input name="product_image" required type="file" accept="image/png,image/jpeg,image/webp" class="field-input"><small>选择 PNG、JPG 或 WebP；更新后会同步替换所有部门展示的主图。</small></label><button class="mt-2 rounded bg-orange-700 px-3 py-2 text-sm font-semibold text-white">更新产品主图</button>`;
+    mainImageFigure.append(imageUpdateForm);
+}
+
 const categorySelect = document.querySelector('#project-category');
 const categoryManager = document.querySelector('#category-manager');
 const categoryEndpoints = @json($managedCategories->mapWithKeys(fn ($category) => [$category->name => route('product-categories.destroy', $category)]));

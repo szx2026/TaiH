@@ -46,4 +46,33 @@ class ProductProjectWorkflowTest extends TestCase
             'product_image' => UploadedFile::fake()->create('product.jpg', 100, 'image/jpeg'),
         ])->assertSessionHasErrors('priority');
     }
+
+    public function test_product_department_can_replace_a_product_main_image(): void
+    {
+        Storage::fake('public');
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $project = ProductProject::create([
+            'project_code' => 'PP-202609-IMAGE-UPDATE',
+            'product_name' => '可更换主图产品',
+            'product_image_path' => 'product-projects/old-image.jpg',
+            'market' => 'US',
+            'priority' => 'market_new',
+            'current_stage' => 'market_research',
+            'status' => 'draft',
+            'owner_department_id' => $department->id,
+            'owner_user_id' => $user->id,
+            'created_by' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->patch("/projects/{$project->id}/image", [
+                'product_image' => UploadedFile::fake()->create('replacement.webp', 100, 'image/webp'),
+            ])
+            ->assertRedirect(route('projects.index', ['stage' => 'market_research', 'project' => $project]));
+
+        $project->refresh();
+        $this->assertNotSame('product-projects/old-image.jpg', $project->product_image_path);
+        Storage::disk('public')->assertExists($project->product_image_path);
+    }
 }
