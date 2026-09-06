@@ -3,6 +3,7 @@
 namespace Tests\Feature\Projects;
 
 use App\Models\Department;
+use App\Models\CreativeAsset;
 use App\Models\ProductProject;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -32,10 +33,10 @@ class CreativeAssetTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get("/projects/{$project->id}")
+            ->get("/projects?stage=content_creative&project={$project->id}")
             ->assertOk()
-            ->assertSee('上传素材')
-            ->assertSee('素材来源');
+            ->assertSee('创意部重点工作')
+            ->assertSee('保存素材');
     }
 
     public function test_content_creative_can_upload_a_video_asset_for_a_product_project(): void
@@ -77,6 +78,11 @@ class CreativeAssetTest extends TestCase
         $storedPath = DB::table('creative_assets')->where('product_project_id', $project->id)->value('storage_path');
         Storage::disk('local')->assertExists($storedPath);
         $this->assertDatabaseHas('project_activities', ['product_project_id' => $project->id, 'event' => 'creative_asset.created']);
+
+        $asset = CreativeAsset::query()->where('product_project_id', $project->id)->firstOrFail();
+        $this->actingAs($user)
+            ->get("/projects/{$project->id}/creative-assets/{$asset->id}/download")
+            ->assertOk();
     }
 
     public function test_content_creative_can_save_multiple_asset_types_including_gif_and_youtube_reference(): void

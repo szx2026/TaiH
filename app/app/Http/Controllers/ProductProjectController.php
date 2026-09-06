@@ -85,10 +85,14 @@ class ProductProjectController extends Controller
         return to_route('projects.index');
     }
 
-    public function show(ProductProject $project): View
+    public function show(ProductProject $project): RedirectResponse
     {
-        return view('projects.show', [
-            'project' => $project->load(['skus', 'landingPages.skus', 'creativeAssets', 'campaignTests', 'optimizationFeedback']),
+        // Keep every project action in the department workspace. The former
+        // standalone detail page duplicated workflow information and made
+        // cross-department collaboration easy to lose.
+        return to_route('projects.index', [
+            'stage' => $project->current_stage,
+            'project' => $project,
         ]);
     }
 

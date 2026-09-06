@@ -35,10 +35,10 @@ class CampaignTestTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get("/projects/{$project->id}")
+            ->get("/projects?stage=traffic_growth&project={$project->id}")
             ->assertOk()
-            ->assertSee('记录投放测试')
-            ->assertSee('优化反馈');
+            ->assertSee('流量部重点工作')
+            ->assertSee('保存投放测试与反馈');
     }
 
     public function test_traffic_growth_can_record_facebook_results_with_the_project_video_and_landing_page(): void
@@ -151,6 +151,7 @@ class CampaignTestTest extends TestCase
         $this->actingAs($user)->post("/projects/{$project->id}/campaign-tests", [
             'platform' => 'facebook', 'campaign_name' => '新指标测试', 'spend' => 23.50,
             'cost_per_click' => 0.75, 'add_to_cart_conversions' => 8, 'checkout_conversions' => 3,
+            'purchase_conversions' => 2, 'purchase_value' => 79.80,
             'creative_asset_id' => $video->id, 'landing_page_id' => $page->id,
             'detail_image' => UploadedFile::fake()->create('facebook-detail.png', 20, 'image/png'),
         ])->assertRedirect();
@@ -159,6 +160,8 @@ class CampaignTestTest extends TestCase
         $this->assertSame('0.75', number_format((float) $campaign->cost_per_click, 2, '.', ''));
         $this->assertSame(8, $campaign->add_to_cart_conversions);
         $this->assertSame(3, $campaign->checkout_conversions);
+        $this->assertSame(2, $campaign->purchase_conversions);
+        $this->assertSame('79.80', number_format((float) $campaign->purchase_value, 2, '.', ''));
         Storage::disk('local')->assertExists($campaign->detail_image_path);
     }
 

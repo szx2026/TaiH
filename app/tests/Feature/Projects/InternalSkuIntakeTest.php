@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\ProductProject;
 use App\Models\ProductSource;
 use App\Models\ProductSku;
+use App\Models\ProjectDecision;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -14,9 +15,10 @@ class InternalSkuIntakeTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_market_research_can_import_an_internal_sku_before_a_supplier_source_exists(): void
+    public function test_market_research_can_import_an_internal_sku_after_operations_confirms_the_specification(): void
     {
         [$user, $project] = $this->marketResearchProject();
+        $this->confirmSpecification($project, $user);
 
         $this->actingAs($user)
             ->post("/projects/{$project->id}/skus", [
@@ -30,7 +32,7 @@ class InternalSkuIntakeTest extends TestCase
             'product_source_id' => null,
             'sku_code' => 'NC03342609026143',
             'variant_name' => '夜灯 + 3 影片',
-            'sku_status' => 'imported',
+            'sku_status' => 'internal_confirmed',
             'created_by' => $user->id,
         ]);
         $this->assertDatabaseHas('project_activities', [
@@ -43,6 +45,7 @@ class InternalSkuIntakeTest extends TestCase
     public function test_internal_sku_code_must_be_unique_within_its_project_even_without_a_source(): void
     {
         [$user, $project] = $this->marketResearchProject();
+        $this->confirmSpecification($project, $user);
         ProductSku::create([
             'product_project_id' => $project->id,
             'product_source_id' => null,
@@ -65,6 +68,7 @@ class InternalSkuIntakeTest extends TestCase
     public function test_legacy_supplier_sku_duplicates_are_preserved_but_cannot_be_imported_again(): void
     {
         [$user, $project] = $this->marketResearchProject();
+        $this->confirmSpecification($project, $user);
         $firstSource = ProductSource::create([
             'product_project_id' => $project->id,
             'supplier_url' => 'https://detail.1688.com/offer/1.html',
@@ -112,6 +116,7 @@ class InternalSkuIntakeTest extends TestCase
         $operations = Department::factory()->create(['code' => 'website_operations']);
         $user = User::factory()->create(['department_id' => $operations->id, 'role' => 'member']);
         $project = $this->projectFor($user, $operations);
+        $this->confirmSpecification($project, $user);
 
         $this->actingAs($user)
             ->post("/projects/{$project->id}/skus", [
@@ -126,6 +131,7 @@ class InternalSkuIntakeTest extends TestCase
         $operations = Department::factory()->create(['code' => 'website_operations']);
         $user = User::factory()->create(['department_id' => $operations->id, 'role' => 'administrator']);
         $project = $this->projectFor($user, $operations);
+        $this->confirmSpecification($project, $user);
 
         $this->actingAs($user)
             ->post("/projects/{$project->id}/skus", [
@@ -162,6 +168,21 @@ class InternalSkuIntakeTest extends TestCase
             'owner_department_id' => $department->id,
             'owner_user_id' => $user->id,
             'created_by' => $user->id,
+        ]);
+    }
+
+    private function confirmSpecification(ProductProject $project, User $user): void
+    {
+        ProjectDecision::create([
+            'product_project_id' => $project->id,
+            'decision_type' => 'specification',
+            'requested_from_stage' => 'website_operations',
+            'title' => '确认产品规格',
+            'status' => 'resolved',
+            'response_note' => '采用初步规格',
+            'created_by' => $user->id,
+            'responded_by' => $user->id,
+            'responded_at' => now(),
         ]);
     }
 }

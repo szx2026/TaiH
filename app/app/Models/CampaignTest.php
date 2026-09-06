@@ -12,6 +12,7 @@ class CampaignTest extends Model
         'product_project_id', 'creative_asset_id', 'landing_page_id', 'platform', 'campaign_name',
         'spend', 'impressions', 'clicks', 'conversions', 'cost_per_click', 'add_to_cart_conversions',
         'checkout_conversions', 'detail_image_path', 'ctr', 'status', 'created_by',
+        'purchase_conversions', 'purchase_value',
     ];
 
     public function project(): BelongsTo

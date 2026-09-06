@@ -23,11 +23,12 @@ class CampaignTestController extends Controller
         $data = $request->validate([
             'spend' => ['required', 'numeric', 'min:0'], 'cost_per_click' => ['required', 'numeric', 'min:0'],
             'add_to_cart_conversions' => ['required', 'integer', 'min:0'], 'checkout_conversions' => ['required', 'integer', 'min:0'],
+            'purchase_conversions' => ['required', 'integer', 'min:0'], 'purchase_value' => ['required', 'numeric', 'min:0'],
             'conclusion' => ['required', 'string', 'max:4000'], 'adjustment_items' => ['required', 'string', 'max:4000'],
         ]);
         DB::transaction(function () use ($campaign, $data, $request): void {
-            $campaign->update(collect($data)->only(['spend', 'cost_per_click', 'add_to_cart_conversions', 'checkout_conversions'])->all());
-            $campaign->revisions()->create(['metrics' => collect($campaign->only(['spend', 'cost_per_click', 'add_to_cart_conversions', 'checkout_conversions']))->all(), 'conclusion' => $data['conclusion'], 'adjustment_items' => $data['adjustment_items'], 'created_by' => $request->user()->id]);
+            $campaign->update(collect($data)->only(['spend', 'cost_per_click', 'add_to_cart_conversions', 'checkout_conversions', 'purchase_conversions', 'purchase_value'])->all());
+            $campaign->revisions()->create(['metrics' => collect($campaign->only(['spend', 'cost_per_click', 'add_to_cart_conversions', 'checkout_conversions', 'purchase_conversions', 'purchase_value']))->all(), 'conclusion' => $data['conclusion'], 'adjustment_items' => $data['adjustment_items'], 'created_by' => $request->user()->id]);
         });
         return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
     }
@@ -42,6 +43,8 @@ class CampaignTestController extends Controller
             'cost_per_click' => ['nullable', 'numeric', 'min:0'],
             'add_to_cart_conversions' => ['nullable', 'integer', 'min:0'],
             'checkout_conversions' => ['nullable', 'integer', 'min:0'],
+            'purchase_conversions' => ['nullable', 'integer', 'min:0'],
+            'purchase_value' => ['nullable', 'numeric', 'min:0'],
             'impressions' => ['nullable', 'integer', 'min:0'],
             'clicks' => ['nullable', 'integer', 'min:0'],
             'conversions' => ['nullable', 'integer', 'min:0'],
@@ -79,6 +82,8 @@ class CampaignTestController extends Controller
                 'cost_per_click' => $data['cost_per_click'] ?? ($clicks > 0 ? round($data['spend'] / $clicks, 2) : null),
                 'add_to_cart_conversions' => $data['add_to_cart_conversions'] ?? null,
                 'checkout_conversions' => $checkoutConversions,
+                'purchase_conversions' => (int) ($data['purchase_conversions'] ?? $checkoutConversions),
+                'purchase_value' => $data['purchase_value'] ?? 0,
                 'detail_image_path' => $detailImagePath,
                 'ctr' => $ctr,
                 'creative_asset_id' => $data['creative_asset_id'],

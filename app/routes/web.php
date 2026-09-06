@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/projects/{project}/skus', [ProductSkuController::class, 'store'])->name('projects.skus.store');
     Route::post('/projects/{project}/landing-pages', [LandingPageController::class, 'store'])->name('projects.landing-pages.store');
     Route::post('/projects/{project}/creative-assets', [CreativeAssetController::class, 'store'])->name('projects.creative-assets.store');
+    Route::get('/projects/{project}/creative-assets/{asset}/download', [CreativeAssetController::class, 'download'])->name('projects.creative-assets.download');
     Route::post('/projects/{project}/campaign-tests', [CampaignTestController::class, 'store'])->name('projects.campaign-tests.store');
     Route::patch('/projects/{project}/campaign-tests/{campaign}', [CampaignTestController::class, 'update'])->name('projects.campaign-tests.update');
     Route::patch('/projects/{project}/optimization-feedback/{feedback}', [OptimizationFeedbackController::class, 'update'])->name('projects.optimization-feedback.update');

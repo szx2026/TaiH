@@ -70,6 +70,34 @@
         </section>
     @endif
     @if($departmentWorkspace && $selectedProject)
+        <section class="mt-5 grid gap-4 lg:grid-cols-2">
+            <article class="rounded-xl border border-yellow-300 bg-yellow-50 p-5">
+                <h3 class="font-semibold text-yellow-950">可下载的创意素材</h3>
+                <p class="mt-1 text-sm text-yellow-900">所有部门均可直接下载创意部已上传的文件；外链素材保留原始链接。</p>
+                <div class="mt-3 space-y-2">
+                    @forelse($selectedProject->creativeAssets as $asset)
+                        <div class="flex items-center justify-between gap-3 rounded-lg bg-white p-3 text-sm"><span class="min-w-0 truncate font-medium">{{ $asset->title }}</span>@if($asset->storage_path)<a href="{{ route('projects.creative-assets.download', [$selectedProject, $asset]) }}" class="shrink-0 rounded bg-yellow-500 px-3 py-2 font-semibold text-slate-950">下载</a>@elseif($asset->external_url)<a href="{{ $asset->external_url }}" target="_blank" rel="noreferrer" class="shrink-0 rounded border border-yellow-500 px-3 py-2 font-semibold text-yellow-950">打开链接</a>@else<span class="text-slate-500">仅文案</span>@endif</div>
+                    @empty <p class="text-sm text-yellow-900">暂未上传可下载素材。</p>
+                    @endforelse
+                </div>
+            </article>
+            <article class="rounded-xl border border-violet-300 bg-violet-50 p-5">
+                <h3 class="font-semibold text-violet-950">Facebook 投放关键指标</h3>
+                <p class="mt-1 text-sm text-violet-900">基于花费、展示、点击、加车、结账、购买数和购买金额自动换算。</p>
+                <div class="mt-3 space-y-2">
+                    @forelse($selectedProject->campaignTests as $campaign)
+                        @php($clicks = (int) $campaign->clicks)
+                        @php($atc = (int) ($campaign->add_to_cart_conversions ?? 0))
+                        @php($checkout = (int) ($campaign->checkout_conversions ?? 0))
+                        @php($purchases = (int) ($campaign->purchase_conversions ?? $checkout))
+                        <div class="rounded-lg bg-white p-3 text-sm"><p class="font-medium">{{ $campaign->campaign_name }}</p><p class="mt-1 text-slate-700">加车率 {{ $clicks ? number_format($atc / $clicks * 100, 2) : '—' }}% · 结账率 {{ $atc ? number_format($checkout / $atc * 100, 2) : '—' }}% · 购买转化率 {{ $clicks ? number_format($purchases / $clicks * 100, 2) : '—' }}%</p><p class="mt-1 text-slate-700">CPA ${{ $purchases ? number_format((float) $campaign->spend / $purchases, 2) : '—' }} · ROAS {{ $campaign->spend > 0 ? number_format((float) ($campaign->purchase_value ?? 0) / $campaign->spend, 2) : '—' }} · 购买金额 ${{ number_format((float) ($campaign->purchase_value ?? 0), 2) }}</p>@if($stage === 'traffic_growth' && $canEdit)<details class="mt-3 border-t border-violet-100 pt-3"><summary class="cursor-pointer font-medium text-violet-900">更新本次投放数据</summary><form method="POST" action="{{ route('projects.campaign-tests.update', [$selectedProject, $campaign]) }}" class="mt-3 grid gap-2 md:grid-cols-2">@csrf @method('PATCH')<input name="spend" required type="number" min="0" step="0.01" value="{{ $campaign->spend }}" class="field-input"><input name="cost_per_click" required type="number" min="0" step="0.01" value="{{ $campaign->cost_per_click }}" class="field-input"><input name="add_to_cart_conversions" required type="number" min="0" value="{{ $campaign->add_to_cart_conversions }}" class="field-input"><input name="checkout_conversions" required type="number" min="0" value="{{ $campaign->checkout_conversions }}" class="field-input"><input name="purchase_conversions" required type="number" min="0" value="{{ $campaign->purchase_conversions ?? $campaign->checkout_conversions }}" class="field-input"><input name="purchase_value" required type="number" min="0" step="0.01" value="{{ $campaign->purchase_value ?? 0 }}" class="field-input"><textarea name="conclusion" required placeholder="新的投放结论" class="field-input md:col-span-2"></textarea><textarea name="adjustment_items" required placeholder="需要调整的产品、页面、素材或规格" class="field-input md:col-span-2"></textarea><button class="rounded bg-violet-700 px-3 py-2 text-sm font-semibold text-white md:col-span-2">保存新版本</button></form></details>@endif</div>
+                    @empty <p class="text-sm text-violet-900">暂无可计算的投放记录。</p>
+                    @endforelse
+                </div>
+            </article>
+        </section>
+    @endif
+    @if($departmentWorkspace && $selectedProject)
         @php($outcomeLabels = ['scale' => '继续放量', 'retest' => '继续测试', 'adjust_retest' => '调整后复测', 'pause' => '暂停', 'reject' => '淘汰', 'complete' => '已完成'])
         <section class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-5"><h3 class="font-semibold text-emerald-900">项目最终结论</h3>
             @if($selectedProject->outcome)<p class="mt-2 font-medium">{{ $outcomeLabels[$selectedProject->outcome] }}</p><p class="mt-1 text-sm">结论依据：{{ $selectedProject->outcome_reason }}</p><p class="mt-1 text-sm">下一步：{{ $selectedProject->next_action }}</p>@else<p class="mt-2 text-sm text-emerald-800">尚未形成最终结论。</p>@endif
@@ -89,6 +117,18 @@
     @endif
 </x-layouts.app>
 <script>
+document.querySelectorAll('form[action*="/campaign-tests"]:not([action$="update"])').forEach((form) => {
+    const checkout = form.querySelector('input[name="checkout_conversions"]');
+    if (!checkout || form.querySelector('input[name="purchase_conversions"]')) return;
+    checkout.insertAdjacentHTML('afterend', `<label class="field-label">购买数 <span>*</span><input name="purchase_conversions" type="number" min="0" required placeholder="用于自动计算 CPA / 转化率" class="field-input"></label><label class="field-label">购买金额（USD） <span>*</span><input name="purchase_value" type="number" step="0.01" min="0" required placeholder="用于自动计算 ROAS" class="field-input"></label>`);
+});
+document.querySelectorAll('form[action$="/decisions"] input[name="decision_type"]').forEach((input) => {
+    input.value = 'specification';
+    const section = input.closest('section');
+    section?.querySelector('h3')?.replaceChildren('向运营部确认最终产品规格');
+    const description = section?.querySelector('p');
+    if (description) description.textContent = '产品部提交初步产品规格；运营部确认采用或修改后，产品部才能开发公司内部 SKU。';
+});
 document.querySelectorAll('[data-paste-upload]').forEach((zone) => {
     zone.addEventListener('paste', (event) => {
         const image = Array.from(event.clipboardData?.files || []).find((file) => file.type.startsWith('image/'));
