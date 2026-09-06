@@ -22,6 +22,7 @@ class ProductProject extends Model
         'owner_department_id',
         'owner_user_id',
         'created_by',
+        'outcome', 'outcome_reason', 'next_action', 'outcome_recorded_at', 'outcome_recorded_by',
     ];
 
     public function ownerDepartment(): BelongsTo

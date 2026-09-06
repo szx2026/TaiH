@@ -105,4 +105,12 @@ class ProductProjectController extends Controller
 
         return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
     }
+
+    public function recordOutcome(\Illuminate\Http\Request $request, ProductProject $project): RedirectResponse
+    {
+        abort_unless($request->user()?->department?->code === 'traffic_growth' || $request->user()?->hasRole('administrator'), 403);
+        $data = $request->validate(['outcome' => ['required', \Illuminate\Validation\Rule::in(['scale', 'retest', 'adjust_retest', 'pause', 'reject', 'complete'])], 'outcome_reason' => ['required', 'string', 'max:4000'], 'next_action' => ['required', 'string', 'max:4000']]);
+        $project->update([...$data, 'outcome_recorded_at' => now(), 'outcome_recorded_by' => $request->user()->id]);
+        return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
+    }
 }

@@ -64,6 +64,13 @@
             </div>
         </section>
     @endif
+    @if($departmentWorkspace && $selectedProject)
+        @php($outcomeLabels = ['scale' => '继续放量', 'retest' => '继续测试', 'adjust_retest' => '调整后复测', 'pause' => '暂停', 'reject' => '淘汰', 'complete' => '已完成'])
+        <section class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-5"><h3 class="font-semibold text-emerald-900">项目最终结论</h3>
+            @if($selectedProject->outcome)<p class="mt-2 font-medium">{{ $outcomeLabels[$selectedProject->outcome] }}</p><p class="mt-1 text-sm">结论依据：{{ $selectedProject->outcome_reason }}</p><p class="mt-1 text-sm">下一步：{{ $selectedProject->next_action }}</p>@else<p class="mt-2 text-sm text-emerald-800">尚未形成最终结论。</p>@endif
+            @if($stage === 'traffic_growth' && $canEdit)<form method="POST" action="{{ route('projects.outcome', $selectedProject) }}" class="mt-4 grid gap-2 md:grid-cols-2">@csrf @method('PATCH')<select name="outcome" required class="rounded border-emerald-200 text-sm"><option value="">选择最终结论</option>@foreach($outcomeLabels as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach</select><input name="outcome_reason" required placeholder="结论依据：关键数据与判断" class="rounded border-emerald-200 text-sm"><textarea name="next_action" required placeholder="下一步安排" class="rounded border-emerald-200 text-sm md:col-span-2"></textarea><div><button class="rounded bg-emerald-700 px-4 py-2 text-sm font-semibold text-white">保存项目结论</button></div></form>@endif
+        </section>
+    @endif
 </x-layouts.app>
 <script>
 document.querySelectorAll('[data-paste-upload]').forEach((zone) => {

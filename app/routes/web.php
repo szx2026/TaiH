@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/projects', [ProductProjectController::class, 'store'])->name('projects.store');
     Route::patch('/projects/{project}/archive', [ProductProjectController::class, 'archive'])->name('projects.archive');
     Route::patch('/projects/{project}/restore', [ProductProjectController::class, 'restore'])->name('projects.restore');
+    Route::patch('/projects/{project}/outcome', [ProductProjectController::class, 'recordOutcome'])->name('projects.outcome');
     Route::post('/projects/{project}/submit', [ProjectWorkflowController::class, 'submit'])->name('projects.submit');
     Route::post('/projects/{project}/research-sources', [ResearchSourceController::class, 'store'])->name('projects.research-sources.store');
     Route::post('/projects/{project}/decisions', [ProjectDecisionController::class, 'store'])->name('projects.decisions.store');
