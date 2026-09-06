@@ -39,6 +39,22 @@
             @if($stage === 'market_research' && $canEdit)<form method="POST" action="{{ route('projects.decisions.store', $selectedProject) }}" class="mt-5 grid gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 md:grid-cols-[1fr_2fr_auto]">@csrf<input type="hidden" name="decision_type" value="sku"><input type="hidden" name="requested_from_stage" value="website_operations"><input name="title" required placeholder="询问详情页需要哪些 SKU" class="rounded border-amber-200 text-sm"><input name="details" required placeholder="说明准备开通的 SKU 和需确认的问题" class="rounded border-amber-200 text-sm"><button class="rounded bg-amber-600 px-3 py-2 text-sm font-semibold text-white">发送给网站运营部</button></form>@endif
         </section>
     @endif
+    @if($departmentWorkspace && $selectedProject)
+        <section class="mt-5 rounded-xl border border-slate-200 bg-white p-5">
+            <h3 class="font-semibold">本部门待处理投放反馈</h3>
+            <div class="mt-3 space-y-3">
+                @forelse($selectedProject->optimizationFeedback->where('target_stage', $userStage)->where('status', '!=', 'resolved') as $feedback)
+                    <div class="rounded-lg bg-slate-50 p-3 text-sm"><p>{{ $feedback->note }}</p>
+                        <form method="POST" action="{{ route('projects.optimization-feedback.update', [$selectedProject, $feedback]) }}" class="mt-3 grid gap-2 md:grid-cols-[140px_1fr_auto]">@csrf @method('PATCH')
+                            <select name="status" class="rounded border-slate-300 text-sm"><option value="in_progress">处理中</option><option value="resolved">已完成</option></select>
+                            <input name="response_note" required placeholder="填写处理结果" class="rounded border-slate-300 text-sm">
+                            <button class="rounded bg-slate-800 px-3 py-2 text-sm font-semibold text-white">提交处理</button>
+                        </form>
+                    </div>
+                @empty<p class="text-sm text-slate-500">暂无需要本部门处理的投放反馈。</p>@endforelse
+            </div>
+        </section>
+    @endif
 </x-layouts.app>
 <script>
 document.querySelectorAll('[data-paste-upload]').forEach((zone) => {
