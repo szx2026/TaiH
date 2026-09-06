@@ -17,9 +17,10 @@ class StoreProductProjectRequest extends FormRequest
     {
         return [
             'product_name' => ['required', 'string', 'max:255'],
-            'category' => ['nullable', 'string', 'max:100'],
-            'market' => ['required', Rule::in(['US'])],
-            'priority' => ['required', Rule::in(['high', 'medium', 'low'])],
+            'category' => ['required', 'string', 'max:100'],
+            'market' => ['nullable', Rule::in(['US'])],
+            'priority' => ['required', Rule::in(['initial_screening', 'market_new', 'historical_winner'])],
+            'product_image' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 }

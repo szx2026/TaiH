@@ -9,6 +9,7 @@ use App\Models\ProductSku;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class LandingPageController extends Controller
@@ -21,6 +22,7 @@ class LandingPageController extends Controller
             'page_url' => ['required', 'url', 'max:2048'],
             'sku_ids' => ['required', 'array', 'min:1'],
             'sku_ids.*' => ['integer', Rule::exists('product_skus', 'id')],
+            'detail_image' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         $skuIds = collect($data['sku_ids'])->unique()->values();
@@ -36,6 +38,7 @@ class LandingPageController extends Controller
                 'version' => $version,
                 'title' => $project->product_name,
                 'page_url' => $data['page_url'],
+                'detail_image_path' => $data['detail_image']->store('landing-pages', 'public'),
                 'selling_price' => null,
                 'currency' => 'USD',
                 'specifications' => null,

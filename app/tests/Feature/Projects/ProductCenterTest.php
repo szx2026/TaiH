@@ -79,7 +79,7 @@ class ProductCenterTest extends TestCase
             ->assertOk()
             ->assertSee('内嵌选品项目')
             ->assertSee('产品部重点工作')
-            ->assertSee('选品、SKU 与货源产品信息')
+            ->assertSee('选品、产品规格与货源产品信息')
             ->assertSee('关联协作摘要');
     }
 
@@ -89,7 +89,7 @@ class ProductCenterTest extends TestCase
         $user = User::factory()->create(['department_id' => $department->id]);
         $project = $this->project($department, $user, 'PP-202609-DEPT-FOCUS', '部门重点项目', 'website_operations');
 
-        $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertSee('运营部重点工作')->assertSee('SKU 与 Shopify 产品');
+        $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertSee('运营部重点工作')->assertSee('最终产品规格与 Shopify 产品');
         $this->actingAs($user)->get("/projects?stage=content_creative&project={$project->id}")->assertOk()->assertSee('创意部重点工作')->assertSee('素材清单');
         $this->actingAs($user)->get("/projects?stage=traffic_growth&project={$project->id}")->assertOk()->assertSee('流量部重点工作')->assertSee('投放测试与反馈');
     }

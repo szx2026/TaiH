@@ -13,11 +13,11 @@ class ProjectDecisionController extends Controller
 {
     public function store(Request $request, ProductProject $project): RedirectResponse
     {
-        abort_unless(in_array($request->user()?->department?->code, ['market_research', 'website_operations'], true) || $request->user()?->hasRole('administrator'), 403);
+        abort_unless($request->user()?->department?->code === 'market_research' || $request->user()?->hasRole('administrator'), 403);
 
         $data = $request->validate([
-            'decision_type' => ['required', Rule::in(['sku', 'pricing', 'specification', 'landing_page'])],
-            'requested_from_stage' => ['required', Rule::in(['market_research', 'website_operations'])],
+            'decision_type' => ['required', Rule::in(['sku', 'specification'])],
+            'requested_from_stage' => ['required', Rule::in(['website_operations'])],
             'title' => ['required', 'string', 'max:255'],
             'details' => ['nullable', 'string', 'max:4000'],
         ]);
@@ -25,8 +25,7 @@ class ProjectDecisionController extends Controller
         $department = $request->user()?->department?->code;
         abort_unless(
             $request->user()?->hasRole('administrator')
-            || ($department === 'market_research' && $data['requested_from_stage'] === 'website_operations')
-            || ($department === 'website_operations' && $data['requested_from_stage'] === 'market_research'),
+            || ($department === 'market_research' && $data['requested_from_stage'] === 'website_operations'),
             403,
         );
 

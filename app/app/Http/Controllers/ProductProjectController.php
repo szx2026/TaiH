@@ -6,6 +6,7 @@ use App\Actions\Projects\CreateProductProject;
 use App\Http\Requests\FilterProductProjectsRequest;
 use App\Http\Requests\StoreProductProjectRequest;
 use App\Models\ProductProject;
+use App\Models\ProductCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -58,16 +59,20 @@ class ProductProjectController extends Controller
                 ->get();
 
         $projectTags = ProductProject::query()->where('status', '!=', 'archived');
-        $availableCategories = (clone $projectTags)->whereNotNull('category')->where('category', '!=', '')->distinct()->orderBy('category')->pluck('category');
+        $availableCategories = ProductCategory::query()->orderBy('name')->pluck('name')
+            ->merge((clone $projectTags)->whereNotNull('category')->where('category', '!=', '')->distinct()->orderBy('category')->pluck('category'))
+            ->unique()->values();
+        $managedCategories = ProductCategory::query()->orderBy('name')->get();
 
         $selectedProject = isset($filters['project'])
-            ? ProductProject::query()->where('status', '!=', 'archived')->whereKey($filters['project'])->with(['researchSources', 'skus', 'sources', 'landingPages.skus', 'creativeAssets', 'campaignTests.revisions', 'optimizationFeedback', 'decisions'])->first()
+            ? ProductProject::query()->where('status', '!=', 'archived')->whereKey($filters['project'])->with(['researchSources', 'skus.source', 'sources.skus', 'landingPages.skus', 'creativeAssets', 'campaignTests.revisions', 'optimizationFeedback', 'decisions'])->first()
             : $projects->first();
 
         return view('projects.index', [
             'projects' => $projects,
             'filters' => $filters,
             'availableCategories' => $availableCategories,
+            'managedCategories' => $managedCategories,
             'departmentWorkspace' => $departmentWorkspace,
             'selectedProject' => $selectedProject,
         ]);

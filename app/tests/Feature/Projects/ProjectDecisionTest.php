@@ -29,7 +29,7 @@ class ProjectDecisionTest extends TestCase
         $this->assertDatabaseHas('project_activities', ['product_project_id' => $project->id, 'event' => 'decision.created']);
     }
 
-    public function test_website_operations_can_request_that_market_research_open_specific_skus(): void
+    public function test_website_operations_cannot_initiate_a_product_specification_request(): void
     {
         $department = Department::factory()->create(['code' => 'website_operations']);
         $user = User::factory()->create(['department_id' => $department->id]);
@@ -40,14 +40,7 @@ class ProjectDecisionTest extends TestCase
             'requested_from_stage' => 'market_research',
             'title' => '请开通夜灯 + 12 影片 SKU',
             'details' => '落地页需要 3 / 6 / 12 影片三档规格用于价格测试。',
-        ])->assertRedirect(route('projects.index', ['stage' => 'website_operations', 'project' => $project]));
-
-        $this->assertDatabaseHas('project_decisions', [
-            'product_project_id' => $project->id,
-            'decision_type' => 'sku',
-            'requested_from_stage' => 'market_research',
-            'status' => 'open',
-        ]);
+        ])->assertForbidden();
     }
 
     public function test_website_operations_can_reply_to_a_product_departments_sku_question(): void

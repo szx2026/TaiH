@@ -16,6 +16,7 @@ use App\Http\Controllers\FeedbackCenterController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\ResearchSourceController;
 use App\Http\Controllers\ProjectDecisionController;
+use App\Http\Controllers\ProductCategoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => auth()->check() ? to_route('projects.index') : to_route('login'));
@@ -31,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/projects/{project}/workspace', [ProjectWorkspaceController::class, 'show'])->name('projects.workspace');
     Route::get('/projects/{project}', [ProductProjectController::class, 'show'])->name('projects.show');
     Route::post('/projects', [ProductProjectController::class, 'store'])->name('projects.store');
+    Route::post('/product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.store');
+    Route::delete('/product-categories/{category}', [ProductCategoryController::class, 'destroy'])->name('product-categories.destroy');
     Route::patch('/projects/{project}/archive', [ProductProjectController::class, 'archive'])->name('projects.archive');
     Route::patch('/projects/{project}/restore', [ProductProjectController::class, 'restore'])->name('projects.restore');
     Route::patch('/projects/{project}/outcome', [ProductProjectController::class, 'recordOutcome'])->name('projects.outcome');

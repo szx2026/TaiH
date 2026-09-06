@@ -58,12 +58,8 @@ class CampaignTestController extends Controller
             ],
             'feedback_target_stages' => ['nullable', 'array'],
             'feedback_target_stages.*' => ['nullable', 'distinct', Rule::in(['market_research', 'website_operations', 'content_creative'])],
-            'feedback_note' => ['nullable', 'string'],
+            'feedback_note' => ['nullable', 'string', 'max:4000'],
         ]);
-
-        if (! empty($data['feedback_target_stages']) && empty($data['feedback_note'])) {
-            return back()->withErrors(['feedback_note' => '填写反馈部门时，请同时填写优化建议。']);
-        }
 
         DB::transaction(function () use ($data, $project, $request): void {
             $detailImagePath = $request->file('detail_image')?->store('campaign-details/'.$project->id, 'local');

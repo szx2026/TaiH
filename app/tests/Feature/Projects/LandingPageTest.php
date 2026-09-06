@@ -7,6 +7,7 @@ use App\Models\ProductProject;
 use App\Models\ProductSku;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class LandingPageTest extends TestCase
@@ -32,7 +33,7 @@ class LandingPageTest extends TestCase
         $this->actingAs($user)
             ->get("/projects?stage=website_operations&project={$project->id}")
             ->assertOk()
-            ->assertSee('SKU 与 Shopify 产品')
+            ->assertSee('最终产品规格与 Shopify 产品')
             ->assertSee('Shopify 产品或落地页链接');
     }
 
@@ -68,6 +69,7 @@ class LandingPageTest extends TestCase
                 'currency' => 'USD',
                 'specifications' => '夜灯，含 3 张投影片',
                 'sku_ids' => [$sku->id],
+                'detail_image' => UploadedFile::fake()->create('detail.jpg', 100, 'image/jpeg'),
             ])
             ->assertRedirect(route('projects.index', ['stage' => 'website_operations', 'project' => $project]));
 
@@ -98,7 +100,7 @@ class LandingPageTest extends TestCase
         $project = ProductProject::create(['project_code' => 'PP-202609-AUTO-TITLE', 'product_name' => '自动命名产品', 'market' => 'US', 'priority' => 'medium', 'current_stage' => 'website_operations', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
         $sku = ProductSku::create(['product_project_id' => $project->id, 'sku_code' => 'AUTO-TITLE-SKU', 'variant_name' => '默认规格', 'sku_status' => 'imported', 'created_by' => $user->id]);
 
-        $this->actingAs($user)->post("/projects/{$project->id}/landing-pages", ['page_url' => 'https://shop.example.com/products/auto-title', 'sku_ids' => [$sku->id]])
+        $this->actingAs($user)->post("/projects/{$project->id}/landing-pages", ['page_url' => 'https://shop.example.com/products/auto-title', 'sku_ids' => [$sku->id], 'detail_image' => UploadedFile::fake()->create('detail.jpg', 100, 'image/jpeg')])
             ->assertRedirect(route('projects.index', ['stage' => 'website_operations', 'project' => $project]));
 
         $this->assertDatabaseHas('landing_pages', ['product_project_id' => $project->id, 'title' => '自动命名产品']);

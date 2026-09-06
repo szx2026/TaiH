@@ -5,6 +5,8 @@ namespace Tests\Feature\Projects;
 use App\Models\Department;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class CreateProductProjectTest extends TestCase
@@ -13,6 +15,7 @@ class CreateProductProjectTest extends TestCase
 
     public function test_a_market_research_member_can_create_a_draft_product_project(): void
     {
+        Storage::fake('public');
         $department = Department::factory()->create(['code' => 'market_research']);
         $user = User::factory()->create([
             'department_id' => $department->id,
@@ -22,8 +25,8 @@ class CreateProductProjectTest extends TestCase
         $response = $this->actingAs($user)->post('/projects', [
             'product_name' => '星空投影灯',
             'category' => '家居装饰',
-            'market' => 'US',
-            'priority' => 'high',
+            'priority' => 'market_new',
+            'product_image' => UploadedFile::fake()->create('project.jpg', 100, 'image/jpeg'),
         ]);
 
         $response->assertRedirect('/projects');
@@ -47,7 +50,8 @@ class CreateProductProjectTest extends TestCase
                 'product_name' => '英国测试产品',
                 'category' => '家居用品',
                 'market' => 'UK',
-                'priority' => 'high',
+                'priority' => 'market_new',
+                'product_image' => UploadedFile::fake()->create('project.jpg', 100, 'image/jpeg'),
             ])
             ->assertRedirect('/projects?stage=market_research')
             ->assertSessionHasErrors('market');

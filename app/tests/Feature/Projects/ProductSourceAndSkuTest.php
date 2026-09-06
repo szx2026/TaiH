@@ -12,7 +12,7 @@ class ProductSourceAndSkuTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_product_department_can_add_an_1688_source_without_creating_an_internal_sku(): void
+    public function test_product_department_records_each_1688_source_with_its_matching_product_specification(): void
     {
         $department = Department::factory()->create(['code' => 'market_research']);
         $user = User::factory()->create(['department_id' => $department->id, 'role' => 'member']);
@@ -36,6 +36,8 @@ class ProductSourceAndSkuTest extends TestCase
                 'currency' => 'CNY',
                 'weight_g' => 93,
                 'notes' => '确认 3 / 6 / 12 影片版本可供货。',
+                'sku_code' => 'SUP-LAMP-12',
+                'variant_name' => '12 影片版本',
             ])
             ->assertRedirect(route('projects.index', ['stage' => 'market_research', 'project' => $project]));
 
@@ -47,12 +49,32 @@ class ProductSourceAndSkuTest extends TestCase
             'weight_g' => 93,
             'notes' => '确认 3 / 6 / 12 影片版本可供货。',
         ]);
-        $this->assertDatabaseCount('product_skus', 0);
+        $this->assertDatabaseHas('product_skus', [
+            'product_project_id' => $project->id,
+            'sku_code' => 'SUP-LAMP-12',
+            'variant_name' => '12 影片版本',
+        ]);
         $this->assertDatabaseHas('project_activities', [
             'product_project_id' => $project->id,
             'actor_id' => $user->id,
             'event' => 'supplier_source.created',
         ]);
+    }
+
+    public function test_product_source_requires_a_matching_product_specification(): void
+    {
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id, 'role' => 'member']);
+        $project = ProductProject::create([
+            'project_code' => 'PP-202609-TEST04', 'product_name' => '规格校验产品', 'market' => 'US',
+            'priority' => 'initial_screening', 'current_stage' => 'market_research', 'status' => 'draft',
+            'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id,
+        ]);
+
+        $this->actingAs($user)->post("/projects/{$project->id}/sources", [
+            'supplier_url' => 'https://detail.1688.com/offer/1073153738003.html',
+            'currency' => 'CNY',
+        ])->assertSessionHasErrors(['sku_code', 'variant_name']);
     }
 
     public function test_operations_cannot_add_an_1688_source(): void

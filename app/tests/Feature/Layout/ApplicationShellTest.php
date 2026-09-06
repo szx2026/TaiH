@@ -26,7 +26,7 @@ class ApplicationShellTest extends TestCase
             ->assertSee('流量部')
             ->assertSee('/projects?stage=market_research', false)
             ->assertSee('/projects?stage=website_operations', false)
-            ->assertSee('反馈中心');
+            ->assertDontSee('反馈中心');
     }
 
     public function test_department_workspace_uses_a_project_selector(): void

@@ -19,7 +19,7 @@ class ResearchSourceController extends Controller
             'platform' => ['required', Rule::in(['tiktok', 'facebook_ads', 'amazon', 'independent_store'])],
             'custom_source_name' => ['nullable', 'string', 'max:255'],
             'url' => ['required', 'url', 'max:2048'],
-            'evidence_note' => ['nullable', 'string', 'max:4000'],
+            'evidence_note' => ['required', 'string', 'max:4000'],
         ]);
 
         $source = ResearchSource::create([

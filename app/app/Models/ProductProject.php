@@ -13,7 +13,7 @@ class ProductProject extends Model
 
     protected $fillable = [
         'project_code',
-        'product_name',
+        'product_name', 'released_at', 'product_image_path',
         'category',
         'market',
         'priority',
@@ -24,6 +24,11 @@ class ProductProject extends Model
         'created_by',
         'outcome', 'outcome_reason', 'next_action', 'outcome_recorded_at', 'outcome_recorded_by',
     ];
+
+    protected function casts(): array
+    {
+        return ['released_at' => 'datetime'];
+    }
 
     public function ownerDepartment(): BelongsTo
     {

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class LandingPage extends Model
 {
     protected $fillable = [
-        'product_project_id', 'version', 'title', 'page_url', 'selling_price',
+        'product_project_id', 'version', 'title', 'page_url', 'detail_image_path', 'selling_price',
         'currency', 'specifications', 'status', 'created_by',
     ];
 
