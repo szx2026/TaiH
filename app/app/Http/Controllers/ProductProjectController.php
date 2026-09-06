@@ -51,11 +51,16 @@ class ProductProjectController extends Controller
                 // Departments collaborate on the same active product in parallel.
                 // `current_stage` remains a progress indicator, not an access filter.
                 ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
+                ->when($filters['category'] ?? null, fn ($query, $category) => $query->where('category', $category))
                 ->when($filters['market'] ?? null, fn ($query, $market) => $query->where('market', $market))
                 ->when($filters['priority'] ?? null, fn ($query, $priority) => $query->where('priority', $priority))
                 ->when($filters['search'] ?? null, fn ($query, $search) => $query->where(fn ($query) => $query->where('product_name', 'like', "%{$search}%")->orWhere('project_code', 'like', "%{$search}%")))
                 ->latest()
                 ->get();
+
+        $projectTags = ProductProject::query()->where('status', '!=', 'archived');
+        $availableCategories = (clone $projectTags)->whereNotNull('category')->where('category', '!=', '')->distinct()->orderBy('category')->pluck('category');
+        $availableMarkets = (clone $projectTags)->whereNotNull('market')->distinct()->orderBy('market')->pluck('market');
 
         $selectedProject = isset($filters['project'])
             ? ProductProject::query()->where('status', '!=', 'archived')->whereKey($filters['project'])->with(['researchSources', 'skus', 'sources', 'landingPages.skus', 'creativeAssets', 'campaignTests.revisions', 'optimizationFeedback', 'decisions'])->first()
@@ -64,6 +69,8 @@ class ProductProjectController extends Controller
         return view('projects.index', [
             'projects' => $projects,
             'filters' => $filters,
+            'availableCategories' => $availableCategories,
+            'availableMarkets' => $availableMarkets,
             'departmentWorkspace' => $departmentWorkspace,
             'selectedProject' => $selectedProject,
         ]);

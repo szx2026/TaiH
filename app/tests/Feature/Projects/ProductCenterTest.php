@@ -38,6 +38,21 @@ class ProductCenterTest extends TestCase
             ->assertSee('<input type="hidden" name="stage" value="market_research">', false);
     }
 
+    public function test_product_creation_tags_for_category_market_and_priority_filter_shared_projects(): void
+    {
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        ProductProject::create(['project_code' => 'PP-202609-PET', 'product_name' => '宠物梳毛器', 'category' => '宠物用品', 'market' => 'US', 'priority' => 'high', 'current_stage' => 'market_research', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+        ProductProject::create(['project_code' => 'PP-202609-HOME', 'product_name' => '衣物收纳盒', 'category' => '家居用品', 'market' => 'UK', 'priority' => 'low', 'current_stage' => 'market_research', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+
+        $this->actingAs($user)->get('/projects?stage=market_research&category=宠物用品&market=US&priority=high')
+            ->assertOk()
+            ->assertSee('宠物梳毛器')
+            ->assertDontSee('衣物收纳盒')
+            ->assertSee('产品类目')
+            ->assertSee('目标市场');
+    }
+
     public function test_website_operations_link_opens_a_department_workspace_not_a_generic_product_pool(): void
     {
         $department = Department::factory()->create(['code' => 'website_operations']);

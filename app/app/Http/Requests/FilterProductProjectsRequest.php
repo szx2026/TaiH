@@ -18,6 +18,7 @@ class FilterProductProjectsRequest extends FormRequest
         return [
             'stage' => ['nullable', Rule::in(ProjectStage::ordered())],
             'status' => ['nullable', Rule::in(['draft', 'in_progress', 'blocked', 'approved', 'rejected', 'archived'])],
+            'category' => ['nullable', 'string', 'max:100'],
             'market' => ['nullable', 'string', 'max:16'],
             'priority' => ['nullable', Rule::in(['high', 'medium', 'low'])],
             'search' => ['nullable', 'string', 'max:100'],
