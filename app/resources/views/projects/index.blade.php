@@ -150,10 +150,43 @@ document.querySelectorAll('form:has(input[name="search"]), form:has(select[name=
 
 const categorySelect = document.querySelector('#project-category');
 const categoryManager = document.querySelector('#category-manager');
+const categoryEndpoints = @json($managedCategories->mapWithKeys(fn ($category) => [$category->name => route('product-categories.destroy', $category)]));
+const csrfToken = document.querySelector('input[name="_token"]')?.value;
 categorySelect?.addEventListener('change', () => {
     if (categorySelect.value !== '__manage__') return;
     categoryManager.hidden = false;
     categorySelect.value = '';
     categoryManager.querySelector('input[name="name"]')?.focus();
+});
+categoryManager?.querySelectorAll('button[aria-label^="删除 "]').forEach((button) => {
+    button.type = 'button';
+    button.addEventListener('click', async () => {
+        const name = button.getAttribute('aria-label').replace('删除 ', '');
+        const endpoint = categoryEndpoints[name];
+        if (!endpoint || !window.confirm(`确认删除产品类目“${name}”吗？已有项目会保留其原标签。`)) return;
+        button.disabled = true;
+        const response = await fetch(endpoint, {
+            method: 'DELETE',
+            headers: {'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json'},
+        });
+        if (response.ok || response.redirected) window.location.assign(response.url || window.location.href);
+        else { button.disabled = false; window.alert('删除失败，请稍后重试。'); }
+    });
+});
+const addCategoryButton = categoryManager?.querySelector('button:not([aria-label])');
+addCategoryButton?.addEventListener('click', async (event) => {
+    event.preventDefault();
+    addCategoryButton.type = 'button';
+    const input = categoryManager.querySelector('input[name="name"]');
+    const name = input?.value.trim();
+    if (!name) return input?.focus();
+    addCategoryButton.disabled = true;
+    const response = await fetch('{{ route('product-categories.store') }}', {
+        method: 'POST',
+        headers: {'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: JSON.stringify({name}),
+    });
+    if (response.ok || response.redirected) window.location.assign(response.url || window.location.href);
+    else { addCategoryButton.disabled = false; window.alert('添加失败：类目名称可能已存在。'); }
 });
 </script>
