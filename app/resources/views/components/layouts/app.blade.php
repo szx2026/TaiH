@@ -10,8 +10,8 @@
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
     <div class="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
-        <aside class="border-r border-slate-200 bg-slate-950 px-4 py-5 text-slate-200">
-            <a href="{{ route('dashboard') }}" class="mb-8 flex items-center gap-3 px-2">
+        <aside data-app-sidebar class="border-b border-slate-800 bg-slate-950 px-4 py-3 text-slate-200 lg:border-r lg:border-b-0 lg:border-slate-200 lg:px-4 lg:py-5">
+            <a href="{{ route('dashboard') }}" class="mb-3 flex items-center gap-3 px-2 lg:mb-8">
                 <span class="grid size-9 place-items-center rounded-xl bg-blue-500 text-sm font-black text-white">N</span>
                 <span>
                     <span class="block text-sm font-bold tracking-tight text-white">NORTHSTAR ERP</span>
@@ -29,7 +29,7 @@
                 <x-nav-item label="回收站" :href="route('projects.recycle-bin')" :active="request()->routeIs('projects.recycle-bin')" />
             </nav>
 
-            <div class="my-7 border-t border-slate-800"></div>
+            <div class="my-3 border-t border-slate-800 lg:my-7"></div>
             <p class="sidebar-label">系统管理</p>
             <nav class="space-y-1" aria-label="系统管理">
                 <x-nav-item label="成员与权限" :href="route('members.index')" :active="request()->routeIs('members.*')" />
@@ -38,7 +38,7 @@
         </aside>
 
         <div class="min-w-0">
-            <header class="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-5 sm:px-8">
+            <header class="flex min-h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-8">
                 <div class="text-sm text-slate-500">产品从研究、开发到测试的统一协作空间</div>
                 <div class="flex items-center gap-3">
                     <div class="hidden text-right sm:block">
@@ -52,7 +52,7 @@
                 </div>
             </header>
 
-            <main class="mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10">
+            <main class="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
                 {{ $slot }}
             </main>
         </div>

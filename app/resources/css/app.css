@@ -43,4 +43,68 @@
     /* The compact collaboration summary is rendered once at the end of the workspace. */
     #project-work-area + section { display: none; }
     main > section.mt-6 > div.mt-5.grid > aside { display: none; }
+
+    /* Phone layout: keep navigation reachable without taking over the screen, and let forms breathe. */
+    @media (max-width: 1023px) {
+        html { overflow-x: hidden; }
+
+        [data-app-sidebar] nav[aria-label] {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding: 0.125rem 0 0.375rem;
+            scrollbar-width: thin;
+        }
+
+        [data-app-sidebar] nav[aria-label] > a {
+            flex: 0 0 auto;
+            margin-bottom: 0;
+            min-height: 44px;
+            padding: 0.625rem 0.75rem;
+            white-space: nowrap;
+        }
+
+        [data-app-sidebar] .sidebar-label {
+            margin: 0.25rem 0 0.125rem;
+            padding: 0;
+        }
+
+        main {
+            min-width: 0;
+            overflow-x: clip;
+        }
+
+        main input:not([type='checkbox']):not([type='radio']),
+        main select {
+            min-height: 44px;
+        }
+
+        main button {
+            min-height: 44px;
+        }
+    }
+
+    @media (max-width: 639px) {
+        header > div:first-child {
+            max-width: 14rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        main > form.mb-4:has(input[name="search"]) button,
+        main > form.mb-4:has(input[name="search"]) a {
+            width: 100%;
+        }
+
+        main .flex.items-baseline.justify-between,
+        main form.flex {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        main form.flex > button {
+            width: 100%;
+        }
+    }
 }
