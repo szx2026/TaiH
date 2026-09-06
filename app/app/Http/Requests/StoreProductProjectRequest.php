@@ -18,7 +18,7 @@ class StoreProductProjectRequest extends FormRequest
         return [
             'product_name' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:100'],
-            'market' => ['required', 'string', 'max:16'],
+            'market' => ['required', Rule::in(['US'])],
             'priority' => ['required', Rule::in(['high', 'medium', 'low'])],
         ];
     }

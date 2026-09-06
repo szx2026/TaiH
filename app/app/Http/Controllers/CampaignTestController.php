@@ -36,7 +36,7 @@ class CampaignTestController extends Controller
         abort_unless($request->user()?->department?->code === 'traffic_growth' || $request->user()?->hasRole('administrator'), 403);
 
         $data = $request->validate([
-            'platform' => ['required', Rule::in(['facebook', 'tiktok', 'other'])],
+            'platform' => ['required', Rule::in(['facebook'])],
             'campaign_name' => ['required', 'string', 'max:255'],
             'spend' => ['required', 'numeric', 'min:0'],
             'cost_per_click' => ['nullable', 'numeric', 'min:0'],

@@ -35,4 +35,23 @@ class CreateProductProjectTest extends TestCase
             'owner_user_id' => $user->id,
         ]);
     }
+
+    public function test_product_project_creation_rejects_non_us_market(): void
+    {
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id, 'role' => 'member']);
+
+        $this->actingAs($user)
+            ->from('/projects?stage=market_research')
+            ->post('/projects', [
+                'product_name' => '英国测试产品',
+                'category' => '家居用品',
+                'market' => 'UK',
+                'priority' => 'high',
+            ])
+            ->assertRedirect('/projects?stage=market_research')
+            ->assertSessionHasErrors('market');
+
+        $this->assertDatabaseMissing('product_projects', ['product_name' => '英国测试产品']);
+    }
 }

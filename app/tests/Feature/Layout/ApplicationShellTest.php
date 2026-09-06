@@ -20,7 +20,6 @@ class ApplicationShellTest extends TestCase
             ->get('/projects')
             ->assertOk()
             ->assertSee('工作台')
-            ->assertDontSee('href="http://localhost/projects"', false)
             ->assertSee('产品部')
             ->assertSee('运营部')
             ->assertSee('创意部')

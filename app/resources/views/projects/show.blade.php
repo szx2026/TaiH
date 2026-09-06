@@ -39,7 +39,8 @@
                 <h2>记录投放测试</h2>
                 <form method="post" action="{{ route('projects.campaign-tests.store', $project) }}">
                     @csrf
-                    <p><label>投放平台 <select name="platform"><option value="facebook">Facebook</option><option value="tiktok">TikTok</option><option value="other">其他</option></select></label></p>
+                    <input type="hidden" name="platform" value="facebook">
+                    <p><label>投放平台 <span>Facebook 广告</span></label></p>
                     <p><label>广告系列名称 <input name="campaign_name" required></label></p>
                     <p><label>花费 <input name="spend" type="number" min="0" step="0.01" required></label></p>
                     <p><label>展示次数 <input name="impressions" type="number" min="0" required></label></p>

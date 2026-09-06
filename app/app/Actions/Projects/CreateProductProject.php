@@ -8,14 +8,14 @@ use Illuminate\Support\Str;
 
 class CreateProductProject
 {
-    /** @param array{product_name: string, category?: string|null, market: string, priority: string} $data */
+    /** @param array{product_name: string, category?: string|null, priority: string} $data */
     public function handle(User $actor, array $data): ProductProject
     {
         return ProductProject::create([
             'project_code' => $this->nextProjectCode(),
             'product_name' => $data['product_name'],
             'category' => $data['category'] ?? null,
-            'market' => $data['market'],
+            'market' => 'US',
             'priority' => $data['priority'],
             'current_stage' => 'market_research',
             'status' => 'draft',

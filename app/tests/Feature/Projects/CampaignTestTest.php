@@ -116,6 +116,29 @@ class CampaignTestTest extends TestCase
         ], $activity->payload);
     }
 
+    public function test_traffic_growth_rejects_non_facebook_campaign_platforms(): void
+    {
+        $department = Department::factory()->create(['code' => 'traffic_growth']);
+        $user = User::factory()->create(['department_id' => $department->id, 'role' => 'member']);
+        $project = ProductProject::create(['project_code' => 'PP-202609-FB-ONLY', 'product_name' => 'Facebook 限定产品', 'market' => 'US', 'priority' => 'high', 'current_stage' => 'traffic_growth', 'status' => 'in_progress', 'owner_department_id' => $department->id, 'owner_user_id' => $user->id, 'created_by' => $user->id]);
+        $video = CreativeAsset::create(['product_project_id' => $project->id, 'title' => '测试视频', 'asset_type' => 'video', 'source_type' => 'original', 'status' => 'draft', 'created_by' => $user->id]);
+        $landingPage = LandingPage::create(['product_project_id' => $project->id, 'version' => 1, 'title' => '测试页面', 'page_url' => 'https://shop.example.com/fb-only', 'currency' => 'USD', 'status' => 'draft', 'created_by' => $user->id]);
+
+        $this->actingAs($user)
+            ->from("/projects?stage=traffic_growth&project={$project->id}")
+            ->post("/projects/{$project->id}/campaign-tests", [
+                'platform' => 'tiktok',
+                'campaign_name' => '不应保存的 TikTok 广告',
+                'spend' => 10,
+                'creative_asset_id' => $video->id,
+                'landing_page_id' => $landingPage->id,
+            ])
+            ->assertRedirect("/projects?stage=traffic_growth&project={$project->id}")
+            ->assertSessionHasErrors('platform');
+
+        $this->assertDatabaseCount('campaign_tests', 0);
+    }
+
     public function test_traffic_growth_can_record_requested_metrics_and_ad_detail_image(): void
     {
         Storage::fake('local');
