@@ -6,7 +6,6 @@ use App\Models\Department;
 use App\Models\ProductProject;
 use App\Models\ProductSource;
 use App\Models\ProductSku;
-use App\Models\ProjectDecision;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,21 +14,21 @@ class InternalSkuIntakeTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_market_research_can_import_an_internal_sku_after_operations_confirms_the_specification(): void
+    public function test_market_research_can_fill_an_internal_sku_after_recording_its_1688_product_specification(): void
     {
         [$user, $project] = $this->marketResearchProject();
-        $this->confirmSpecification($project, $user);
+        $pendingSku = $this->pendingSpecification($project, $user);
 
         $this->actingAs($user)
             ->post("/projects/{$project->id}/skus", [
+                'product_sku_id' => $pendingSku->id,
                 'sku_code' => 'NC03342609026143',
-                'variant_name' => '夜灯 + 3 影片',
             ])
             ->assertRedirect(route('projects.index', ['stage' => 'market_research', 'project' => $project]));
 
         $this->assertDatabaseHas('product_skus', [
             'product_project_id' => $project->id,
-            'product_source_id' => null,
+            'product_source_id' => $pendingSku->product_source_id,
             'sku_code' => 'NC03342609026143',
             'variant_name' => '夜灯 + 3 影片',
             'sku_status' => 'internal_confirmed',
@@ -45,7 +44,7 @@ class InternalSkuIntakeTest extends TestCase
     public function test_internal_sku_code_must_be_unique_within_its_project_even_without_a_source(): void
     {
         [$user, $project] = $this->marketResearchProject();
-        $this->confirmSpecification($project, $user);
+        $pendingSku = $this->pendingSpecification($project, $user);
         ProductSku::create([
             'product_project_id' => $project->id,
             'product_source_id' => null,
@@ -58,8 +57,8 @@ class InternalSkuIntakeTest extends TestCase
         $this->actingAs($user)
             ->from(route('projects.workspace', ['project' => $project, 'tab' => 'research']))
             ->post("/projects/{$project->id}/skus", [
+                'product_sku_id' => $pendingSku->id,
                 'sku_code' => 'NC03342609026143',
-                'variant_name' => '夜灯 + 12 影片',
             ])
             ->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'research']))
             ->assertSessionHasErrors('sku_code');
@@ -68,7 +67,7 @@ class InternalSkuIntakeTest extends TestCase
     public function test_legacy_supplier_sku_duplicates_are_preserved_but_cannot_be_imported_again(): void
     {
         [$user, $project] = $this->marketResearchProject();
-        $this->confirmSpecification($project, $user);
+        $pendingSku = $this->pendingSpecification($project, $user);
         $firstSource = ProductSource::create([
             'product_project_id' => $project->id,
             'supplier_url' => 'https://detail.1688.com/offer/1.html',
@@ -102,13 +101,13 @@ class InternalSkuIntakeTest extends TestCase
         $this->actingAs($user)
             ->from(route('projects.workspace', ['project' => $project, 'tab' => 'research']))
             ->post("/projects/{$project->id}/skus", [
+                'product_sku_id' => $pendingSku->id,
                 'sku_code' => 'NC03342609026143',
-                'variant_name' => '夜灯 + 6 影片',
             ])
             ->assertRedirect(route('projects.workspace', ['project' => $project, 'tab' => 'research']))
             ->assertSessionHasErrors('sku_code');
 
-        $this->assertDatabaseCount('product_skus', 2);
+        $this->assertDatabaseCount('product_skus', 3);
     }
 
     public function test_only_market_research_members_and_administrators_can_import_internal_skus(): void
@@ -116,7 +115,6 @@ class InternalSkuIntakeTest extends TestCase
         $operations = Department::factory()->create(['code' => 'website_operations']);
         $user = User::factory()->create(['department_id' => $operations->id, 'role' => 'member']);
         $project = $this->projectFor($user, $operations);
-        $this->confirmSpecification($project, $user);
 
         $this->actingAs($user)
             ->post("/projects/{$project->id}/skus", [
@@ -126,23 +124,38 @@ class InternalSkuIntakeTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_product_department_cannot_send_specification_to_operations_until_an_internal_sku_is_filled(): void
+    {
+        [$user, $project] = $this->marketResearchProject();
+        $this->pendingSpecification($project, $user);
+
+        $this->actingAs($user)
+            ->post("/projects/{$project->id}/decisions", [
+                'decision_type' => 'specification',
+                'requested_from_stage' => 'website_operations',
+                'title' => '请确认规格',
+                'details' => '待确认',
+            ])
+            ->assertStatus(422);
+    }
+
     public function test_an_administrator_can_import_an_internal_sku(): void
     {
         $operations = Department::factory()->create(['code' => 'website_operations']);
         $user = User::factory()->create(['department_id' => $operations->id, 'role' => 'administrator']);
         $project = $this->projectFor($user, $operations);
-        $this->confirmSpecification($project, $user);
+        $pendingSku = $this->pendingSpecification($project, $user);
 
         $this->actingAs($user)
             ->post("/projects/{$project->id}/skus", [
+                'product_sku_id' => $pendingSku->id,
                 'sku_code' => 'NC03342609026143',
-                'variant_name' => '夜灯 + 3 影片',
             ])
             ->assertRedirect(route('projects.index', ['stage' => 'market_research', 'project' => $project]));
 
         $this->assertDatabaseHas('product_skus', [
             'product_project_id' => $project->id,
-            'product_source_id' => null,
+            'product_source_id' => $pendingSku->product_source_id,
             'created_by' => $user->id,
         ]);
     }
@@ -171,18 +184,23 @@ class InternalSkuIntakeTest extends TestCase
         ]);
     }
 
-    private function confirmSpecification(ProductProject $project, User $user): void
+    private function pendingSpecification(ProductProject $project, User $user): ProductSku
     {
-        ProjectDecision::create([
+        $source = ProductSource::create([
             'product_project_id' => $project->id,
-            'decision_type' => 'specification',
-            'requested_from_stage' => 'website_operations',
-            'title' => '确认产品规格',
-            'status' => 'resolved',
-            'response_note' => '采用初步规格',
+            'supplier_url' => 'https://detail.1688.com/offer/pending-spec.html',
+            'supplier_name' => '1688 测试工厂',
+            'currency' => 'CNY',
             'created_by' => $user->id,
-            'responded_by' => $user->id,
-            'responded_at' => now(),
+        ]);
+
+        return ProductSku::create([
+            'product_project_id' => $project->id,
+            'product_source_id' => $source->id,
+            'sku_code' => null,
+            'variant_name' => '夜灯 + 3 影片',
+            'sku_status' => 'source_recorded',
+            'created_by' => $user->id,
         ]);
     }
 }

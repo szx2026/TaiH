@@ -29,6 +29,14 @@ class ProjectDecisionController extends Controller
             403,
         );
 
+        if ($data['decision_type'] === 'specification') {
+            abort_unless(
+                $project->skus()->whereNotNull('sku_code')->exists(),
+                422,
+                '请先根据已录入的产品规格回填公司内部 SKU，再发送运营部确认。',
+            );
+        }
+
         $decision = ProjectDecision::create([
             'product_project_id' => $project->id,
             'decision_type' => $data['decision_type'],

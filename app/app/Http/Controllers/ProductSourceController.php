@@ -9,7 +9,6 @@ use App\Models\ProductSku;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class ProductSourceController extends Controller
 {
@@ -24,7 +23,6 @@ class ProductSourceController extends Controller
             'currency' => ['required', 'string', 'size:3'],
             'weight_g' => ['nullable', 'integer', 'min:0'],
             'notes' => ['required', 'string', 'max:4000'],
-            'sku_code' => ['required', 'string', 'max:100', Rule::unique('product_skus')->where('product_project_id', $project->id)],
             'variant_name' => ['required', 'string', 'max:255'],
         ]);
 
@@ -42,7 +40,7 @@ class ProductSourceController extends Controller
             ProductSku::create([
                 'product_project_id' => $project->id,
                 'product_source_id' => $source->id,
-                'sku_code' => $data['sku_code'],
+                'sku_code' => null,
                 'variant_name' => $data['variant_name'],
                 'purchase_price' => $data['purchase_price'] ?? null,
                 'weight_g' => $data['weight_g'] ?? null,
@@ -56,7 +54,7 @@ class ProductSourceController extends Controller
         app(RecordProjectActivity::class)->handle($project, $request->user(), 'supplier_source.created', [
             'source_id' => $source->id,
             'supplier_url' => $source->supplier_url,
-            'sku_code' => $data['sku_code'],
+            'variant_name' => $data['variant_name'],
         ]);
 
         return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);

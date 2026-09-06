@@ -40,6 +40,9 @@
     main > section.mt-6 > div.mt-5 > aside { display: none; }
     /* Campaign history and feedback are consolidated in the shared panel. */
     main > section.mt-6 > section:has(> h3.text-violet-900) { display: none; }
+    /* The product workflow is completed in its primary work panel. */
+    main > section.mt-6 > section:has(> div > p.text-orange-900),
+    main > section.mt-6 > section:has(> div > div > h3.text-amber-950) { display: none; }
     /* Replaced by the single source-to-SKU record card in the product workspace. */
     #project-work-area ~ section .mt-4.grid.gap-3.lg\:grid-cols-3 form[action*="/skus"],
     #project-work-area ~ section .mt-4.grid.gap-3.lg\:grid-cols-3 form[action*="/sources"] { display: none; }
