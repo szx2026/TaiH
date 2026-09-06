@@ -248,4 +248,20 @@ class CampaignTestTest extends TestCase
             ->where('event', 'feedback.created')
             ->count());
     }
+
+    public function test_an_administrator_can_record_campaign_data_for_any_department_project(): void
+    {
+        $operations = Department::factory()->create(['code' => 'website_operations']);
+        $admin = User::factory()->create(['department_id' => $operations->id, 'role' => 'administrator']);
+        $project = ProductProject::create(['project_code' => 'PP-202609-ADMIN-CAMPAIGN', 'product_name' => '管理员投放项目', 'market' => 'US', 'priority' => 'high', 'current_stage' => 'market_research', 'status' => 'in_progress', 'owner_department_id' => $operations->id, 'owner_user_id' => $admin->id, 'created_by' => $admin->id]);
+        $video = CreativeAsset::create(['product_project_id' => $project->id, 'title' => '管理员测试视频', 'asset_type' => 'video', 'source_type' => 'original', 'status' => 'draft', 'created_by' => $admin->id]);
+        $page = LandingPage::create(['product_project_id' => $project->id, 'version' => 1, 'title' => '管理员测试页面', 'page_url' => 'https://shop.example.com/admin-test', 'currency' => 'USD', 'status' => 'draft', 'created_by' => $admin->id]);
+
+        $this->actingAs($admin)->post("/projects/{$project->id}/campaign-tests", [
+            'platform' => 'facebook', 'campaign_name' => '管理员手动录入', 'spend' => 12.5,
+            'creative_asset_id' => $video->id, 'landing_page_id' => $page->id,
+        ])->assertRedirect(route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]));
+
+        $this->assertDatabaseHas('campaign_tests', ['product_project_id' => $project->id, 'campaign_name' => '管理员手动录入']);
+    }
 }

@@ -15,7 +15,11 @@ class CampaignTestController extends Controller
 {
     public function update(Request $request, ProductProject $project, CampaignTest $campaign): RedirectResponse
     {
-        abort_unless($request->user()?->department?->code === 'traffic_growth' && $campaign->product_project_id === $project->id, 403);
+        abort_unless(
+            ($request->user()?->department?->code === 'traffic_growth' || $request->user()?->hasRole('administrator'))
+                && $campaign->product_project_id === $project->id,
+            403,
+        );
         $data = $request->validate([
             'spend' => ['required', 'numeric', 'min:0'], 'cost_per_click' => ['required', 'numeric', 'min:0'],
             'add_to_cart_conversions' => ['required', 'integer', 'min:0'], 'checkout_conversions' => ['required', 'integer', 'min:0'],
@@ -29,7 +33,7 @@ class CampaignTestController extends Controller
     }
     public function store(Request $request, ProductProject $project): RedirectResponse
     {
-        abort_unless($request->user()?->department?->code === 'traffic_growth', 403);
+        abort_unless($request->user()?->department?->code === 'traffic_growth' || $request->user()?->hasRole('administrator'), 403);
 
         $data = $request->validate([
             'platform' => ['required', Rule::in(['facebook', 'tiktok', 'other'])],

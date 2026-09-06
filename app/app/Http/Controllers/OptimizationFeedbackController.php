@@ -14,7 +14,11 @@ class OptimizationFeedbackController extends Controller
     public function update(Request $request, ProductProject $project, OptimizationFeedback $feedback): RedirectResponse
     {
         abort_unless($feedback->product_project_id === $project->id, 404);
-        abort_unless($request->user()?->department?->code === $feedback->target_stage, 403);
+        abort_unless(
+            $request->user()?->department?->code === $feedback->target_stage
+                || $request->user()?->hasRole('administrator'),
+            403,
+        );
 
         $data = $request->validate([
             'status' => ['required', Rule::in(['in_progress', 'resolved'])],

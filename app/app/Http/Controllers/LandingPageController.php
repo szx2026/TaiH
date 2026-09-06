@@ -15,7 +15,7 @@ class LandingPageController extends Controller
 {
     public function store(Request $request, ProductProject $project): RedirectResponse
     {
-        abort_unless($request->user()?->department?->code === 'website_operations', 403);
+        abort_unless($request->user()?->department?->code === 'website_operations' || $request->user()?->hasRole('administrator'), 403);
 
         $data = $request->validate([
             'page_url' => ['required', 'url', 'max:2048'],

@@ -13,7 +13,7 @@ class CreativeAssetController extends Controller
 {
     public function store(Request $request, ProductProject $project): RedirectResponse
     {
-        abort_unless($request->user()?->department?->code === 'content_creative', 403);
+        abort_unless($request->user()?->department?->code === 'content_creative' || $request->user()?->hasRole('administrator'), 403);
 
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
