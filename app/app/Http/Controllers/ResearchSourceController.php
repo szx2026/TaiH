@@ -22,14 +22,25 @@ class ResearchSourceController extends Controller
             'evidence_note' => ['required', 'string', 'max:4000'],
         ]);
 
-        $source = ResearchSource::create([
-            'product_project_id' => $project->id,
-            ...$data,
-            'captured_at' => now(),
-            'created_by' => $request->user()->id,
-        ]);
+        $source = $project->researchSources()->oldest('id')->first();
+        $event = 'research_source.created';
 
-        app(RecordProjectActivity::class)->handle($project, $request->user(), 'research_source.created', [
+        if ($source) {
+            $source->update([
+                ...$data,
+                'captured_at' => now(),
+            ]);
+            $event = 'research_source.updated';
+        } else {
+            $source = ResearchSource::create([
+                'product_project_id' => $project->id,
+                ...$data,
+                'captured_at' => now(),
+                'created_by' => $request->user()->id,
+            ]);
+        }
+
+        app(RecordProjectActivity::class)->handle($project, $request->user(), $event, [
             'research_source_id' => $source->id,
             'platform' => $source->platform,
             'url' => $source->url,
