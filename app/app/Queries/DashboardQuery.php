@@ -44,6 +44,11 @@ class DashboardQuery
             ->limit(8)
             ->get();
 
-        return compact('projects', 'feedback', 'metrics', 'activities', 'isAdministrator');
+        $collaborationOverview = ProductProject::query()
+            ->where('status', '!=', 'archived')
+            ->withCount(['researchSources', 'skus', 'sources', 'landingPages', 'creativeAssets', 'campaignTests'])
+            ->get();
+
+        return compact('projects', 'feedback', 'metrics', 'activities', 'isAdministrator', 'collaborationOverview');
     }
 }

@@ -11,3 +11,35 @@
 }
 
 @layer components { .sidebar-label { @apply mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-600; } }
+
+@layer components {
+    /* The product workspace keeps creation open and combines filtering with project selection. */
+    details#create-project > summary { display: none; }
+    details#create-project:not([open]) > :not(summary) { display: block; }
+
+    main > form.mb-4:has(input[name="search"]) {
+        display: inline-block;
+        width: calc(68% - 0.4rem);
+        margin-right: 0.4rem;
+        vertical-align: top;
+    }
+
+    main > form.mb-4:has(input[name="search"]) + form.mb-5 {
+        display: inline-block;
+        width: 31%;
+        vertical-align: top;
+    }
+
+    @media (max-width: 1023px) {
+        main > form.mb-4:has(input[name="search"]),
+        main > form.mb-4:has(input[name="search"]) + form.mb-5 {
+            display: block;
+            width: 100%;
+            margin-right: 0;
+        }
+    }
+
+    /* The compact collaboration summary is rendered once at the end of the workspace. */
+    #project-work-area + section { display: none; }
+    main > section.mt-6 > div.mt-5.grid > aside { display: none; }
+}

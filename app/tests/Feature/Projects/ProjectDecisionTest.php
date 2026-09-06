@@ -49,4 +49,29 @@ class ProjectDecisionTest extends TestCase
             'status' => 'open',
         ]);
     }
+
+    public function test_website_operations_can_reply_to_a_product_departments_sku_question(): void
+    {
+        $productDepartment = Department::factory()->create(['code' => 'market_research']);
+        $operationsDepartment = Department::factory()->create(['code' => 'website_operations']);
+        $productUser = User::factory()->create(['department_id' => $productDepartment->id]);
+        $operationsUser = User::factory()->create(['department_id' => $operationsDepartment->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-SKU-REPLY', 'product_name' => 'SKU 回复测试产品', 'market' => 'US', 'priority' => 'high', 'current_stage' => 'website_operations', 'status' => 'in_progress', 'owner_department_id' => $productDepartment->id, 'owner_user_id' => $productUser->id, 'created_by' => $productUser->id]);
+
+        $this->actingAs($productUser)->post("/projects/{$project->id}/decisions", [
+            'decision_type' => 'sku', 'requested_from_stage' => 'website_operations',
+            'title' => '请确认详情页需要哪些 SKU', 'details' => '请说明规格组合。',
+        ]);
+        $decisionId = $project->decisions()->value('id');
+
+        $this->actingAs($operationsUser)
+            ->patch("/projects/{$project->id}/decisions/{$decisionId}", ['response_note' => '详情页需要单件、两件套和四件套。'])
+            ->assertRedirect(route('projects.index', ['stage' => 'website_operations', 'project' => $project]));
+
+        $this->assertDatabaseHas('project_decisions', ['id' => $decisionId, 'status' => 'resolved', 'response_note' => '详情页需要单件、两件套和四件套。']);
+        $this->actingAs($productUser)->get("/projects?stage=market_research&project={$project->id}")
+            ->assertOk()
+            ->assertSee('运营部回复')
+            ->assertSee('详情页需要单件、两件套和四件套。');
+    }
 }

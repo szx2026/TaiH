@@ -49,4 +49,29 @@ class ProjectDecisionController extends Controller
 
         return to_route('projects.index', ['stage' => $department, 'project' => $project]);
     }
+
+    public function respond(Request $request, ProductProject $project, ProjectDecision $decision): RedirectResponse
+    {
+        abort_unless($decision->product_project_id === $project->id, 404);
+        abort_unless(
+            ($request->user()?->department?->code === $decision->requested_from_stage || $request->user()?->hasRole('administrator'))
+                && $decision->status === 'open',
+            403,
+        );
+
+        $data = $request->validate(['response_note' => ['required', 'string', 'max:4000']]);
+        $decision->update([
+            'status' => 'resolved',
+            'response_note' => $data['response_note'],
+            'responded_by' => $request->user()->id,
+            'responded_at' => now(),
+        ]);
+
+        app(RecordProjectActivity::class)->handle($project, $request->user(), 'decision.resolved', [
+            'decision_id' => $decision->id,
+            'response_note' => $data['response_note'],
+        ]);
+
+        return to_route('projects.index', ['stage' => $request->user()?->department?->code, 'project' => $project]);
+    }
 }

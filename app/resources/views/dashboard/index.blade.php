@@ -12,6 +12,17 @@
         <x-metric-card label="平均点击率" :value="$metrics->ctr.'%'" hint="点击 / 展示" />
     </section>
 
+    <section class="mt-7 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 class="text-sm font-semibold text-slate-800">四部门项目总览</h2>
+        <p class="mt-1 text-sm text-slate-500">汇总全部未归档产品项目的协作产出。</p>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4 text-sm">
+            <div class="rounded-lg bg-slate-50 p-3"><p class="font-medium">产品部</p><p class="mt-1 text-slate-600">选品证据 {{ $collaborationOverview->sum('research_sources_count') }} 条 · SKU {{ $collaborationOverview->sum('skus_count') }} 个</p></div>
+            <div class="rounded-lg bg-slate-50 p-3"><p class="font-medium">运营部</p><p class="mt-1 text-slate-600">1688 货源 {{ $collaborationOverview->sum('sources_count') }} 条 · Shopify {{ $collaborationOverview->sum('landing_pages_count') }} 页</p></div>
+            <div class="rounded-lg bg-slate-50 p-3"><p class="font-medium">创意部</p><p class="mt-1 text-slate-600">素材 {{ $collaborationOverview->sum('creative_assets_count') }} 个</p></div>
+            <div class="rounded-lg bg-slate-50 p-3"><p class="font-medium">流量部</p><p class="mt-1 text-slate-600">投放 {{ $collaborationOverview->sum('campaign_tests_count') }} 条 · 待处理反馈 {{ $feedback->count() }} 条</p></div>
+        </div>
+    </section>
+
     <div class="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]">
         <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
