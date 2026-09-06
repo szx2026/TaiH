@@ -270,10 +270,10 @@ pendingSpecificationDecisions.forEach((decision) => {
     if (!initialSpecifications.length) return;
     const summary = document.createElement('div');
     summary.dataset.initialSpecifications = 'true';
-    summary.className = 'mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-slate-700';
+    summary.className = 'mt-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-slate-700';
     const heading = document.createElement('p');
     heading.className = 'font-semibold text-blue-950';
-    heading.textContent = '产品部提交的初步规格';
+    heading.textContent = '产品部初步规格（只读）';
     const list = document.createElement('ul');
     list.className = 'mt-2 space-y-1';
     initialSpecifications.forEach((specification) => {
@@ -285,15 +285,15 @@ pendingSpecificationDecisions.forEach((decision) => {
     form.before(summary);
     if (form.dataset.specificationRequestForm) return;
     form.dataset.specificationRequestForm = 'true';
-    form.className = 'mt-3 grid gap-3 rounded-lg border border-blue-200 bg-white p-4';
+    form.className = 'mt-3 grid gap-3 rounded-lg border border-blue-200 bg-white p-3';
     form.querySelector('input[name="response_note"]')?.remove();
     const instruction = document.createElement('p');
-    instruction.className = 'text-sm text-blue-900';
-    instruction.textContent = '产品部提交的内部 SKU 与初步规格为只读信息，运营部无需也不能修改；请仅补充运营部需要新增的产品规格。';
+    instruction.className = 'text-sm text-slate-600';
+    instruction.textContent = '该规格是否满足运营需求？';
     form.prepend(instruction);
     const requestList = document.createElement('div');
     requestList.dataset.requestedSpecifications = 'true';
-    requestList.className = 'space-y-2';
+    requestList.className = 'hidden space-y-2';
     const addRequest = () => {
         const row = document.createElement('div');
         row.className = 'flex gap-2';
@@ -311,10 +311,10 @@ pendingSpecificationDecisions.forEach((decision) => {
         requestList.append(row);
     };
     const requestHeading = document.createElement('div');
-    requestHeading.className = 'flex items-center justify-between gap-3';
+    requestHeading.className = 'hidden items-center justify-between gap-3';
     const requestLabel = document.createElement('p');
     requestLabel.className = 'font-semibold text-blue-950';
-    requestLabel.textContent = '运营部新增产品规格需求';
+    requestLabel.textContent = '新增产品规格需求';
     const addButton = document.createElement('button');
     addButton.type = 'button';
     addButton.className = 'rounded border border-blue-300 px-3 py-2 text-sm font-semibold text-blue-900';
@@ -328,6 +328,7 @@ pendingSpecificationDecisions.forEach((decision) => {
     if (submit) {
         submit.name = 'specification_action';
         submit.value = 'request';
+        submit.classList.add('hidden');
         submit.textContent = '发送新增规格给产品部生成内部 SKU';
         form.append(submit);
     }
@@ -336,9 +337,24 @@ pendingSpecificationDecisions.forEach((decision) => {
     adopt.name = 'specification_action';
     adopt.value = 'adopt';
     adopt.formNoValidate = true;
-    adopt.className = 'rounded border border-blue-300 bg-white px-4 py-2 text-sm font-semibold text-blue-800';
-    adopt.textContent = '确认采用当前规格并反馈产品部';
-    submit?.insertAdjacentElement('beforebegin', adopt);
+    adopt.className = 'rounded bg-blue-700 px-4 py-2 text-sm font-semibold text-white';
+    adopt.textContent = '确认采用并反馈产品部';
+    const actions = document.createElement('div');
+    actions.className = 'flex flex-wrap gap-2';
+    const request = document.createElement('button');
+    request.type = 'button';
+    request.className = 'rounded border border-blue-300 bg-white px-4 py-2 text-sm font-semibold text-blue-800';
+    request.textContent = '需要新增规格';
+    request.addEventListener('click', () => {
+        requestHeading.classList.remove('hidden');
+        requestHeading.classList.add('flex');
+        requestList.classList.remove('hidden');
+        submit?.classList.remove('hidden');
+        request.classList.add('hidden');
+        requestList.querySelector('input')?.focus();
+    });
+    actions.append(adopt, request);
+    submit?.insertAdjacentElement('beforebegin', actions);
 });
 
 const operationsHeading = Array.from(document.querySelectorAll('h3')).find((heading) => heading.textContent.trim() === '最终产品规格与 Shopify 产品');
@@ -349,10 +365,10 @@ if (operationsPanel && specificationConfirmation && shouldShowSpecificationConfi
     operationsPanel.insertBefore(specificationConfirmation, shopifyForm?.parentElement || null);
     specificationConfirmation.classList.remove('mt-5');
     specificationConfirmation.classList.add('mt-4');
-    specificationConfirmation.querySelector('h3').textContent = '运营部新增产品规格需求';
-    specificationConfirmation.querySelector('h3 + p').textContent = '产品部提交的内部 SKU 与初步规格仅供查阅；请添加运营部需要的新产品规格，反馈产品部生成新的内部 SKU。';
+    specificationConfirmation.querySelector('h3').textContent = '产品规格确认';
+    specificationConfirmation.querySelector('h3 + p').textContent = '查看产品部提交的规格，确认采用或按需新增。';
     const workflowDescription = operationsHeading?.nextElementSibling;
-    if (workflowDescription?.tagName === 'P') workflowDescription.textContent = '产品部已录入的内部 SKU 与初步规格为稳定基础信息。运营部只新增业务所需的产品规格，再反馈产品部在内部系统生成对应的新 SKU。';
+    if (workflowDescription?.tagName === 'P') workflowDescription.textContent = '查看产品部规格，确认采用或提出新增规格需求；新增规格由产品部生成对应的内部 SKU。';
 }
 
 document.querySelectorAll('form[action*="/creative-assets"] input[name="title"], form[action*="/campaign-tests"] input[name="campaign_name"]').forEach((input) => {
