@@ -106,4 +106,6 @@ document.querySelectorAll('form:has(input[name="search"]), form:has(select[name=
         form.action = `${form.action.split('#')[0]}#project-work-area`;
     });
 });
+
+document.querySelector('#create-project')?.setAttribute('open', '');
 </script>
