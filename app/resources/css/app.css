@@ -17,27 +17,9 @@
     details#create-project > summary { display: none; }
     details#create-project:not([open]) > :not(summary) { display: block; }
 
-    main > form.mb-4:has(input[name="search"]) button,
-    main > form.mb-4:has(input[name="search"]) a {
+    main > form:has(input[name="search"]) button,
+    main > form:has(input[name="search"]) a {
         white-space: nowrap;
-    }
-
-    /* The navigation consumes desktop width, so only ultra-wide screens keep both cards side by side. */
-    @media (min-width: 1800px) {
-        main > form.mb-4:has(input[name="search"]),
-        main > form.mb-4:has(input[name="search"]) + form.mb-5 {
-            display: inline-block;
-            vertical-align: top;
-        }
-
-        main > form.mb-4:has(input[name="search"]) {
-            width: calc(68% - 0.4rem);
-            margin-right: 0.4rem;
-        }
-
-        main > form.mb-4:has(input[name="search"]) + form.mb-5 {
-            width: 31%;
-        }
     }
 
     /* The compact collaboration summary is rendered once at the end of the workspace. */
@@ -92,8 +74,8 @@
             white-space: nowrap;
         }
 
-        main > form.mb-4:has(input[name="search"]) button,
-        main > form.mb-4:has(input[name="search"]) a {
+        main > form:has(input[name="search"]) button,
+        main > form:has(input[name="search"]) a {
             width: 100%;
         }
 
