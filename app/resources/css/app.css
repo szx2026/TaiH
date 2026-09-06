@@ -46,6 +46,10 @@
     /* Replaced by the single source-to-SKU record card in the product workspace. */
     #project-work-area ~ section .mt-4.grid.gap-3.lg\:grid-cols-3 form[action*="/skus"],
     #project-work-area ~ section .mt-4.grid.gap-3.lg\:grid-cols-3 form[action*="/sources"] { display: none; }
+    /* The product image belongs in the primary work panel; keep the header compact. */
+    main > section.mt-6 > div:first-child > img { display: none; }
+    /* Evidence intake is integrated beside the product image, not repeated below it. */
+    main > section.mt-6 .dept-panel-market_research > div[class*="lg:grid-cols-3"] { display: none !important; }
 
     [data-app-sidebar] { align-self: start; }
     @media (min-width: 1024px) {
