@@ -33,6 +33,6 @@ class NavigationIntegrityTest extends TestCase
         $target = "/projects?stage=website_operations&amp;project={$project->id}";
 
         $this->actingAs($user)->get('/dashboard')->assertOk()->assertSee($target, false);
-        $this->actingAs($user)->get('/feedback')->assertOk()->assertSee($target, false);
+        $this->actingAs($user)->get('/feedback')->assertRedirect("/projects?stage=website_operations&project={$project->id}");
     }
 }
