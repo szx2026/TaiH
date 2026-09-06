@@ -260,6 +260,35 @@ if (mainImageFigure && @json($stage === 'market_research' && $canEdit) && !mainI
     mainImageFigure.append(imageUpdateForm);
 }
 
+const shouldShowSpecificationConfirmation = @json($stage === 'website_operations');
+const pendingSpecificationDecisions = @json($incoming->where('decision_type', 'specification')->values());
+pendingSpecificationDecisions.forEach((decision) => {
+    if (!shouldShowSpecificationConfirmation) return;
+    const form = document.querySelector(`form[action$="/decisions/${decision.id}"]`);
+    if (!form || form.querySelector('[data-initial-specifications]')) return;
+    const initialSpecifications = decision.details?.initial_specifications || [];
+    if (!initialSpecifications.length) return;
+    const summary = document.createElement('div');
+    summary.dataset.initialSpecifications = 'true';
+    summary.className = 'mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-slate-700';
+    const heading = document.createElement('p');
+    heading.className = 'font-semibold text-blue-950';
+    heading.textContent = '产品部提交的初步规格';
+    const list = document.createElement('ul');
+    list.className = 'mt-2 space-y-1';
+    initialSpecifications.forEach((specification) => {
+        const item = document.createElement('li');
+        item.textContent = `${specification.sku_code} · ${specification.variant_name} · 采购价 ¥${specification.purchase_price ?? '待补'} · 重量 ${specification.weight_g ?? '待补'}g`;
+        list.append(item);
+    });
+    summary.append(heading, list);
+    form.before(summary);
+    const responseInput = form.querySelector('input[name="response_note"]');
+    if (responseInput && !responseInput.value) {
+        responseInput.value = `采用产品部初步规格：${initialSpecifications.map((specification) => `${specification.sku_code} ${specification.variant_name}`).join('；')}`;
+    }
+});
+
 const categorySelect = document.querySelector('#project-category');
 const categoryManager = document.querySelector('#category-manager');
 const categoryEndpoints = @json($managedCategories->mapWithKeys(fn ($category) => [$category->name => route('product-categories.destroy', $category)]));

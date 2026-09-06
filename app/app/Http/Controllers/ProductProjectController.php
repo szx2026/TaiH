@@ -8,6 +8,7 @@ use App\Http\Requests\FilterProductProjectsRequest;
 use App\Http\Requests\StoreProductProjectRequest;
 use App\Models\ProductProject;
 use App\Models\ProductCategory;
+use App\Models\ProjectDecision;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -68,6 +69,33 @@ class ProductProjectController extends Controller
         $selectedProject = isset($filters['project'])
             ? ProductProject::query()->where('status', '!=', 'archived')->whereKey($filters['project'])->with(['researchSources', 'skus.source', 'sources.skus', 'landingPages.skus', 'creativeAssets', 'campaignTests.revisions', 'optimizationFeedback', 'decisions'])->first()
             : $projects->first();
+
+        // Older products may have specifications created before the automatic
+        // operations handoff existed. Create one open request so they enter
+        // the same confirmation flow as newly saved source specifications.
+        if ($selectedProject
+            && $selectedProject->sources->isNotEmpty()
+            && $selectedProject->skus->isNotEmpty()
+            && ! $selectedProject->decisions()->where('decision_type', 'specification')->where('requested_from_stage', 'website_operations')->exists()
+        ) {
+            ProjectDecision::create([
+                'product_project_id' => $selectedProject->id,
+                'decision_type' => 'specification',
+                'requested_from_stage' => 'website_operations',
+                'title' => "确认「{$selectedProject->product_name}」初步产品规格",
+                'status' => 'open',
+                'details' => [
+                    'initial_specifications' => $selectedProject->skus->map(fn ($sku) => [
+                        'sku_code' => $sku->sku_code,
+                        'variant_name' => $sku->variant_name,
+                        'purchase_price' => $sku->purchase_price,
+                        'weight_g' => $sku->weight_g,
+                    ])->values()->all(),
+                ],
+                'created_by' => $selectedProject->created_by,
+            ]);
+            $selectedProject->load('decisions');
+        }
 
         return view('projects.index', [
             'projects' => $projects,

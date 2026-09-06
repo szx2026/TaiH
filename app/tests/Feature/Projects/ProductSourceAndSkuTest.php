@@ -64,6 +64,12 @@ class ProductSourceAndSkuTest extends TestCase
             'actor_id' => $user->id,
             'event' => 'supplier_source.created',
         ]);
+        $this->assertDatabaseHas('project_decisions', [
+            'product_project_id' => $project->id,
+            'decision_type' => 'specification',
+            'requested_from_stage' => 'website_operations',
+            'status' => 'open',
+        ]);
     }
 
     public function test_product_source_requires_a_matching_product_specification(): void

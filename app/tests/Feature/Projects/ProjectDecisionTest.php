@@ -4,6 +4,8 @@ namespace Tests\Feature\Projects;
 
 use App\Models\Department;
 use App\Models\ProductProject;
+use App\Models\ProductSource;
+use App\Models\ProductSku;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -66,5 +68,24 @@ class ProjectDecisionTest extends TestCase
             ->assertOk()
             ->assertSee('运营部回复')
             ->assertSee('详情页需要单件、两件套和四件套。');
+    }
+
+    public function test_operations_receives_a_confirmation_request_for_existing_product_specifications(): void
+    {
+        $productDepartment = Department::factory()->create(['code' => 'market_research']);
+        $operationsDepartment = Department::factory()->create(['code' => 'website_operations']);
+        $productUser = User::factory()->create(['department_id' => $productDepartment->id]);
+        $operationsUser = User::factory()->create(['department_id' => $operationsDepartment->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-SPEC-RECEIVE', 'product_name' => '规格交接产品', 'market' => 'US', 'priority' => 'market_new', 'current_stage' => 'market_research', 'status' => 'draft', 'owner_department_id' => $productDepartment->id, 'owner_user_id' => $productUser->id, 'created_by' => $productUser->id]);
+        $source = ProductSource::create(['product_project_id' => $project->id, 'supplier_url' => 'https://detail.1688.com/offer/spec-receive.html', 'supplier_name' => '测试工厂', 'product_name' => '规格交接产品', 'currency' => 'CNY', 'notes' => '初步货源信息。', 'created_by' => $productUser->id]);
+        ProductSku::create(['product_project_id' => $project->id, 'product_source_id' => $source->id, 'sku_code' => 'SPEC-001', 'variant_name' => '单件装', 'purchase_price' => 19, 'weight_g' => 320, 'sku_status' => 'internal_confirmed', 'created_by' => $productUser->id]);
+
+        $this->actingAs($operationsUser)
+            ->get("/projects?stage=website_operations&project={$project->id}")
+            ->assertOk()
+            ->assertSee('待确认的初步产品规格')
+            ->assertSee('SPEC-001');
+
+        $this->assertDatabaseHas('project_decisions', ['product_project_id' => $project->id, 'decision_type' => 'specification', 'requested_from_stage' => 'website_operations', 'status' => 'open']);
     }
 }

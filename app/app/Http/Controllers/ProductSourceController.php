@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Activity\RecordProjectActivity;
 use App\Models\ProductProject;
+use App\Models\ProjectDecision;
 use App\Models\ProductSource;
 use App\Models\ProductSku;
 use Illuminate\Http\RedirectResponse;
@@ -61,12 +62,42 @@ class ProductSourceController extends Controller
             return $source;
         });
 
+        $decision = ProjectDecision::firstOrCreate(
+            [
+                'product_project_id' => $project->id,
+                'decision_type' => 'specification',
+                'requested_from_stage' => 'website_operations',
+                'status' => 'open',
+            ],
+            [
+                'title' => "确认「{$project->product_name}」初步产品规格",
+                'details' => [
+                    'initial_specifications' => collect($data['specifications'])->map(fn (array $specification) => [
+                        'sku_code' => $specification['sku_code'],
+                        'variant_name' => $specification['variant_name'],
+                        'purchase_price' => $specification['purchase_price'] ?? null,
+                        'weight_g' => $specification['weight_g'] ?? null,
+                    ])->values()->all(),
+                ],
+                'created_by' => $request->user()->id,
+            ],
+        );
+
         app(RecordProjectActivity::class)->handle($project, $request->user(), 'supplier_source.created', [
             'source_id' => $source->id,
             'supplier_url' => $source->supplier_url,
             'product_name' => $source->product_name,
             'specifications' => count($data['specifications']),
         ]);
+
+        if ($decision->wasRecentlyCreated) {
+            app(RecordProjectActivity::class)->handle($project, $request->user(), 'decision.created', [
+                'decision_id' => $decision->id,
+                'decision_type' => $decision->decision_type,
+                'requested_from_stage' => $decision->requested_from_stage,
+                'title' => $decision->title,
+            ]);
+        }
 
         return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
