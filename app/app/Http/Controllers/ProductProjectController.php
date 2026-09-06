@@ -80,9 +80,12 @@ class ProductProjectController extends Controller
 
     public function store(StoreProductProjectRequest $request, CreateProductProject $createProductProject): RedirectResponse
     {
-        $createProductProject->handle($request->user(), $request->validated());
+        $project = $createProductProject->handle($request->user(), $request->validated());
 
-        return to_route('projects.index');
+        return to_route('projects.index', [
+            'stage' => 'market_research',
+            'project' => $project,
+        ]);
     }
 
     public function show(ProductProject $project): RedirectResponse

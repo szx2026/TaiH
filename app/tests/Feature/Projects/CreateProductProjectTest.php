@@ -29,7 +29,8 @@ class CreateProductProjectTest extends TestCase
             'product_image' => UploadedFile::fake()->create('project.jpg', 100, 'image/jpeg'),
         ]);
 
-        $response->assertRedirect('/projects');
+        $project = \App\Models\ProductProject::query()->where('product_name', '星空投影灯')->firstOrFail();
+        $response->assertRedirect(route('projects.index', ['stage' => 'market_research', 'project' => $project]));
 
         $this->assertDatabaseHas('product_projects', [
             'product_name' => '星空投影灯',
