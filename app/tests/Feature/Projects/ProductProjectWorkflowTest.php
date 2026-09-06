@@ -34,4 +34,16 @@ class ProductProjectWorkflowTest extends TestCase
         $this->assertNotNull($project->released_at);
         Storage::disk('public')->assertExists($project->product_image_path);
     }
+
+    public function test_product_stage_must_be_chosen_explicitly(): void
+    {
+        Storage::fake('public');
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+
+        $this->actingAs($user)->post('/projects', [
+            'product_name' => '未选阶段产品', 'category' => '厨房用品',
+            'product_image' => UploadedFile::fake()->create('product.jpg', 100, 'image/jpeg'),
+        ])->assertSessionHasErrors('priority');
+    }
 }

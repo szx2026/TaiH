@@ -15,6 +15,8 @@ class ProductSku extends Model
         'product_source_id',
         'sku_code',
         'variant_name',
+        'purchase_price',
+        'weight_g',
         'sku_status',
         'created_by',
     ];

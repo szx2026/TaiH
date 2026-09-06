@@ -16,14 +16,16 @@
     .field-label > span { @apply text-red-700; }
     .field-label small { @apply mt-1 block text-xs font-normal text-slate-500; }
     .field-input { @apply mt-1 block w-full rounded-lg border-slate-300 bg-white text-sm shadow-sm focus:border-slate-900 focus:ring-slate-900; }
-    .dept-text-market_research { @apply text-orange-800; }
-    .dept-text-website_operations { @apply text-blue-800; }
-    .dept-text-content_creative { @apply text-yellow-800; }
-    .dept-text-traffic_growth { @apply text-violet-800; }
-    .dept-panel-market_research { @apply border-orange-200 bg-orange-50; }
-    .dept-panel-website_operations { @apply border-blue-200 bg-blue-50; }
-    .dept-panel-content_creative { @apply border-yellow-200 bg-yellow-50; }
-    .dept-panel-traffic_growth { @apply border-violet-200 bg-violet-50; }
+    .dept-text-market_research { color: #9a3412; }
+    .dept-text-website_operations { color: #1d4ed8; }
+    .dept-text-content_creative { color: #854d0e; }
+    .dept-text-traffic_growth { color: #6d28d9; }
+    .dept-panel-market_research { border-color: #fb923c !important; background-color: #fff7ed !important; }
+    .dept-panel-website_operations { border-color: #60a5fa !important; background-color: #eff6ff !important; }
+    .dept-panel-content_creative { border-color: #facc15 !important; background-color: #fefce8 !important; }
+    .dept-panel-traffic_growth { border-color: #a78bfa !important; background-color: #f5f3ff !important; }
+    .status-success { border-color: #22c55e !important; background-color: #f0fdf4 !important; color: #166534 !important; }
+    .status-danger { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #991b1b !important; }
 }
 
 @layer components {
@@ -36,6 +38,9 @@
     /* The compact collaboration summary is rendered once at the end of the workspace. */
     #project-work-area + section { display: none; }
     main > section.mt-6 > div.mt-5.grid > aside { display: none; }
+    /* Replaced by the single source-to-SKU record card in the product workspace. */
+    #project-work-area ~ section .mt-4.grid.gap-3.lg\:grid-cols-3 form[action*="/skus"],
+    #project-work-area ~ section .mt-4.grid.gap-3.lg\:grid-cols-3 form[action*="/sources"] { display: none; }
 
     [data-app-sidebar] { align-self: start; }
     @media (min-width: 1024px) {

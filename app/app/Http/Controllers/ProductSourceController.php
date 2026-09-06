@@ -29,21 +29,23 @@ class ProductSourceController extends Controller
         ]);
 
         $source = DB::transaction(function () use ($data, $project, $request): ProductSource {
-            $source = ProductSource::create([
-                'product_project_id' => $project->id,
-                'supplier_url' => $data['supplier_url'],
-                'supplier_name' => $data['supplier_name'] ?? null,
-                'purchase_price' => $data['purchase_price'] ?? null,
-                'currency' => strtoupper($data['currency']),
-                'weight_g' => $data['weight_g'] ?? null,
-                'notes' => $data['notes'] ?? null,
-                'created_by' => $request->user()->id,
-            ]);
+            $source = ProductSource::firstOrCreate(
+                ['product_project_id' => $project->id, 'supplier_url' => $data['supplier_url'], 'supplier_name' => $data['supplier_name']],
+                [
+                    'purchase_price' => $data['purchase_price'] ?? null,
+                    'currency' => strtoupper($data['currency']),
+                    'weight_g' => $data['weight_g'] ?? null,
+                    'notes' => $data['notes'] ?? null,
+                    'created_by' => $request->user()->id,
+                ],
+            );
             ProductSku::create([
                 'product_project_id' => $project->id,
                 'product_source_id' => $source->id,
                 'sku_code' => $data['sku_code'],
                 'variant_name' => $data['variant_name'],
+                'purchase_price' => $data['purchase_price'] ?? null,
+                'weight_g' => $data['weight_g'] ?? null,
                 'sku_status' => 'source_recorded',
                 'created_by' => $request->user()->id,
             ]);

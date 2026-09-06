@@ -19,7 +19,7 @@ class FilterProductProjectsRequest extends FormRequest
             'stage' => ['nullable', Rule::in(ProjectStage::ordered())],
             'status' => ['nullable', Rule::in(['draft', 'in_progress', 'blocked', 'approved', 'rejected', 'archived'])],
             'category' => ['nullable', 'string', 'max:100'],
-            'priority' => ['nullable', Rule::in(['high', 'medium', 'low'])],
+            'priority' => ['nullable', Rule::in(['initial_screening', 'market_new', 'historical_winner', 'high', 'medium', 'low'])],
             'search' => ['nullable', 'string', 'max:100'],
             'project' => ['nullable', 'integer', Rule::exists('product_projects', 'id')],
         ];
