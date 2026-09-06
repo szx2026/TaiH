@@ -3,6 +3,8 @@
         $stage = $filters['stage'] ?? null;
         $userStage = auth()->user()?->department?->code;
         $canEdit = auth()->user()?->hasRole('administrator') || $userStage === $stage;
+        // Administrators manage the department workspace currently open; members manage only their own.
+        $feedbackTargetStage = auth()->user()?->hasRole('administrator') ? $stage : $userStage;
         $labels = ['market_research' => '市场研究部', 'website_operations' => '网站运营部', 'content_creative' => '内容创意部', 'traffic_growth' => '流量增长部'];
         $sourceLabels = ['tiktok' => 'TikTok', 'facebook_ads' => 'Facebook 广告库', 'amazon' => 'Amazon', 'independent_store' => '独立站'];
     @endphp
@@ -52,7 +54,7 @@
         <section class="mt-5 rounded-xl border border-slate-200 bg-white p-5">
             <h3 class="font-semibold">本部门待处理投放反馈</h3>
             <div class="mt-3 space-y-3">
-                @forelse($selectedProject->optimizationFeedback->where('target_stage', $userStage)->where('status', '!=', 'resolved') as $feedback)
+                @forelse($selectedProject->optimizationFeedback->where('target_stage', $feedbackTargetStage)->where('status', '!=', 'resolved') as $feedback)
                     <div class="rounded-lg bg-slate-50 p-3 text-sm"><p>{{ $feedback->note }}</p>
                         <form method="POST" action="{{ route('projects.optimization-feedback.update', [$selectedProject, $feedback]) }}" class="mt-3 grid gap-2 md:grid-cols-[140px_1fr_auto]">@csrf @method('PATCH')
                             <select name="status" class="rounded border-slate-300 text-sm"><option value="in_progress">处理中</option><option value="resolved">已完成</option></select>
