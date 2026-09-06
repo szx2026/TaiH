@@ -89,7 +89,7 @@ class ProjectDecisionTest extends TestCase
         $this->assertDatabaseHas('project_decisions', ['product_project_id' => $project->id, 'decision_type' => 'specification', 'requested_from_stage' => 'website_operations', 'status' => 'open']);
     }
 
-    public function test_operations_can_confirm_a_final_specification_without_changing_the_internal_sku(): void
+    public function test_operations_can_request_new_specifications_without_changing_product_departments_internal_sku(): void
     {
         $productDepartment = Department::factory()->create(['code' => 'market_research']);
         $operationsDepartment = Department::factory()->create(['code' => 'website_operations']);
@@ -102,11 +102,11 @@ class ProjectDecisionTest extends TestCase
 
         $this->actingAs($operationsUser)
             ->patch("/projects/{$project->id}/decisions/{$decision->id}", [
-                'final_specifications' => [['sku_id' => $sku->id, 'variant_name' => '两件套']],
+                'requested_specifications' => ['两件套', '礼盒装'],
             ])
             ->assertRedirect(route('projects.index', ['stage' => 'website_operations', 'project' => $project]));
 
         $this->assertDatabaseHas('product_skus', ['id' => $sku->id, 'sku_code' => 'INTERNAL-001', 'variant_name' => '单件装']);
-        $this->assertDatabaseHas('project_decisions', ['id' => $decision->id, 'status' => 'resolved', 'response_note' => '最终产品规格：INTERNAL-001 · 两件套']);
+        $this->assertDatabaseHas('project_decisions', ['id' => $decision->id, 'status' => 'resolved', 'response_note' => '运营部新增产品规格：两件套；礼盒装']);
     }
 }

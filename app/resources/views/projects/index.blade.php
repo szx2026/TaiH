@@ -7,9 +7,6 @@
         $feedbackTargetStage = auth()->user()?->hasRole('administrator') ? $stage : $userStage;
         $labels = ['market_research' => '产品部', 'website_operations' => '运营部', 'content_creative' => '创意部', 'traffic_growth' => '流量部'];
         $sourceLabels = ['tiktok' => 'TikTok', 'facebook_ads' => 'Facebook 广告库', 'amazon' => 'Amazon', 'independent_store' => '独立站'];
-        $projectSpecificationRows = $selectedProject?->skus->map(function ($sku) {
-            return ['id' => $sku->id, 'sku_code' => $sku->sku_code, 'variant_name' => $sku->variant_name];
-        })->values() ?? collect();
     @endphp
     <div class="mb-7"><p class="text-sm font-semibold dept-text-{{ $stage }}">{{ $departmentWorkspace['eyebrow'] ?? '产品项目' }}</p><h1 class="mt-1 text-3xl font-bold">{{ $departmentWorkspace['title'] ?? '产品项目池' }}</h1><p class="mt-2 text-sm text-slate-500">{{ $departmentWorkspace['description'] ?? '统一查看产品与协作进度。' }}</p></div>
 
@@ -265,7 +262,6 @@ if (mainImageFigure && @json($stage === 'market_research' && $canEdit) && !mainI
 
 const shouldShowSpecificationConfirmation = @json($stage === 'website_operations');
 const pendingSpecificationDecisions = @json($incoming->where('decision_type', 'specification')->values());
-const projectSpecificationRows = @json($projectSpecificationRows);
 pendingSpecificationDecisions.forEach((decision) => {
     if (!shouldShowSpecificationConfirmation) return;
     const form = document.querySelector(`form[action$="/decisions/${decision.id}"]`);
@@ -287,54 +283,50 @@ pendingSpecificationDecisions.forEach((decision) => {
     });
     summary.append(heading, list);
     form.before(summary);
-    const responseInput = form.querySelector('input[name="response_note"]');
-    if (responseInput && !responseInput.value) {
-        responseInput.value = `采用产品部初步规格：${initialSpecifications.map((specification) => `${specification.sku_code} ${specification.variant_name}`).join('；')}`;
-    }
-
-    const specifications = initialSpecifications.map((specification) => ({
-        ...specification,
-        sku_id: specification.sku_id || projectSpecificationRows.find((sku) => sku.sku_code === specification.sku_code)?.id,
-    })).filter((specification) => specification.sku_id);
-    if (!specifications.length || form.dataset.finalSpecificationForm) return;
-    form.dataset.finalSpecificationForm = 'true';
+    if (form.dataset.specificationRequestForm) return;
+    form.dataset.specificationRequestForm = 'true';
     form.className = 'mt-3 grid gap-3 rounded-lg border border-blue-200 bg-white p-4';
     form.querySelector('input[name="response_note"]')?.remove();
     const instruction = document.createElement('p');
     instruction.className = 'text-sm text-blue-900';
-    instruction.textContent = '内部 SKU 由产品部系统生成并保持不变；请只确认或修改对应的最终产品规格。';
+    instruction.textContent = '产品部提交的内部 SKU 与初步规格为只读信息，运营部无需也不能修改；请仅补充运营部需要新增的产品规格。';
     form.prepend(instruction);
-    specifications.forEach((specification, index) => {
+    const requestList = document.createElement('div');
+    requestList.dataset.requestedSpecifications = 'true';
+    requestList.className = 'space-y-2';
+    const addRequest = () => {
         const row = document.createElement('div');
-        row.className = 'grid gap-3 md:grid-cols-2';
-        const skuLabel = document.createElement('label');
-        skuLabel.className = 'field-label';
-        skuLabel.append('公司内部 SKU（不可修改）');
-        const skuInput = document.createElement('input');
-        skuInput.value = specification.sku_code;
-        skuInput.readOnly = true;
-        skuInput.className = 'field-input bg-slate-100 text-slate-500';
-        skuLabel.append(skuInput);
-        const variantLabel = document.createElement('label');
-        variantLabel.className = 'field-label';
-        variantLabel.append('最终产品规格 *');
-        const variantInput = document.createElement('input');
-        variantInput.name = `final_specifications[${index}][variant_name]`;
-        variantInput.required = true;
-        variantInput.value = specification.variant_name;
-        variantInput.className = 'field-input';
-        variantLabel.append(variantInput);
-        const skuId = document.createElement('input');
-        skuId.type = 'hidden';
-        skuId.name = `final_specifications[${index}][sku_id]`;
-        skuId.value = specification.sku_id;
-        row.append(skuLabel, variantLabel, skuId);
-        form.append(row);
-    });
+        row.className = 'flex gap-2';
+        const input = document.createElement('input');
+        input.name = 'requested_specifications[]';
+        input.required = true;
+        input.placeholder = '例如：两件套 / 礼盒装 / 新尺寸版本';
+        input.className = 'field-input min-w-0 flex-1';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'rounded border border-blue-200 px-3 text-sm text-blue-800';
+        remove.textContent = '删除';
+        remove.addEventListener('click', () => row.remove());
+        row.append(input, remove);
+        requestList.append(row);
+    };
+    const requestHeading = document.createElement('div');
+    requestHeading.className = 'flex items-center justify-between gap-3';
+    const requestLabel = document.createElement('p');
+    requestLabel.className = 'font-semibold text-blue-950';
+    requestLabel.textContent = '运营部新增产品规格需求';
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.className = 'rounded border border-blue-300 px-3 py-2 text-sm font-semibold text-blue-900';
+    addButton.textContent = '＋ 添加产品规格';
+    addButton.addEventListener('click', addRequest);
+    requestHeading.append(requestLabel, addButton);
+    form.append(requestHeading, requestList);
+    addRequest();
     const submit = form.querySelector('button');
     submit?.classList.remove('shrink-0');
     if (submit) {
-        submit.textContent = '确认最终规格并反馈产品部';
+        submit.textContent = '发送新增规格给产品部生成内部 SKU';
         form.append(submit);
     }
 });
@@ -347,6 +339,10 @@ if (operationsPanel && specificationConfirmation && shouldShowSpecificationConfi
     operationsPanel.insertBefore(specificationConfirmation, shopifyForm?.parentElement || null);
     specificationConfirmation.classList.remove('mt-5');
     specificationConfirmation.classList.add('mt-4');
+    specificationConfirmation.querySelector('h3').textContent = '运营部新增产品规格需求';
+    specificationConfirmation.querySelector('h3 + p').textContent = '产品部提交的内部 SKU 与初步规格仅供查阅；请添加运营部需要的新产品规格，反馈产品部生成新的内部 SKU。';
+    const workflowDescription = operationsHeading?.nextElementSibling;
+    if (workflowDescription?.tagName === 'P') workflowDescription.textContent = '产品部已录入的内部 SKU 与初步规格为稳定基础信息。运营部只新增业务所需的产品规格，再反馈产品部在内部系统生成对应的新 SKU。';
 }
 
 document.querySelectorAll('form[action*="/creative-assets"] input[name="title"], form[action*="/campaign-tests"] input[name="campaign_name"]').forEach((input) => {

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Actions\Activity\RecordProjectActivity;
 use App\Models\ProductProject;
-use App\Models\ProductSku;
 use App\Models\ProjectDecision;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -69,37 +68,26 @@ class ProjectDecisionController extends Controller
 
         $data = $request->validate([
             'response_note' => ['nullable', 'string', 'max:4000'],
-            'final_specifications' => ['nullable', 'array', 'min:1'],
-            'final_specifications.*.sku_id' => ['required_with:final_specifications', 'integer'],
-            'final_specifications.*.variant_name' => ['required_with:final_specifications', 'string', 'max:255'],
+            'requested_specifications' => ['nullable', 'array', 'min:1'],
+            'requested_specifications.*' => ['required_with:requested_specifications', 'string', 'max:255'],
         ]);
 
         $details = $decision->details ?? [];
         $responseNote = $data['response_note'] ?? null;
 
         if ($decision->decision_type === 'specification') {
-            abort_unless(! empty($data['final_specifications']), 422, '请逐条确认每个内部 SKU 对应的最终产品规格。');
+            abort_unless(! empty($data['requested_specifications']), 422, '请至少填写一条运营部新增的产品规格需求。');
 
-            $specificationRows = collect($data['final_specifications'])->values();
-            $skus = ProductSku::query()
-                ->where('product_project_id', $project->id)
-                ->whereIn('id', $specificationRows->pluck('sku_id'))
-                ->get()
-                ->keyBy('id');
-            abort_unless($skus->count() === $specificationRows->pluck('sku_id')->unique()->count(), 422);
+            $requestedSpecifications = collect($data['requested_specifications'])
+                ->map(fn (string $specification) => trim($specification))
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+            abort_unless($requestedSpecifications !== [], 422, '请至少填写一条运营部新增的产品规格需求。');
 
-            $finalSpecifications = $specificationRows->map(function (array $specification) use ($skus): array {
-                $sku = $skus->get($specification['sku_id']);
-
-                return [
-                    'sku_id' => $sku->id,
-                    'sku_code' => $sku->sku_code,
-                    'variant_name' => $specification['variant_name'],
-                ];
-            })->all();
-            $details['final_specifications'] = $finalSpecifications;
-            $responseNote = '最终产品规格：'.collect($finalSpecifications)
-                ->map(fn (array $specification) => "{$specification['sku_code']} · {$specification['variant_name']}")
+            $details['requested_specifications'] = $requestedSpecifications;
+            $responseNote = '运营部新增产品规格：'.collect($requestedSpecifications)
                 ->implode('；');
         }
 
