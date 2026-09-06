@@ -25,6 +25,19 @@ class ProductCenterTest extends TestCase
             ->assertDontSee('旅行收纳包');
     }
 
+    public function test_department_workspaces_do_not_filter_shared_projects_by_department(): void
+    {
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id]);
+        $this->project($department, $user, 'PP-202609-SHARED', '跨部门协作项目', 'website_operations');
+
+        $this->actingAs($user)->get('/projects?stage=market_research')
+            ->assertOk()
+            ->assertSee('跨部门协作项目')
+            ->assertDontSee('全部部门')
+            ->assertSee('<input type="hidden" name="stage" value="market_research">', false);
+    }
+
     public function test_website_operations_link_opens_a_department_workspace_not_a_generic_product_pool(): void
     {
         $department = Department::factory()->create(['code' => 'website_operations']);
