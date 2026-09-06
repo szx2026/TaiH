@@ -326,9 +326,19 @@ pendingSpecificationDecisions.forEach((decision) => {
     const submit = form.querySelector('button');
     submit?.classList.remove('shrink-0');
     if (submit) {
+        submit.name = 'specification_action';
+        submit.value = 'request';
         submit.textContent = '发送新增规格给产品部生成内部 SKU';
         form.append(submit);
     }
+    const adopt = document.createElement('button');
+    adopt.type = 'submit';
+    adopt.name = 'specification_action';
+    adopt.value = 'adopt';
+    adopt.formNoValidate = true;
+    adopt.className = 'rounded border border-blue-300 bg-white px-4 py-2 text-sm font-semibold text-blue-800';
+    adopt.textContent = '确认采用当前规格并反馈产品部';
+    submit?.insertAdjacentElement('beforebegin', adopt);
 });
 
 const operationsHeading = Array.from(document.querySelectorAll('h3')).find((heading) => heading.textContent.trim() === '最终产品规格与 Shopify 产品');

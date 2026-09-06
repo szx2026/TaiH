@@ -109,4 +109,25 @@ class ProjectDecisionTest extends TestCase
         $this->assertDatabaseHas('product_skus', ['id' => $sku->id, 'sku_code' => 'INTERNAL-001', 'variant_name' => '单件装']);
         $this->assertDatabaseHas('project_decisions', ['id' => $decision->id, 'status' => 'resolved', 'response_note' => '运营部新增产品规格：两件套；礼盒装']);
     }
+
+    public function test_operations_can_confirm_product_departments_initial_specifications_without_adding_new_requirements(): void
+    {
+        $productDepartment = Department::factory()->create(['code' => 'market_research']);
+        $operationsDepartment = Department::factory()->create(['code' => 'website_operations']);
+        $productUser = User::factory()->create(['department_id' => $productDepartment->id]);
+        $operationsUser = User::factory()->create(['department_id' => $operationsDepartment->id]);
+        $project = ProductProject::create(['project_code' => 'PP-202609-SPEC-ADOPT', 'product_name' => '确认规格产品', 'market' => 'US', 'priority' => 'market_new', 'current_stage' => 'market_research', 'status' => 'draft', 'owner_department_id' => $productDepartment->id, 'owner_user_id' => $productUser->id, 'created_by' => $productUser->id]);
+        $source = ProductSource::create(['product_project_id' => $project->id, 'supplier_url' => 'https://detail.1688.com/offer/spec-adopt.html', 'supplier_name' => '测试工厂', 'product_name' => '确认规格产品', 'currency' => 'CNY', 'notes' => '初步货源信息。', 'created_by' => $productUser->id]);
+        $sku = ProductSku::create(['product_project_id' => $project->id, 'product_source_id' => $source->id, 'sku_code' => 'INTERNAL-ADOPT-001', 'variant_name' => '单件装', 'sku_status' => 'internal_confirmed', 'created_by' => $productUser->id]);
+        $decision = $project->decisions()->create(['decision_type' => 'specification', 'requested_from_stage' => 'website_operations', 'title' => '确认初步规格', 'status' => 'open', 'details' => ['initial_specifications' => [['sku_id' => $sku->id, 'sku_code' => $sku->sku_code, 'variant_name' => $sku->variant_name]]], 'created_by' => $productUser->id]);
+
+        $this->actingAs($operationsUser)
+            ->patch("/projects/{$project->id}/decisions/{$decision->id}", [
+                'specification_action' => 'adopt',
+            ])
+            ->assertRedirect(route('projects.index', ['stage' => 'website_operations', 'project' => $project]));
+
+        $this->assertDatabaseHas('product_skus', ['id' => $sku->id, 'sku_code' => 'INTERNAL-ADOPT-001', 'variant_name' => '单件装']);
+        $this->assertDatabaseHas('project_decisions', ['id' => $decision->id, 'status' => 'resolved', 'response_note' => '运营部确认采用产品部初步规格。']);
+    }
 }

@@ -68,6 +68,7 @@ class ProjectDecisionController extends Controller
 
         $data = $request->validate([
             'response_note' => ['nullable', 'string', 'max:4000'],
+            'specification_action' => ['nullable', Rule::in(['adopt', 'request'])],
             'requested_specifications' => ['nullable', 'array', 'min:1'],
             'requested_specifications.*' => ['required_with:requested_specifications', 'string', 'max:255'],
         ]);
@@ -76,6 +77,10 @@ class ProjectDecisionController extends Controller
         $responseNote = $data['response_note'] ?? null;
 
         if ($decision->decision_type === 'specification') {
+            if (($data['specification_action'] ?? null) === 'adopt') {
+                $details['specification_adopted'] = true;
+                $responseNote = '运营部确认采用产品部初步规格。';
+            } else {
             abort_unless(! empty($data['requested_specifications']), 422, '请至少填写一条运营部新增的产品规格需求。');
 
             $requestedSpecifications = collect($data['requested_specifications'])
@@ -89,6 +94,7 @@ class ProjectDecisionController extends Controller
             $details['requested_specifications'] = $requestedSpecifications;
             $responseNote = '运营部新增产品规格：'.collect($requestedSpecifications)
                 ->implode('；');
+            }
         }
 
         abort_unless(filled($responseNote), 422, '请填写运营部回复。');
