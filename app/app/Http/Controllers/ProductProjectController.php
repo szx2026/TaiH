@@ -16,29 +16,29 @@ class ProductProjectController extends Controller
         $filters = $request->validated();
         $departmentWorkspaces = [
             'market_research' => [
-                'eyebrow' => '市场研究部',
-                'title' => '市场研究部工作台',
+                'eyebrow' => '产品部',
+                'title' => '产品部工作台',
                 'description' => '完成选品证据、公司产品管理系统开品与内部 SKU 回填。',
                 'list_label' => '待选品与 SKU 回填项目',
                 'allows_create' => true,
             ],
             'website_operations' => [
-                'eyebrow' => '网站运营部',
-                'title' => '网站运营部工作台',
+                'eyebrow' => '运营部',
+                'title' => '运营部工作台',
                 'description' => '处理 1688 货源、Shopify 上架与产品页、价格和规格。',
                 'list_label' => '当前待处理项目',
                 'allows_create' => false,
             ],
             'content_creative' => [
-                'eyebrow' => '内容创意部',
-                'title' => '内容创意部工作台',
+                'eyebrow' => '创意部',
+                'title' => '创意部工作台',
                 'description' => '围绕已选产品制作、上传并完善可投放的视频素材。',
                 'list_label' => '待制作素材项目',
                 'allows_create' => false,
             ],
             'traffic_growth' => [
-                'eyebrow' => '流量增长部',
-                'title' => '流量增长部工作台',
+                'eyebrow' => '流量部',
+                'title' => '流量部工作台',
                 'description' => '选择视频与 Shopify 页面投放，并将测试数据反馈给相关部门。',
                 'list_label' => '待投放与复盘项目',
                 'allows_create' => false,

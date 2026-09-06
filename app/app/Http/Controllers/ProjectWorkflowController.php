@@ -34,11 +34,11 @@ class ProjectWorkflowController extends Controller
         }
 
         if ($project->current_stage === 'website_operations' && ($project->sources()->doesntExist() || $project->skus()->doesntExist() || $project->landingPages()->doesntExist())) {
-            return back()->withErrors(['handoff' => '交接给内容创意部前，请完成 1688 货源、SKU 与至少一个落地页版本。']);
+            return back()->withErrors(['handoff' => '交接给创意部前，请完成 1688 货源、SKU 与至少一个落地页版本。']);
         }
 
         if ($project->current_stage === 'content_creative' && $project->creativeAssets()->doesntExist()) {
-            return back()->withErrors(['handoff' => '交接给流量增长部前，至少需要一条可投放素材。']);
+            return back()->withErrors(['handoff' => '交接给流量部前，至少需要一条可投放素材。']);
         }
 
         $submitProjectStage->handle($project, $request->user(), $data['target_stage'], $data['note'] ?? null);

@@ -33,7 +33,7 @@ class ProductCenterTest extends TestCase
 
         $this->actingAs($user)->get('/projects?stage=website_operations')
             ->assertOk()
-            ->assertSee('网站运营部工作台')
+            ->assertSee('运营部工作台')
             ->assertSee('1688 货源、Shopify 上架与产品页')
             ->assertSee('产品项目')
             ->assertSee('Shopify 待上架产品')
@@ -49,7 +49,7 @@ class ProductCenterTest extends TestCase
         $this->actingAs($user)->get("/projects?stage=market_research&project={$project->id}")
             ->assertOk()
             ->assertSee('内嵌选品项目')
-            ->assertSee('市场研究部重点工作')
+            ->assertSee('产品部重点工作')
             ->assertSee('选品证据与内部 SKU')
             ->assertSee('关联协作摘要');
     }
@@ -60,9 +60,9 @@ class ProductCenterTest extends TestCase
         $user = User::factory()->create(['department_id' => $department->id]);
         $project = $this->project($department, $user, 'PP-202609-DEPT-FOCUS', '部门重点项目', 'website_operations');
 
-        $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertSee('网站运营部重点工作')->assertSee('货源、SKU 与 Shopify 产品');
-        $this->actingAs($user)->get("/projects?stage=content_creative&project={$project->id}")->assertOk()->assertSee('内容创意部重点工作')->assertSee('素材清单');
-        $this->actingAs($user)->get("/projects?stage=traffic_growth&project={$project->id}")->assertOk()->assertSee('流量增长部重点工作')->assertSee('投放测试与反馈');
+        $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")->assertOk()->assertSee('运营部重点工作')->assertSee('货源、SKU 与 Shopify 产品');
+        $this->actingAs($user)->get("/projects?stage=content_creative&project={$project->id}")->assertOk()->assertSee('创意部重点工作')->assertSee('素材清单');
+        $this->actingAs($user)->get("/projects?stage=traffic_growth&project={$project->id}")->assertOk()->assertSee('流量部重点工作')->assertSee('投放测试与反馈');
     }
 
     public function test_department_workbenches_show_active_products_in_parallel(): void
@@ -76,7 +76,7 @@ class ProductCenterTest extends TestCase
             ->assertSee('并联协作项目');
         $this->actingAs($user)->get("/projects?stage=content_creative&project={$project->id}")
             ->assertOk()
-            ->assertSee('内容创意部重点工作');
+            ->assertSee('创意部重点工作');
     }
 
     public function test_department_workspace_keeps_the_current_departments_edit_form_inline(): void

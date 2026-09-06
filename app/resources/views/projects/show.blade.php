@@ -45,7 +45,7 @@
                     <p><label>展示次数 <input name="impressions" type="number" min="0" required></label></p>
                     <p><label>点击次数 <input name="clicks" type="number" min="0" required></label></p>
                     <p><label>转化次数 <input name="conversions" type="number" min="0" required></label></p>
-                    <p><label>反馈给 <select name="feedback_target_stage"><option value="">暂不创建反馈</option><option value="website_operations">网站运营部（落地页/价格/规格）</option><option value="content_creative">内容创意部（素材）</option><option value="market_research">市场研究部（选品/SKU）</option></select></label></p>
+                    <p><label>反馈给 <select name="feedback_target_stage"><option value="">暂不创建反馈</option><option value="website_operations">运营部（落地页/价格/规格）</option><option value="content_creative">创意部（素材）</option><option value="market_research">产品部（选品/SKU）</option></select></label></p>
                     <p><label>优化反馈 <textarea name="feedback_note"></textarea></label></p>
                     <p><button type="submit">保存测试数据</button></p>
                 </form>

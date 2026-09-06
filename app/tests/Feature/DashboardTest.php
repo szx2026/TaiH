@@ -15,7 +15,7 @@ class DashboardTest extends TestCase
 
     public function test_a_department_member_sees_current_stage_projects_and_open_feedback(): void
     {
-        $department = Department::factory()->create(['code' => 'website_operations', 'name' => '网站运营部']);
+        $department = Department::factory()->create(['code' => 'website_operations', 'name' => '运营部']);
         $user = User::factory()->create(['department_id' => $department->id, 'role' => 'member']);
         $project = ProductProject::create([
             'project_code' => 'PP-202609-DASHBOARD01',

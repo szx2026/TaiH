@@ -42,6 +42,6 @@ class StageHandoffTest extends TestCase
 
         $this->actingAs($user)->get("/projects?stage=website_operations&project={$project->id}")
             ->assertOk()
-            ->assertSee('网站运营部重点工作');
+            ->assertSee('运营部重点工作');
     }
 }
