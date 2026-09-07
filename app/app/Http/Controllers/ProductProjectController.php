@@ -10,6 +10,8 @@ use App\Models\ProductProject;
 use App\Models\ProductCategory;
 use App\Models\ProjectDecision;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProductProjectController extends Controller
@@ -187,6 +189,82 @@ class ProductProjectController extends Controller
         $project->update(['status' => 'in_progress']);
 
         return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
+    }
+
+    public function forceDestroy(\Illuminate\Http\Request $request, ProductProject $project): RedirectResponse
+    {
+        abort_unless($request->user()?->department?->code === 'traffic_growth' || $request->user()?->hasRole('administrator'), 403);
+
+        DB::transaction(function () use ($project) {
+            $this->deleteProjectFiles($project);
+            $project->decisions()->delete();
+            $project->members()->delete();
+            $project->activities()->delete();
+            $project->optimizationFeedback()->delete();
+            $project->campaignTests()->delete();
+            $project->creativeAssets()->delete();
+            $project->landingPages()->delete();
+            $project->skus()->delete();
+            $project->sources()->delete();
+            $project->workflowTransitions()->delete();
+            $project->researchSources()->delete();
+            $project->delete();
+        });
+
+        if ($request->input('redirect_to') === 'index') {
+            return to_route('projects.index', ['stage' => 'traffic_growth']);
+        }
+
+        return to_route('projects.recycle-bin');
+    }
+
+    public function emptyRecycleBin(\Illuminate\Http\Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->department?->code === 'traffic_growth' || $request->user()?->hasRole('administrator'), 403);
+
+        $archivedProjects = ProductProject::query()->where('status', 'archived')->get();
+
+        DB::transaction(function () use ($archivedProjects) {
+            foreach ($archivedProjects as $project) {
+                $this->deleteProjectFiles($project);
+                $project->decisions()->delete();
+                $project->members()->delete();
+                $project->activities()->delete();
+                $project->optimizationFeedback()->delete();
+                $project->campaignTests()->delete();
+                $project->creativeAssets()->delete();
+                $project->landingPages()->delete();
+                $project->skus()->delete();
+                $project->sources()->delete();
+                $project->workflowTransitions()->delete();
+                $project->researchSources()->delete();
+                $project->delete();
+            }
+        });
+
+        return to_route('projects.recycle-bin');
+    }
+
+    private function deleteProjectFiles(ProductProject $project): void
+    {
+        if ($project->product_image_path) {
+            Storage::disk('public')->delete($project->product_image_path);
+        }
+        foreach ($project->landingPages as $page) {
+            if ($page->detail_image_path) {
+                Storage::disk('public')->delete($page->detail_image_path);
+            }
+        }
+        foreach ($project->creativeAssets as $asset) {
+            if ($asset->file_path) {
+                Storage::disk('public')->delete($asset->file_path);
+            }
+        }
+        foreach ($project->campaignTests as $test) {
+            if ($test->detail_image_path) {
+                Storage::disk('public')->delete($test->detail_image_path);
+            }
+        }
     }
 
     public function recordOutcome(\Illuminate\Http\Request $request, ProductProject $project): RedirectResponse

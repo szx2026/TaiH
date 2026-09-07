@@ -38,6 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/product-categories/{category}', [ProductCategoryController::class, 'destroy'])->name('product-categories.destroy');
     Route::patch('/projects/{project}/archive', [ProductProjectController::class, 'archive'])->name('projects.archive');
     Route::patch('/projects/{project}/restore', [ProductProjectController::class, 'restore'])->name('projects.restore');
+    Route::delete('/projects/{project}/force-destroy', [ProductProjectController::class, 'forceDestroy'])->name('projects.force-destroy');
+    Route::delete('/recycle-bin/empty', [ProductProjectController::class, 'emptyRecycleBin'])->name('projects.recycle-bin.empty');
     Route::patch('/projects/{project}/outcome', [ProductProjectController::class, 'recordOutcome'])->name('projects.outcome');
     Route::patch('/projects/{project}/ad-delivery-status', [ProductProjectController::class, 'updateAdDeliveryStatus'])->name('projects.ad-delivery-status.update');
     Route::post('/projects/{project}/submit', [ProjectWorkflowController::class, 'submit'])->name('projects.submit');
