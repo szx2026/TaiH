@@ -76,6 +76,10 @@
                         <p class="project-progress-detail" data-project-stage-description>当前环节：{{ $labels[$selectedProject->current_stage] ?? $selectedProject->current_stage }} · {{ data_get($projectStages, $selectedProject->current_stage.'.description') }}</p>
                     </section>
                 </header>
+                @php $nextStages = ['market_research' => 'website_operations', 'website_operations' => 'content_creative', 'content_creative' => 'traffic_growth']; $nextStage = $nextStages[$selectedProject->current_stage] ?? null; @endphp
+                @if($canEdit && $stage === $selectedProject->current_stage && $nextStage)
+                    <section class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4"><div class="flex flex-wrap items-end justify-between gap-3"><div><p class="font-semibold text-slate-950">完成当前环节并提交</p><p class="mt-1 text-sm text-slate-600">确认资料已完成后，项目会推进到{{ $labels[$nextStage] }}。</p></div><form method="POST" action="{{ route('projects.submit', $selectedProject) }}" class="flex flex-wrap items-center gap-2">@csrf<input type="hidden" name="target_stage" value="{{ $nextStage }}"><input name="note" placeholder="给{{ $labels[$nextStage] }}的交接说明（可选）" class="field-input w-64"><button class="rounded bg-slate-950 px-4 py-2 text-sm font-semibold text-white">完成并提交</button></form></div></section>
+                @endif
                 @if($stage === 'market_research' && $canEdit)
                     <section class="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4">
                         <div><p class="text-sm font-semibold text-orange-900">产品资料补充</p><p class="mt-1 text-sm text-orange-800">关键词会显示在项目标题后；详情页参考链接会同步给运营部和创意部查阅。</p></div>
