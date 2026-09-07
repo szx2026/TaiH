@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class CreativeAsset extends Model
 {
@@ -25,5 +26,10 @@ class CreativeAsset extends Model
     public function landingPage(): BelongsTo
     {
         return $this->belongsTo(LandingPage::class);
+    }
+
+    public function hasStoredFile(): bool
+    {
+        return (bool) ($this->storage_path && $this->storage_disk && Storage::disk($this->storage_disk)->exists($this->storage_path));
     }
 }

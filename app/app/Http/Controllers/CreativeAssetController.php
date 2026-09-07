@@ -16,7 +16,7 @@ class CreativeAssetController extends Controller
     public function download(Request $request, ProductProject $project, CreativeAsset $asset): StreamedResponse
     {
         abort_unless($asset->product_project_id === $project->id, 404);
-        abort_unless($asset->storage_path && $asset->storage_disk, 404);
+        abort_unless($asset->hasStoredFile(), 404);
 
         return Storage::disk($asset->storage_disk)->download($asset->storage_path, basename($asset->storage_path));
     }

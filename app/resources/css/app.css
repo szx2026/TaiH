@@ -12,6 +12,10 @@
 }
 
 @layer components {
+    .resource-link { overflow-wrap: anywhere; word-break: break-word; }
+    @media (min-width: 901px) {
+        .project-summary-header { position: sticky; top: .75rem; z-index: 20; background: white; }
+    }
     .project-summary-header { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.95fr); align-items: end; }
     .project-summary-title { min-width: 0; }
     .project-progress-rail { min-width: 0; }
