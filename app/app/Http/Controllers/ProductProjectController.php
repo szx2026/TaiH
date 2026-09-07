@@ -139,6 +139,21 @@ class ProductProjectController extends Controller
         return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 
+    public function updateProductInformation(\Illuminate\Http\Request $request, ProductProject $project): RedirectResponse
+    {
+        abort_unless($request->user()?->department?->code === 'market_research' || $request->user()?->hasRole('administrator'), 403);
+
+        $data = $request->validate([
+            'keywords' => ['nullable', 'string', 'max:1000'],
+            'detail_reference_url' => ['nullable', 'url', 'max:2048'],
+        ]);
+
+        $project->update($data);
+        app(RecordProjectActivity::class)->handle($project, $request->user(), 'product_information.updated', $data);
+
+        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
+    }
+
     public function show(ProductProject $project): RedirectResponse
     {
         // Keep every project action in the department workspace. The former

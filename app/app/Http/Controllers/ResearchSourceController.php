@@ -20,6 +20,8 @@ class ResearchSourceController extends Controller
             'custom_source_name' => ['nullable', 'string', 'max:255'],
             'url' => ['required', 'url', 'max:2048'],
             'evidence_note' => ['required', 'string', 'max:4000'],
+            'keywords' => ['nullable', 'string', 'max:1000'],
+            'detail_reference_url' => ['nullable', 'url', 'max:2048'],
         ]);
 
         $source = $project->researchSources()->oldest('id')->first();
@@ -44,6 +46,11 @@ class ResearchSourceController extends Controller
             'research_source_id' => $source->id,
             'platform' => $source->platform,
             'url' => $source->url,
+        ]);
+
+        $project->update([
+            'keywords' => $data['keywords'] ?? $project->keywords,
+            'detail_reference_url' => $data['detail_reference_url'] ?? $project->detail_reference_url,
         ]);
 
         return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
