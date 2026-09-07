@@ -21,26 +21,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        try {
-            if (config('database.default') === 'sqlite') {
-                $dbPath = config('database.connections.sqlite.database');
-                if ($dbPath && $dbPath !== ':memory:' && ! file_exists($dbPath)) {
-                    $dir = dirname($dbPath);
-                    if (! is_dir($dir)) {
-                        mkdir($dir, 0755, true);
-                    }
-                    touch($dbPath);
-                }
-            }
-
-            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            if (! \Illuminate\Support\Facades\Schema::hasTable('users')) {
-                \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-            }
-        } catch (\Throwable $e) {
-            // Swallowed to prevent crash during initial boot
-        }
-
         View::composer('components.layouts.app', function ($view): void {
             $user = auth()->user();
             $pendingFeedbackCount = $user
