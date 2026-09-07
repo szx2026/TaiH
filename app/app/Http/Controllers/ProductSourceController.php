@@ -24,6 +24,7 @@ class ProductSourceController extends Controller
             'currency' => ['required', 'string', 'size:3'],
             'notes' => ['required', 'string', 'max:4000'],
             'product_name' => ['required', 'string', 'max:255'],
+            'keywords' => ['nullable', 'string', 'max:1000'],
             'alternative_sources' => ['nullable', 'array'],
             'alternative_sources.*.supplier_url' => ['required', 'url', 'max:2048'],
             'alternative_sources.*.supplier_name' => ['required', 'string', 'max:255'],
@@ -33,6 +34,10 @@ class ProductSourceController extends Controller
             'specifications.*.purchase_price' => ['nullable', 'numeric', 'min:0'],
             'specifications.*.weight_g' => ['nullable', 'integer', 'min:0'],
         ]);
+
+        if ($request->has('keywords')) {
+            $project->update(['keywords' => $data['keywords']]);
+        }
 
         $source = DB::transaction(function () use ($data, $project, $request): ProductSource {
             $source = ProductSource::firstOrCreate(
