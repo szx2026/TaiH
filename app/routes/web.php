@@ -43,9 +43,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/projects/{project}/submit', [ProjectWorkflowController::class, 'submit'])->name('projects.submit');
     Route::post('/projects/{project}/research-sources', [ResearchSourceController::class, 'store'])->name('projects.research-sources.store');
     Route::post('/projects/{project}/decisions', [ProjectDecisionController::class, 'store'])->name('projects.decisions.store');
+    Route::patch('/projects/{project}/decisions/{decision}/requested-specifications/{specification}/withdraw', [ProjectDecisionController::class, 'withdrawRequestedSpecification'])->name('projects.decisions.requested-specifications.withdraw');
     Route::patch('/projects/{project}/decisions/{decision}', [ProjectDecisionController::class, 'respond'])->name('projects.decisions.respond');
     Route::post('/projects/{project}/sources', [ProductSourceController::class, 'store'])->name('projects.sources.store');
     Route::post('/projects/{project}/skus', [ProductSkuController::class, 'store'])->name('projects.skus.store');
+    Route::patch('/projects/{project}/skus/{sku}', [ProductSkuController::class, 'update'])->name('projects.skus.update');
     Route::delete('/projects/{project}/skus/{sku}', [ProductSkuController::class, 'destroy'])->name('projects.skus.destroy');
     Route::post('/projects/{project}/landing-pages', [LandingPageController::class, 'store'])->name('projects.landing-pages.store');
     Route::post('/projects/{project}/creative-assets', [CreativeAssetController::class, 'store'])->name('projects.creative-assets.store');

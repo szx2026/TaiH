@@ -12,6 +12,37 @@ use Illuminate\Validation\Rule;
 
 class ProductSkuController extends Controller
 {
+    public function update(Request $request, ProductProject $project, ProductSku $sku): RedirectResponse
+    {
+        abort_unless(
+            $request->user()?->department?->code === 'market_research'
+                || $request->user()?->hasRole('administrator'),
+            403,
+        );
+        abort_unless($sku->product_project_id === $project->id, 404);
+
+        $data = $request->validate([
+            'sku_code' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('product_skus')->ignore($sku->id)->where('product_project_id', $project->id),
+            ],
+            'variant_name' => ['required', 'string', 'max:255'],
+            'purchase_price' => ['nullable', 'numeric', 'min:0'],
+            'weight_g' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $sku->update($data);
+        app(RecordProjectActivity::class)->handle($project, $request->user(), 'sku.updated', [
+            'sku_id' => $sku->id,
+            'sku_code' => $sku->sku_code,
+            'variant_name' => $sku->variant_name,
+        ]);
+
+        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
+    }
+
     public function store(Request $request, ProductProject $project): RedirectResponse
     {
         abort_unless(

@@ -81,6 +81,22 @@
                         <form method="POST" action="{{ route('projects.product-information.update', $selectedProject) }}" class="mt-3 grid gap-3 md:grid-cols-2">@csrf @method('PATCH')<label class="field-label">产品关键词<input name="keywords" value="{{ old('keywords', $selectedProject->keywords) }}" placeholder="例如：轮胎灯, 自行车配件" class="field-input"><small>多个关键词请用逗号分隔。</small></label><label class="field-label">详情页参考链接<input name="detail_reference_url" type="url" value="{{ old('detail_reference_url', $selectedProject->detail_reference_url) }}" placeholder="粘贴参考详情页链接" class="field-input"></label><div class="md:col-span-2"><button class="rounded bg-orange-700 px-4 py-2 text-sm font-semibold text-white">保存产品资料</button></div></form>
                     </section>
                 @endif
+                @if($stage === 'market_research' && $canEdit && $selectedProject->skus->isNotEmpty())
+                    <section class="mt-4 rounded-xl border border-orange-200 bg-white p-4">
+                        <p class="text-sm font-semibold text-orange-900">已录入产品规格</p><p class="mt-1 text-sm text-slate-600">可修改产品规格、内部 SKU、采购价和重量；删除规格会同步移除共享资料与 Shopify 页面关联。</p>
+                        <div class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                            @foreach($selectedProject->skus as $sku)
+                                <article class="rounded-lg border border-slate-200 p-3 text-sm"><p class="font-semibold text-slate-950">产品规格：{{ $sku->variant_name }}</p><p class="mt-1 text-slate-600">内部 SKU：{{ $sku->sku_code ?: '待生成' }}</p><p class="mt-1 text-slate-500">采购价 ¥{{ $sku->purchase_price ?? '待补' }} · 重量 {{ $sku->weight_g ?? '待补' }}g</p><details class="mt-3 border-t border-slate-100 pt-3"><summary class="cursor-pointer font-semibold text-orange-800">修改规格</summary><form method="POST" action="{{ route('projects.skus.update', [$selectedProject, $sku]) }}" class="mt-3 grid gap-2">@csrf @method('PATCH')<input name="variant_name" required value="{{ $sku->variant_name }}" class="field-input"><input name="sku_code" required value="{{ $sku->sku_code }}" class="field-input"><input name="purchase_price" type="number" min="0" step="0.01" value="{{ $sku->purchase_price }}" class="field-input"><input name="weight_g" type="number" min="0" value="{{ $sku->weight_g }}" class="field-input"><button class="rounded bg-orange-700 px-3 py-2 font-semibold text-white">保存修改</button></form></details></article>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+                @if($stage === 'website_operations' && $canEdit)
+                    @php $withdrawableSpecificationDecisions = $selectedProject->decisions->where('decision_type', 'specification')->where('requested_from_stage', 'website_operations')->where('status', 'resolved'); @endphp
+                    @if($withdrawableSpecificationDecisions->isNotEmpty())
+                        <section class="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4"><p class="text-sm font-semibold text-blue-950">已发送的新增规格</p><p class="mt-1 text-sm text-blue-800">产品部尚未生成内部 SKU 的规格可撤回。</p><div class="mt-3 flex flex-wrap gap-2">@foreach($withdrawableSpecificationDecisions as $decision) @foreach(data_get($decision->details, 'requested_specifications', []) as $specification) @if(!in_array($specification, data_get($decision->details, 'withdrawn_requested_specifications', []), true) && ! $selectedProject->skus->contains('variant_name', $specification))<form method="POST" action="{{ route('projects.decisions.requested-specifications.withdraw', [$selectedProject, $decision, 'specification' => $specification]) }}">@csrf @method('PATCH')<button class="rounded border border-blue-300 bg-white px-3 py-2 text-sm font-semibold text-blue-800" onclick="return confirm('确认撤回新增规格「{{ $specification }}」吗？')">撤回 {{ $specification }}</button></form>@endif @endforeach @endforeach</div></section>
+                    @endif
+                @endif
                 @if(! $canEdit)<p class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">当前以 {{ $labels[$userStage] ?? '其他部门' }} 身份查看；本部门工作与待处理事项会优先显示，完整项目资料见下方。</p>@endif
             <div class="mt-5"><div class="w-full rounded-xl border dept-panel-{{ $stage }} p-5">
                 @if($stage === 'market_research')

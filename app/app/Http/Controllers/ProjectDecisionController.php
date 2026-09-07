@@ -11,6 +11,37 @@ use Illuminate\Validation\Rule;
 
 class ProjectDecisionController extends Controller
 {
+    public function withdrawRequestedSpecification(Request $request, ProductProject $project, ProjectDecision $decision, string $specification): RedirectResponse
+    {
+        abort_unless($decision->product_project_id === $project->id, 404);
+        abort_unless(
+            ($request->user()?->department?->code === 'website_operations' || $request->user()?->hasRole('administrator'))
+                && $decision->requested_from_stage === 'website_operations'
+                && $decision->decision_type === 'specification'
+                && $decision->status === 'resolved',
+            403,
+        );
+
+        $details = $decision->details ?? [];
+        $requestedSpecifications = collect($details['requested_specifications'] ?? []);
+        abort_unless($requestedSpecifications->contains($specification), 404);
+        abort_if($project->skus()->where('variant_name', $specification)->exists(), 422, '产品部已为该规格录入内部 SKU，无法撤回。');
+
+        $withdrawnSpecifications = collect($details['withdrawn_requested_specifications'] ?? [])
+            ->push($specification)
+            ->unique()
+            ->values()
+            ->all();
+        $decision->update(['details' => [...$details, 'withdrawn_requested_specifications' => $withdrawnSpecifications]]);
+
+        app(RecordProjectActivity::class)->handle($project, $request->user(), 'specification_request.withdrawn', [
+            'decision_id' => $decision->id,
+            'specification' => $specification,
+        ]);
+
+        return to_route('projects.index', ['stage' => 'website_operations', 'project' => $project]);
+    }
+
     public function store(Request $request, ProductProject $project): RedirectResponse
     {
         abort_unless($request->user()?->department?->code === 'market_research' || $request->user()?->hasRole('administrator'), 403);
