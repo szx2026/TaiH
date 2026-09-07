@@ -56,7 +56,7 @@ class ProductProjectController extends Controller
                 ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
                 ->when($filters['category'] ?? null, fn ($query, $category) => $query->where('category', $category))
                 ->when($filters['priority'] ?? null, fn ($query, $priority) => $query->where('priority', $priority))
-                ->when($filters['search'] ?? null, fn ($query, $search) => $query->where(fn ($query) => $query->where('product_name', 'like', "%{$search}%")->orWhere('project_code', 'like', "%{$search}%")))
+                ->when($filters['search'] ?? null, fn ($query, $search) => $query->where(fn ($query) => $query->where('product_name', 'like', "%{$search}%")->orWhere('keywords', 'like', "%{$search}%")->orWhere('project_code', 'like', "%{$search}%")))
                 ->when($filters['created_from'] ?? null, fn ($query, $date) => $query->whereDate('released_at', '>=', $date))
                 ->when($filters['created_to'] ?? null, fn ($query, $date) => $query->whereDate('released_at', '<=', $date))
                 ->latest('released_at')
@@ -80,11 +80,12 @@ class ProductProjectController extends Controller
             && $selectedProject->skus->isNotEmpty()
             && ! $selectedProject->decisions()->where('decision_type', 'specification')->where('requested_from_stage', 'website_operations')->where('status', 'open')->exists()
         ) {
+            $productTitleWithKeywords = $selectedProject->keywords ? "{$selectedProject->product_name} · {$selectedProject->keywords}" : $selectedProject->product_name;
             ProjectDecision::create([
                 'product_project_id' => $selectedProject->id,
                 'decision_type' => 'specification',
                 'requested_from_stage' => 'website_operations',
-                'title' => "确认「{$selectedProject->product_name}」初步产品规格",
+                'title' => "确认「{$productTitleWithKeywords}」初步产品规格",
                 'status' => 'open',
                 'details' => [
                     'initial_specifications' => $selectedProject->skus->map(fn ($sku) => [

@@ -14,7 +14,7 @@
                             <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">{{ $item['type'] }}</span>
                             <span class="text-xs text-slate-400">{{ $item['created_at']->format('Y-m-d H:i') }}</span>
                         </div>
-                        <h2 class="mt-3 text-lg font-bold text-slate-950">{{ $item['project']->product_name }}</h2>
+                        <h2 class="mt-3 text-lg font-bold text-slate-950">{{ $item['project']->product_name }}@if($item['project']->keywords) · {{ $item['project']->keywords }}@endif</h2>
                         <p class="mt-1 font-medium text-slate-800">{{ $item['title'] }}</p>
                         <p class="mt-2 text-sm leading-6 text-slate-600">{{ $item['description'] }}</p>
                     </div>
