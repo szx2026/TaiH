@@ -601,6 +601,31 @@ if (sharedMaterialsGrid) {
         const paletteClass = sharedDepartmentCardPalette[departmentTitle];
         if (paletteClass) card.classList.add('shared-department-card', paletteClass);
     });
+    const urlPattern = /(https?:\/\/[^\s<]+)/g;
+    const linkifySharedResourceText = (root) => {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach((node) => {
+            if (!urlPattern.test(node.nodeValue) || node.parentElement?.closest('a, script, style')) return;
+            urlPattern.lastIndex = 0;
+            const fragment = document.createDocumentFragment();
+            node.nodeValue.split(urlPattern).forEach((part) => {
+                if (!part) return;
+                if (/^https?:\/\//.test(part)) {
+                    const link = document.createElement('a');
+                    link.href = part;
+                    link.target = '_blank';
+                    link.rel = 'noreferrer';
+                    link.className = 'resource-link';
+                    link.textContent = part;
+                    fragment.append(link);
+                } else fragment.append(document.createTextNode(part));
+            });
+            node.parentNode?.replaceChild(fragment, node);
+        });
+    };
+    sharedMaterialsGrid.querySelectorAll('.shared-department-card').forEach(linkifySharedResourceText);
 }
 
 const submittedRecords = {
