@@ -52,10 +52,9 @@
                     'content_creative' => ['label' => '创意部', 'description' => '视频素材与详情页动图制作'],
                     'traffic_growth' => ['label' => '流量部', 'description' => '广告投放、数据复盘与协作反馈'],
                 ];
-                @php
-                    $activeStageCode = array_key_exists($stage, $projectStages) ? $stage : $selectedProject->current_stage;
-                    $activeStageIndex = array_search($activeStageCode, array_keys($projectStages), true);
-                @endphp
+                $activeStageCode = array_key_exists($stage, $projectStages) ? $stage : $selectedProject->current_stage;
+                $activeStageIndex = array_search($activeStageCode, array_keys($projectStages), true);
+            @endphp
             <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <header class="project-summary-header border-b border-slate-100 pb-5">
                     <div class="project-summary-title">
