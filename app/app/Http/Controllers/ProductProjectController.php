@@ -59,8 +59,16 @@ class ProductProjectController extends Controller
                 ->when($filters['category'] ?? null, fn ($query, $category) => $query->where('category', $category))
                 ->when($filters['priority'] ?? null, fn ($query, $priority) => $query->where('priority', $priority))
                 ->when($filters['search'] ?? null, fn ($query, $search) => $query->where(fn ($query) => $query->where('product_name', 'like', "%{$search}%")->orWhere('keywords', 'like', "%{$search}%")->orWhere('project_code', 'like', "%{$search}%")))
-                ->when($filters['created_from'] ?? null, fn ($query, $date) => $query->whereDate('released_at', '>=', $date))
-                ->when($filters['created_to'] ?? null, fn ($query, $date) => $query->whereDate('released_at', '<=', $date))
+                ->when(!empty($filters['created_from']) && !empty($filters['created_to']), function ($query) use ($filters) {
+                    $query->whereDate('released_at', '>=', $filters['created_from'])
+                          ->whereDate('released_at', '<=', $filters['created_to']);
+                })
+                ->when(!empty($filters['created_from']) && empty($filters['created_to']), function ($query) use ($filters) {
+                    $query->whereDate('released_at', '=', $filters['created_from']);
+                })
+                ->when(empty($filters['created_from']) && !empty($filters['created_to']), function ($query) use ($filters) {
+                    $query->whereDate('released_at', '=', $filters['created_to']);
+                })
                 ->latest('released_at')
                 ->get();
 

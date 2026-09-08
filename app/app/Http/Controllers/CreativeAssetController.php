@@ -28,10 +28,12 @@ class CreativeAssetController extends Controller
         $data = $request->validate([
             'title' => ['nullable', 'string', 'max:255'],
             'asset_types' => ['required', 'array', 'min:1'],
-            'asset_types.*' => ['required', 'distinct', Rule::in(['video', 'gif'])],
+            'asset_types.*' => ['required', 'distinct', Rule::in(['video', 'gif', 'archive'])],
             'source_type' => ['required', Rule::in(['tiktok', 'youtube', 'other'])],
             'landing_page_id' => ['nullable', 'integer', Rule::exists('landing_pages', 'id')],
-            'asset_file' => ['nullable', 'file', 'max:102400'],
+            'asset_file' => ['nullable', 'file', 'max:262144'],
+            'asset_files' => ['nullable', 'array'],
+            'asset_files.*' => ['file', 'max:262144'],
             'reference_urls' => ['required', 'array', 'min:1'],
             'reference_urls.*' => ['required', 'distinct', 'url', 'max:2048'],
             'copy_text' => ['required', 'string'],
@@ -42,25 +44,62 @@ class CreativeAssetController extends Controller
             abort_unless($project->landingPages()->whereKey($data['landing_page_id'])->exists(), 422);
         }
 
-        $path = $request->file('asset_file')?->store('creative-assets/'.$project->id, 'local');
+        $files = [];
+        if ($request->hasFile('asset_files')) {
+            $uploaded = $request->file('asset_files');
+            $files = is_array($uploaded) ? $uploaded : [$uploaded];
+        } elseif ($request->hasFile('asset_file')) {
+            $files = [$request->file('asset_file')];
+        }
 
-        $asset = CreativeAsset::create([
-            'product_project_id' => $project->id,
-            'title' => $project->product_name,
-            'asset_type' => $data['asset_types'][0],
-            'asset_types' => $data['asset_types'],
-            'source_type' => $data['source_type'],
-            'landing_page_id' => $data['landing_page_id'] ?? null,
-            'external_url' => $data['reference_urls'][0],
-            'reference_urls' => array_values($data['reference_urls']),
-            'storage_disk' => $path ? 'local' : null,
-            'storage_path' => $path,
-            'copy_text' => $data['copy_text'] ?? null,
-            'notes' => $data['notes'] ?? null,
-            'status' => 'draft',
-            'created_by' => $request->user()->id,
-        ]);
-        app(RecordProjectActivity::class)->handle($project, $request->user(), 'creative_asset.created', ['asset_id' => $asset->id, 'title' => $asset->title]);
+        if (empty($files)) {
+            $asset = CreativeAsset::create([
+                'product_project_id' => $project->id,
+                'title' => $project->product_name,
+                'asset_type' => $data['asset_types'][0],
+                'asset_types' => $data['asset_types'],
+                'source_type' => $data['source_type'],
+                'landing_page_id' => $data['landing_page_id'] ?? null,
+                'external_url' => $data['reference_urls'][0],
+                'reference_urls' => array_values($data['reference_urls']),
+                'storage_disk' => null,
+                'storage_path' => null,
+                'copy_text' => $data['copy_text'] ?? null,
+                'notes' => $data['notes'] ?? null,
+                'status' => 'draft',
+                'created_by' => $request->user()->id,
+            ]);
+            app(RecordProjectActivity::class)->handle($project, $request->user(), 'creative_asset.created', ['asset_id' => $asset->id, 'title' => $asset->title]);
+        } else {
+            foreach ($files as $file) {
+                $ext = strtolower($file->getClientOriginalExtension());
+                $types = $data['asset_types'];
+                if (in_array($ext, ['zip', 'rar', '7z', 'tar', 'gz'], true) && ! in_array('archive', $types, true)) {
+                    $types[] = 'archive';
+                }
+
+                $path = $file->store('creative-assets/'.$project->id, 'local');
+                $title = count($files) > 1 ? $project->product_name.' - '.$file->getClientOriginalName() : $project->product_name;
+
+                $asset = CreativeAsset::create([
+                    'product_project_id' => $project->id,
+                    'title' => $title,
+                    'asset_type' => $types[0],
+                    'asset_types' => $types,
+                    'source_type' => $data['source_type'],
+                    'landing_page_id' => $data['landing_page_id'] ?? null,
+                    'external_url' => $data['reference_urls'][0],
+                    'reference_urls' => array_values($data['reference_urls']),
+                    'storage_disk' => 'local',
+                    'storage_path' => $path,
+                    'copy_text' => $data['copy_text'] ?? null,
+                    'notes' => $data['notes'] ?? null,
+                    'status' => 'draft',
+                    'created_by' => $request->user()->id,
+                ]);
+                app(RecordProjectActivity::class)->handle($project, $request->user(), 'creative_asset.created', ['asset_id' => $asset->id, 'title' => $asset->title]);
+            }
+        }
 
         return to_route('projects.index', ['stage' => 'content_creative', 'project' => $project]);
     }
