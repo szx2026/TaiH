@@ -60,9 +60,28 @@
         }
 
         .project-summary-header {
+            display: grid !important;
+            gap: 1.5rem !important;
+            grid-template-columns: minmax(0, 1.35fr) minmax(20rem, 0.85fr) !important;
+            align-items: start !important;
             contain: layout;
             transform: translateZ(0);
             backface-visibility: hidden;
+        }
+
+        @media (max-width: 1080px) {
+            .project-summary-header {
+                grid-template-columns: 1fr !important;
+                gap: 1.25rem !important;
+            }
+        }
+
+        .btn-edit-product-name {
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            min-height: 28px !important;
+            height: 28px !important;
+            line-height: 1 !important;
         }
 
         [data-workspace-refresh-result] {

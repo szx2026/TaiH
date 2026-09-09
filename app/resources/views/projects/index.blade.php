@@ -57,16 +57,20 @@
             @endphp
             <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <header class="project-summary-header border-b border-slate-100 pb-5">
-                    <div class="project-summary-title">
+                    <div class="project-summary-title min-w-0">
                         <p class="text-xs font-semibold dept-text-{{ $stage }}">{{ $selectedProject->project_code }}@if($selectedProject->released_at) · 发布于 {{ $selectedProject->released_at->format('Y-m-d') }}@endif</p>
-                        <div class="mt-2 flex items-center gap-3">
-                            @if($selectedProject->product_image_path)<img src="{{ asset('storage/'.$selectedProject->product_image_path) }}" alt="{{ $selectedProject->product_name }} 产品主图" width="48" height="48" loading="eager" decoding="async" class="size-12 shrink-0 rounded-lg object-cover" style="aspect-ratio: 1/1; width: 48px; height: 48px;">@endif
-                            <div>
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <h2 class="text-2xl font-bold">{{ $selectedProject->product_name }}@if($selectedProject->keywords) · {{ $selectedProject->keywords }}@endif</h2>
+                        <div class="mt-2.5 flex items-start gap-3.5 min-w-0">
+                            @if($selectedProject->product_image_path)
+                                <img src="{{ asset('storage/'.$selectedProject->product_image_path) }}" alt="{{ $selectedProject->product_name }} 产品主图" width="52" height="52" loading="eager" decoding="async" class="size-13 shrink-0 rounded-xl object-cover ring-1 ring-slate-200/80 shadow-sm" style="aspect-ratio: 1/1; width: 52px; height: 52px;">
+                            @endif
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                                    <h2 class="text-xl sm:text-2xl font-bold leading-snug tracking-tight text-slate-950 break-words [overflow-wrap:anywhere]" style="word-break: break-word; overflow-wrap: anywhere;">
+                                        {{ $selectedProject->product_name }}@if($selectedProject->keywords) · {{ $selectedProject->keywords }}@endif
+                                    </h2>
                                     @if($canEdit && ($userStage === 'market_research' || auth()->user()?->hasRole('administrator')))
-                                        <button type="button" onclick="openEditProductNameModal()" class="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-0.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition select-none">
-                                            <svg class="size-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <button type="button" onclick="openEditProductNameModal()" class="btn-edit-product-name shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 transition select-none" style="white-space: nowrap !important; flex-shrink: 0 !important; min-height: 28px !important; height: 28px !important; line-height: 1 !important;">
+                                            <svg class="size-3.5 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
                                             <span>修改名称</span>
@@ -95,7 +99,7 @@
                                         </div>
                                     @endif
                                 </div>
-                                <p class="mt-1 text-sm text-slate-500">当前环节：{{ $labels[$activeStageCode] ?? $activeStageCode }}</p>
+                                <p class="mt-1.5 text-xs sm:text-sm text-slate-500">当前环节：{{ $labels[$activeStageCode] ?? $activeStageCode }}</p>
                             </div>
                         </div>
                     </div>
