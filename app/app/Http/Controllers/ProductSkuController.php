@@ -40,7 +40,7 @@ class ProductSkuController extends Controller
             'variant_name' => $sku->variant_name,
         ]);
 
-        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 
     public function store(Request $request, ProductProject $project): RedirectResponse
@@ -82,7 +82,7 @@ class ProductSkuController extends Controller
             'sku_code' => $sku->sku_code,
         ]);
 
-        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 
     public function destroy(Request $request, ProductProject $project, ProductSku $sku): RedirectResponse
@@ -107,6 +107,6 @@ class ProductSkuController extends Controller
             $sku->delete();
         });
 
-        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 }

@@ -22,6 +22,7 @@ class ResearchSourceController extends Controller
             'evidence_note' => ['required', 'string', 'max:4000'],
             'keywords' => ['nullable', 'string', 'max:1000'],
             'detail_reference_url' => ['nullable', 'url', 'max:2048'],
+            'creative_reference_url' => ['nullable', 'url', 'max:2048'],
         ]);
 
         $source = $project->researchSources()->oldest('id')->first();
@@ -51,8 +52,9 @@ class ResearchSourceController extends Controller
         $project->update([
             'keywords' => $data['keywords'] ?? $project->keywords,
             'detail_reference_url' => $data['detail_reference_url'] ?? $project->detail_reference_url,
+            'creative_reference_url' => $data['creative_reference_url'] ?? $project->creative_reference_url,
         ]);
 
-        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 }

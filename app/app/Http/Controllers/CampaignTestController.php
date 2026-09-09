@@ -30,7 +30,7 @@ class CampaignTestController extends Controller
             $campaign->update(collect($data)->only(['spend', 'cost_per_click', 'add_to_cart_conversions', 'checkout_conversions', 'purchase_conversions', 'purchase_value'])->all());
             $campaign->revisions()->create(['metrics' => collect($campaign->only(['spend', 'cost_per_click', 'add_to_cart_conversions', 'checkout_conversions', 'purchase_conversions', 'purchase_value']))->all(), 'conclusion' => $data['conclusion'], 'adjustment_items' => $data['adjustment_items'], 'created_by' => $request->user()->id]);
         });
-        return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
     }
     public function store(Request $request, ProductProject $project): RedirectResponse
     {
@@ -123,6 +123,6 @@ class CampaignTestController extends Controller
             ]);
         });
 
-        return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
     }
 }

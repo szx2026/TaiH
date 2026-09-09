@@ -147,7 +147,7 @@ class ProductProjectController extends Controller
             'product_image_path' => $project->product_image_path,
         ]);
 
-        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 
     public function updateProductInformation(\Illuminate\Http\Request $request, ProductProject $project): RedirectResponse
@@ -155,14 +155,16 @@ class ProductProjectController extends Controller
         abort_unless($request->user()?->department?->code === 'market_research' || $request->user()?->hasRole('administrator'), 403);
 
         $data = $request->validate([
+            'product_name' => ['sometimes', 'required', 'string', 'max:255'],
             'keywords' => ['nullable', 'string', 'max:1000'],
             'detail_reference_url' => ['nullable', 'url', 'max:2048'],
+            'creative_reference_url' => ['nullable', 'url', 'max:2048'],
         ]);
 
         $project->update($data);
         app(RecordProjectActivity::class)->handle($project, $request->user(), 'product_information.updated', $data);
 
-        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 
     public function show(ProductProject $project): RedirectResponse
@@ -280,7 +282,7 @@ class ProductProjectController extends Controller
         abort_unless($request->user()?->department?->code === 'traffic_growth' || $request->user()?->hasRole('administrator'), 403);
         $data = $request->validate(['outcome' => ['required', \Illuminate\Validation\Rule::in(['scale', 'retest', 'adjust_retest', 'pause', 'reject', 'complete'])], 'outcome_reason' => ['required', 'string', 'max:4000'], 'next_action' => ['required', 'string', 'max:4000']]);
         $project->update([...$data, 'outcome_recorded_at' => now(), 'outcome_recorded_by' => $request->user()->id]);
-        return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
     }
 
     public function updateAdDeliveryStatus(\Illuminate\Http\Request $request, ProductProject $project): RedirectResponse
@@ -294,6 +296,6 @@ class ProductProjectController extends Controller
 
         $project->update([...$data, 'ad_delivery_status_updated_at' => now()]);
 
-        return to_route('projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'traffic_growth', 'project' => $project]);
     }
 }

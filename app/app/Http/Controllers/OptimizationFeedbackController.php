@@ -38,6 +38,6 @@ class OptimizationFeedbackController extends Controller
             'response_note' => $data['response_note'],
         ]);
 
-        return to_route('projects.index');
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => $request->user()?->department?->code, 'project' => $project]);
     }
 }

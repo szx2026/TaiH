@@ -132,6 +132,6 @@ class ProductSourceController extends Controller
             ]);
         }
 
-        return to_route('projects.index', ['stage' => 'market_research', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'market_research', 'project' => $project]);
     }
 }

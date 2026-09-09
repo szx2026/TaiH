@@ -49,6 +49,6 @@ class LandingPageController extends Controller
             ]);
         });
 
-        return to_route('projects.index', ['stage' => 'website_operations', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'website_operations', 'project' => $project]);
     }
 }

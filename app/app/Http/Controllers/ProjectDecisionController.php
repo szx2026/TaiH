@@ -39,7 +39,7 @@ class ProjectDecisionController extends Controller
             'specification' => $specification,
         ]);
 
-        return to_route('projects.index', ['stage' => 'website_operations', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'website_operations', 'project' => $project]);
     }
 
     public function store(Request $request, ProductProject $project): RedirectResponse
@@ -85,7 +85,7 @@ class ProjectDecisionController extends Controller
             'title' => $decision->title,
         ]);
 
-        return to_route('projects.index', ['stage' => $department, 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => $department, 'project' => $project]);
     }
 
     public function respond(Request $request, ProductProject $project, ProjectDecision $decision): RedirectResponse
@@ -142,6 +142,6 @@ class ProjectDecisionController extends Controller
             'response_note' => $responseNote,
         ]);
 
-        return to_route('projects.index', ['stage' => $request->user()?->department?->code, 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => $request->user()?->department?->code, 'project' => $project]);
     }
 }

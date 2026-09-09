@@ -13,7 +13,7 @@ class ProductProject extends Model
 
     protected $fillable = [
         'project_code',
-        'product_name', 'keywords', 'detail_reference_url', 'released_at', 'product_image_path',
+        'product_name', 'keywords', 'detail_reference_url', 'creative_reference_url', 'released_at', 'product_image_path',
         'category',
         'market',
         'priority',

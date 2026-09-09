@@ -101,6 +101,24 @@ class CreativeAssetController extends Controller
             }
         }
 
-        return to_route('projects.index', ['stage' => 'content_creative', 'project' => $project]);
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'content_creative', 'project' => $project]);
+    }
+
+    public function destroy(Request $request, ProductProject $project, CreativeAsset $asset): RedirectResponse
+    {
+        abort_unless($request->user()?->department?->code === 'content_creative' || $request->user()?->hasRole('administrator'), 403);
+        abort_unless($asset->product_project_id === $project->id, 404);
+
+        if ($asset->hasStoredFile()) {
+            Storage::disk($asset->storage_disk)->delete($asset->storage_path);
+        }
+
+        $title = $asset->title;
+        $asset->delete();
+
+        app(RecordProjectActivity::class)->handle($project, $request->user(), 'creative_asset.deleted', ['title' => $title]);
+
+        return $this->redirectWithFilters($request, 'projects.index', ['stage' => 'content_creative', 'project' => $project]);
     }
 }
+
