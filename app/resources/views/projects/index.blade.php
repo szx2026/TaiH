@@ -57,23 +57,23 @@
             @endphp
             <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <header class="project-summary-header border-b border-slate-100 pb-5">
-                    <div class="project-summary-title min-w-0">
+                    <div class="project-summary-title min-w-0" style="min-width: 0;">
                         <p class="text-xs font-semibold dept-text-{{ $stage }}">{{ $selectedProject->project_code }}@if($selectedProject->released_at) · 发布于 {{ $selectedProject->released_at->format('Y-m-d') }}@endif</p>
-                        <div class="mt-2.5 flex items-start gap-3.5 min-w-0">
+                        <div style="margin-top: 8px; display: flex; align-items: flex-start; gap: 12px; min-width: 0;">
                             @if($selectedProject->product_image_path)
-                                <img src="{{ asset('storage/'.$selectedProject->product_image_path) }}" alt="{{ $selectedProject->product_name }} 产品主图" width="52" height="52" loading="eager" decoding="async" class="size-13 shrink-0 rounded-xl object-cover ring-1 ring-slate-200/80 shadow-sm" style="aspect-ratio: 1/1; width: 52px; height: 52px;">
+                                <img src="{{ asset('storage/'.$selectedProject->product_image_path) }}" alt="{{ $selectedProject->product_name }} 产品主图" width="44" height="44" loading="eager" decoding="async" style="width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0; flex-shrink: 0; margin-top: 2px;">
                             @endif
-                            <div class="min-w-0 flex-1">
-                                <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-                                    <h2 class="text-xl sm:text-2xl font-bold leading-snug tracking-tight text-slate-950 break-words [overflow-wrap:anywhere]" style="word-break: break-word; overflow-wrap: anywhere;">
+                            <div style="min-width: 0; flex: 1;">
+                                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                                    <h2 style="font-size: 1.35rem; font-weight: 700; line-height: 1.35; color: #0f172a; margin: 0; word-break: break-word; overflow-wrap: anywhere;">
                                         {{ $selectedProject->product_name }}@if($selectedProject->keywords) · {{ $selectedProject->keywords }}@endif
                                     </h2>
                                     @if($canEdit && ($userStage === 'market_research' || auth()->user()?->hasRole('administrator')))
-                                        <button type="button" onclick="openEditProductNameModal()" class="btn-edit-product-name shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 transition select-none" style="white-space: nowrap !important; flex-shrink: 0 !important; min-height: 28px !important; height: 28px !important; line-height: 1 !important;">
-                                            <svg class="size-3.5 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        <button type="button" onclick="openEditProductNameModal()" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; font-size: 12px; font-weight: 500; color: #475569; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; white-space: nowrap; flex-shrink: 0; min-height: 0 !important; height: 24px !important; line-height: 1 !important; box-shadow: 0 1px 2px rgba(0,0,0,0.05); user-select: none;">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 12px !important; height: 12px !important; min-width: 12px !important; min-height: 12px !important; display: inline-block; flex-shrink: 0;">
+                                                <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
-                                            <span>修改名称</span>
+                                            <span style="font-size: 12px; line-height: 1;">修改名称</span>
                                         </button>
                                         <div id="edit-product-name-modal" class="modal-backdrop-smooth" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(3px); align-items: center; justify-content: center; padding: 1rem;" onclick="if(event.target === this) closeEditProductNameModal()">
                                             <div class="modal-dialog-smooth" style="background: #ffffff; border-radius: 14px; width: 100%; max-width: 440px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; overflow: hidden; text-align: left;">
@@ -99,7 +99,7 @@
                                         </div>
                                     @endif
                                 </div>
-                                <p class="mt-1.5 text-xs sm:text-sm text-slate-500">当前环节：{{ $labels[$activeStageCode] ?? $activeStageCode }}</p>
+                                <p style="margin-top: 4px; margin-bottom: 0; font-size: 0.8125rem; color: #64748b;">当前环节：{{ $labels[$activeStageCode] ?? $activeStageCode }}</p>
                             </div>
                         </div>
                     </div>

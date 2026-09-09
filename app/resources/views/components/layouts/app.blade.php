@@ -76,14 +76,6 @@
             }
         }
 
-        .btn-edit-product-name {
-            white-space: nowrap !important;
-            flex-shrink: 0 !important;
-            min-height: 28px !important;
-            height: 28px !important;
-            line-height: 1 !important;
-        }
-
         [data-workspace-refresh-result] {
             min-height: 1.15rem;
             line-height: 1.15rem;
