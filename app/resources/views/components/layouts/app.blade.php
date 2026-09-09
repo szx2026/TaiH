@@ -18,13 +18,57 @@
 
         html {
             scroll-behavior: smooth;
+            scrollbar-gutter: stable;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            overflow-y: scroll;
+            overflow-anchor: auto;
         }
 
-        /* 1. Page & Workspace Smooth Entrance */
+        body {
+            font-feature-settings: "tnum" 1, "cv02" 1, "cv03" 1, "cv04" 1;
+            font-variant-numeric: tabular-nums;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* Universal Box Model & Media Stability */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        img, video {
+            max-width: 100%;
+            height: auto;
+            vertical-align: middle;
+            font-style: italic;
+            shape-margin: 0.75rem;
+        }
+
+        img:not([height]) {
+            min-height: 1px;
+        }
+
+        /* Layout Containment for Render Stability */
         main {
+            contain: layout style;
+            will-change: opacity, transform;
             animation: silkyFadeIn var(--dur-gentle) var(--ease-silky) both;
+        }
+
+        [data-app-sidebar] {
+            contain: layout style;
+        }
+
+        .project-summary-header {
+            contain: layout;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+        [data-workspace-refresh-result] {
+            min-height: 1.15rem;
+            line-height: 1.15rem;
+            display: block;
         }
 
         @keyframes silkyFadeIn {
