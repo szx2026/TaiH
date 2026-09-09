@@ -27,7 +27,7 @@
 
     <form method="GET" class="mb-5 rounded-xl border border-slate-200 bg-white p-4"><input type="hidden" name="stage" value="{{ $stage }}"><div class="grid gap-4 xl:grid-cols-[minmax(250px,0.95fr)_minmax(0,2.65fr)]"><label class="rounded-xl border dept-panel-{{ $stage }} p-3 text-xs font-semibold">当前产品项目<select name="project" onchange="this.form.submit()" class="mt-2 w-full rounded-lg border-slate-300 bg-white text-sm text-slate-800"><option value="">选择一个产品项目</option>@foreach($projects as $project)<option value="{{ $project->id }}" @selected($selectedProject?->id === $project->id)>{{ $project->product_name }}@if($project->keywords) · {{ $project->keywords }}@endif · {{ $project->project_code }}</option>@endforeach</select></label><div class="grid gap-3 border-slate-200 xl:border-l xl:pl-4 md:grid-cols-2 xl:grid-cols-[minmax(190px,1.25fr)_minmax(150px,0.75fr)_minmax(130px,0.6fr)_minmax(135px,0.7fr)_minmax(135px,0.7fr)_auto_auto]"><label class="text-xs font-medium text-slate-600">搜索项目<input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="产品名称或项目编号" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></label><label class="text-xs font-medium text-slate-600">产品类目<select name="category" class="mt-1 w-full rounded-lg border-slate-300 text-sm"><option value="">全部类目</option>@foreach($availableCategories as $category)<option value="{{ $category }}" @selected(($filters['category'] ?? null) === $category)>{{ $category }}</option>@endforeach</select></label><label class="text-xs font-medium text-slate-600">产品阶段<select name="priority" class="mt-1 w-full rounded-lg border-slate-300 text-sm"><option value="">全部阶段</option><option value="initial_screening" @selected(($filters['priority'] ?? null) === 'initial_screening')>初筛产品</option><option value="market_new" @selected(($filters['priority'] ?? null) === 'market_new')>市场新品</option><option value="historical_winner" @selected(($filters['priority'] ?? null) === 'historical_winner')>历史爆品</option></select></label><label class="text-xs font-medium text-slate-600">创建时间从<input name="created_from" type="date" value="{{ $filters['created_from'] ?? '' }}" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></label><label class="text-xs font-medium text-slate-600">创建时间至<input name="created_to" type="date" value="{{ $filters['created_to'] ?? '' }}" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></label><button class="mt-5 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">应用筛选</button><a href="{{ route('projects.index', ['stage' => $stage]) }}" class="mt-5 rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700">清除</a></div></div>@if($projects->isEmpty())<p class="mt-3 text-sm text-slate-500">当前没有可处理项目。</p>@endif</form>
 
-    @if($projects->isNotEmpty())<section class="mb-5 rounded-xl border border-slate-200 bg-white p-4"><div class="flex items-center justify-between"><h2 class="font-semibold">匹配的产品项目</h2><span class="text-sm text-slate-500">{{ $projects->count() }} 个</span></div><div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">@foreach($projects as $project)<a href="{{ route('projects.index', array_merge($filters, ['stage' => $stage, 'project' => $project->id])) }}" class="rounded-lg border border-slate-200 p-3 transition hover:border-slate-400 hover:bg-slate-50 @if($selectedProject?->id === $project->id) border-slate-900 bg-slate-50 @endif"><p class="font-semibold text-slate-950">{{ $project->product_name }}@if($project->keywords) · {{ $project->keywords }}@endif</p><p class="mt-1 text-xs text-slate-500">{{ $project->project_code }} · {{ $labels[$project->current_stage] ?? $project->current_stage }}@if($project->category) · {{ $project->category }}@endif</p></a>@endforeach</div></section>@endif
+    @if($projects->isNotEmpty())<section class="mb-5 rounded-xl border border-slate-200 bg-white p-4"><div class="flex items-center justify-between"><h2 class="font-semibold">匹配的产品项目</h2><span class="text-sm text-slate-500">{{ $projects->count() }} 个</span></div><div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">@foreach($projects as $project)<a href="{{ route('projects.index', array_merge($filters, ['stage' => $stage, 'project' => $project->id])) }}" class="project-card-item rounded-lg border border-slate-200 p-3 transition hover:border-slate-400 hover:bg-slate-50 @if($selectedProject?->id === $project->id) border-slate-900 bg-slate-50 @endif"><p class="font-semibold text-slate-950">{{ $project->product_name }}@if($project->keywords) · {{ $project->keywords }}@endif</p><p class="mt-1 text-xs text-slate-500">{{ $project->project_code }} · {{ $labels[$project->current_stage] ?? $project->current_stage }}@if($project->category) · {{ $project->category }}@endif</p></a>@endforeach</div></section>@endif
     <div id="project-work-area"></div>
     @if($departmentWorkspace && $selectedProject)
         <section class="mt-5 rounded-xl border border-slate-200 bg-white p-5">
@@ -71,8 +71,8 @@
                                             </svg>
                                             <span>修改名称</span>
                                         </button>
-                                        <div id="edit-product-name-modal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(2px); align-items: center; justify-content: center; padding: 1rem;" onclick="if(event.target === this) closeEditProductNameModal()">
-                                            <div style="background: #ffffff; border-radius: 14px; width: 100%; max-width: 440px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; overflow: hidden; text-align: left;">
+                                        <div id="edit-product-name-modal" class="modal-backdrop-smooth" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(3px); align-items: center; justify-content: center; padding: 1rem;" onclick="if(event.target === this) closeEditProductNameModal()">
+                                            <div class="modal-dialog-smooth" style="background: #ffffff; border-radius: 14px; width: 100%; max-width: 440px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; overflow: hidden; text-align: left;">
                                                 <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
                                                     <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #0f172a;">修改产品项目名称</h3>
                                                     <button type="button" onclick="closeEditProductNameModal()" style="background: none; border: none; font-size: 1.25rem; color: #94a3b8; cursor: pointer; padding: 0.25rem; line-height: 1;">&times;</button>
@@ -838,12 +838,23 @@ document.addEventListener('submit', function (e) {
 
 function openEditProductNameModal() {
     const modal = document.getElementById('edit-product-name-modal');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+        modal.style.display = 'flex';
+        void modal.offsetWidth;
+        modal.classList.add('is-open');
+    }
 }
 
 function closeEditProductNameModal() {
     const modal = document.getElementById('edit-product-name-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.classList.remove('is-open');
+        setTimeout(() => {
+            if (!modal.classList.contains('is-open')) {
+                modal.style.display = 'none';
+            }
+        }, 220);
+    }
 }
 
 document.addEventListener('keydown', function (e) {

@@ -7,6 +7,181 @@
     @unless (app()->environment('testing'))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endunless
+    <style id="nc-system-motion">
+        :root {
+            --ease-silky: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --dur-instant: 140ms;
+            --dur-snappy: 200ms;
+            --dur-gentle: 280ms;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 1. Page & Workspace Smooth Entrance */
+        main {
+            animation: silkyFadeIn var(--dur-gentle) var(--ease-silky) both;
+        }
+
+        @keyframes silkyFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 2. Interactive Buttons & Action Controls */
+        button,
+        input[type="submit"],
+        input[type="button"],
+        .btn-smooth,
+        a.btn-smooth {
+            transition: transform var(--dur-instant) var(--ease-silky),
+                        background-color var(--dur-snappy) var(--ease-silky),
+                        border-color var(--dur-snappy) var(--ease-silky),
+                        box-shadow var(--dur-snappy) var(--ease-silky),
+                        color var(--dur-instant) var(--ease-silky),
+                        opacity var(--dur-instant) var(--ease-silky);
+            will-change: transform;
+        }
+
+        button:hover:not(:disabled),
+        input[type="submit"]:hover:not(:disabled),
+        input[type="button"]:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        button:active:not(:disabled),
+        input[type="submit"]:active:not(:disabled),
+        input[type="button"]:active:not(:disabled) {
+            transform: scale(0.976) translateY(0);
+        }
+
+        /* 3. Form Inputs, Selects & Textareas Smooth Focus */
+        input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+        select,
+        textarea {
+            transition: border-color var(--dur-instant) var(--ease-silky),
+                        box-shadow var(--dur-snappy) var(--ease-silky),
+                        background-color var(--dur-instant) var(--ease-silky) !important;
+        }
+
+        input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):focus,
+        select:focus,
+        textarea:focus {
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08) !important;
+            border-color: #0f172a !important;
+        }
+
+        /* 4. Interactive Cards, Project Items & Metric Cards */
+        .project-card-item,
+        .interactive-card,
+        .metric-card-smooth,
+        .shared-department-card {
+            transition: transform var(--dur-snappy) var(--ease-silky),
+                        box-shadow var(--dur-snappy) var(--ease-silky),
+                        border-color var(--dur-snappy) var(--ease-silky),
+                        background-color var(--dur-snappy) var(--ease-silky);
+            will-change: transform;
+        }
+
+        .project-card-item:hover,
+        .metric-card-smooth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -3px rgba(15, 23, 42, 0.06), 0 3px 6px -2px rgba(15, 23, 42, 0.04);
+        }
+
+        .project-card-item:active {
+            transform: translateY(0) scale(0.99);
+        }
+
+        /* 5. Sidebar Navigation Transitions */
+        [data-app-sidebar] nav a {
+            transition: transform var(--dur-instant) var(--ease-silky),
+                        background-color var(--dur-snappy) var(--ease-silky),
+                        color var(--dur-instant) var(--ease-silky),
+                        box-shadow var(--dur-snappy) var(--ease-silky) !important;
+        }
+
+        [data-app-sidebar] nav a:hover {
+            transform: translateX(3px);
+        }
+
+        [data-app-sidebar] nav a:active {
+            transform: translateX(1px) scale(0.99);
+        }
+
+        /* 6. Modal Backdrop & Dialog Spring Entrance */
+        .modal-backdrop-smooth {
+            opacity: 0;
+            transition: opacity var(--dur-snappy) var(--ease-silky);
+            pointer-events: none;
+        }
+
+        .modal-backdrop-smooth.is-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-dialog-smooth {
+            transform: scale(0.94) translateY(12px);
+            opacity: 0;
+            transition: transform var(--dur-gentle) var(--ease-silky),
+                        opacity var(--dur-snappy) var(--ease-silky);
+        }
+
+        .modal-backdrop-smooth.is-open .modal-dialog-smooth {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        /* 7. Progress Dot Micro-interaction */
+        .project-progress-dot {
+            transition: transform var(--dur-snappy) var(--ease-spring),
+                        background-color var(--dur-instant) var(--ease-silky),
+                        border-color var(--dur-instant) var(--ease-silky),
+                        box-shadow var(--dur-snappy) var(--ease-silky) !important;
+        }
+
+        .project-progress-step:hover .project-progress-dot {
+            transform: scale(1.15);
+        }
+
+        .project-progress-step:active .project-progress-dot {
+            transform: scale(0.95);
+        }
+
+        /* 8. Table Rows & Divide Lists */
+        .divide-y > * {
+            transition: background-color var(--dur-instant) var(--ease-silky);
+        }
+
+        /* 9. Respect Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            button:hover, 
+            input[type="submit"]:hover,
+            [data-app-sidebar] nav a:hover,
+            .project-card-item:hover,
+            .metric-card-smooth:hover {
+                transform: none !important;
+            }
+        }
+    </style>
 </head>
 <body class="min-h-screen bg-zinc-50 text-zinc-950 antialiased">
     <div class="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
