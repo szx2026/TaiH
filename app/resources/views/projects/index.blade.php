@@ -65,24 +65,34 @@
                                 <div class="flex flex-wrap items-center gap-2">
                                     <h2 class="text-2xl font-bold">{{ $selectedProject->product_name }}@if($selectedProject->keywords) · {{ $selectedProject->keywords }}@endif</h2>
                                     @if($canEdit && ($userStage === 'market_research' || auth()->user()?->hasRole('administrator')))
-                                        <details class="relative inline-block">
-                                            <summary class="cursor-pointer rounded border border-slate-200 bg-white px-2 py-0.5 text-xs font-normal text-slate-600 hover:bg-slate-50 hover:text-slate-900 select-none">
-                                                修改名称
-                                            </summary>
-                                            <div class="absolute left-0 top-full z-30 mt-1 w-80 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
-                                                <form method="POST" action="{{ route('projects.product-information.update', $selectedProject) }}" class="space-y-2">
+                                        <button type="button" onclick="openEditProductNameModal()" class="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-0.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition select-none">
+                                            <svg class="size-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
+                                            <span>修改名称</span>
+                                        </button>
+                                        <div id="edit-product-name-modal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(2px); align-items: center; justify-content: center; padding: 1rem;" onclick="if(event.target === this) closeEditProductNameModal()">
+                                            <div style="background: #ffffff; border-radius: 14px; width: 100%; max-width: 440px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; overflow: hidden; text-align: left;">
+                                                <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+                                                    <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #0f172a;">修改产品项目名称</h3>
+                                                    <button type="button" onclick="closeEditProductNameModal()" style="background: none; border: none; font-size: 1.25rem; color: #94a3b8; cursor: pointer; padding: 0.25rem; line-height: 1;">&times;</button>
+                                                </div>
+                                                <form method="POST" action="{{ route('projects.product-information.update', $selectedProject) }}" style="padding: 1.25rem;">
                                                     @csrf
                                                     @method('PATCH')
                                                     <input type="hidden" name="return_url" value="{{ request()->fullUrl() }}">
-                                                    <label class="block text-xs font-semibold text-slate-700">修改产品项目名称</label>
-                                                    <input name="product_name" required value="{{ $selectedProject->product_name }}" class="w-full rounded border border-slate-300 text-sm px-2.5 py-1.5 focus:border-slate-900 focus:ring-0">
-                                                    <div class="flex justify-end gap-2 pt-1">
-                                                        <button type="button" onclick="this.closest('details').removeAttribute('open')" class="rounded px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100">取消</button>
-                                                        <button type="submit" class="rounded bg-slate-900 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-800">保存修改</button>
+                                                    <div>
+                                                        <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #334155; margin-bottom: 0.375rem;">产品项目名称 <span style="color: #ef4444;">*</span></label>
+                                                        <input name="product_name" required value="{{ $selectedProject->product_name }}" style="width: 100%; box-sizing: border-box; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
+                                                        <p style="margin-top: 0.375rem; margin-bottom: 0; font-size: 0.75rem; color: #64748b;">修改后，全流程各部门协作资料将同步使用新名称。</p>
+                                                    </div>
+                                                    <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                                        <button type="button" onclick="closeEditProductNameModal()" style="padding: 0.375rem 0.875rem; font-size: 0.8125rem; font-weight: 600; color: #475569; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer;">取消</button>
+                                                        <button type="submit" style="padding: 0.375rem 1rem; font-size: 0.8125rem; font-weight: 600; color: #ffffff; background: #0f172a; border: none; border-radius: 6px; cursor: pointer;">保存修改</button>
                                                     </div>
                                                 </form>
                                             </div>
-                                        </details>
+                                        </div>
                                     @endif
                                 </div>
                                 <p class="mt-1 text-sm text-slate-500">当前环节：{{ $labels[$activeStageCode] ?? $activeStageCode }}</p>
@@ -824,5 +834,19 @@ document.addEventListener('submit', function (e) {
         input.value = window.location.href;
         form.appendChild(input);
     }
+});
+
+function openEditProductNameModal() {
+    const modal = document.getElementById('edit-product-name-modal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeEditProductNameModal() {
+    const modal = document.getElementById('edit-product-name-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeEditProductNameModal();
 });
 </script>
