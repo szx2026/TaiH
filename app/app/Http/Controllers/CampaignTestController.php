@@ -39,7 +39,7 @@ class CampaignTestController extends Controller
         $data = $request->validate([
             'platform' => ['required', Rule::in(['facebook'])],
             'campaign_name' => ['nullable', 'string', 'max:255'],
-            'spend' => ['required', 'numeric', 'min:0'],
+            'spend' => ['nullable', 'numeric', 'min:0'],
             'cost_per_click' => ['nullable', 'numeric', 'min:0'],
             'add_to_cart_conversions' => ['nullable', 'integer', 'min:0'],
             'checkout_conversions' => ['nullable', 'integer', 'min:0'],
@@ -51,10 +51,9 @@ class CampaignTestController extends Controller
             'conversions' => ['nullable', 'integer', 'min:0'],
             'detail_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'creative_asset_id' => [
-                'required',
+                'nullable',
                 Rule::exists('creative_assets', 'id')->where(fn ($query) => $query
-                    ->where('product_project_id', $project->id)
-                    ->where('asset_type', 'video')),
+                    ->where('product_project_id', $project->id)),
             ],
             'landing_page_id' => [
                 'required',
@@ -75,12 +74,12 @@ class CampaignTestController extends Controller
                 'product_project_id' => $project->id,
                 'platform' => $data['platform'],
                 'campaign_name' => $project->product_name,
-                'spend' => $data['spend'],
+                'spend' => $data['spend'] ?? 0,
                 // Legacy columns stay populated for historical compatibility.
                 'impressions' => $impressions,
                 'clicks' => $clicks,
                 'conversions' => $checkoutConversions,
-                'cost_per_click' => $data['cost_per_click'] ?? ($clicks > 0 ? round($data['spend'] / $clicks, 2) : null),
+                'cost_per_click' => $data['cost_per_click'] ?? ($clicks > 0 ? round(($data['spend'] ?? 0) / $clicks, 2) : null),
                 'add_to_cart_conversions' => $data['add_to_cart_conversions'] ?? null,
                 'checkout_conversions' => $checkoutConversions,
                 'purchase_conversions' => (int) ($data['purchase_conversions'] ?? $checkoutConversions),
@@ -88,7 +87,7 @@ class CampaignTestController extends Controller
                 'result_metric' => $data['result_metric'] ?? 'purchase',
                 'detail_image_path' => $detailImagePath,
                 'ctr' => $ctr,
-                'creative_asset_id' => $data['creative_asset_id'],
+                'creative_asset_id' => $data['creative_asset_id'] ?? null,
                 'landing_page_id' => $data['landing_page_id'],
                 'created_by' => $request->user()->id,
             ]);
@@ -117,9 +116,9 @@ class CampaignTestController extends Controller
                 'add_to_cart_conversions' => $campaign->add_to_cart_conversions,
                 'checkout_conversions' => $campaign->checkout_conversions,
                 'creative_asset_id' => $campaign->creative_asset_id,
-                'creative_asset_title' => $campaign->creativeAsset->title,
+                'creative_asset_title' => $campaign->creativeAsset?->title,
                 'landing_page_id' => $campaign->landing_page_id,
-                'landing_page_title' => $campaign->landingPage->title,
+                'landing_page_title' => $campaign->landingPage?->title,
             ]);
         });
 

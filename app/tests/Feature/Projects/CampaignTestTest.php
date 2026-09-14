@@ -271,11 +271,9 @@ class CampaignTestTest extends TestCase
         $this->actingAs($user)
             ->get("/projects?stage=traffic_growth&project={$project->id}")
             ->assertOk()
-            ->assertSee('本次投放使用的创意部视频素材')
-            ->assertSee('选择创意部视频素材')
             ->assertSee('选择 Shopify 页面')
-            ->assertSee('当前项目视频')
             ->assertSee('当前项目 Shopify 页面')
+            ->assertSee('当前项目视频')
             ->assertSee('当前项目图片');
     }
 
