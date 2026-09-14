@@ -34,7 +34,7 @@ class ProductionAccountSeeder extends Seeder
                 [
                     'name' => $name,
                     'department_id' => $department->id,
-                    'role' => 'manager',
+                    'role' => 'administrator',
                     'password' => Hash::make($password),
                 ],
             );

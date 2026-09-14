@@ -2,6 +2,7 @@
 
 namespace App\Actions\Projects;
 
+use App\Models\Department;
 use App\Models\ProductProject;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -22,7 +23,7 @@ class CreateProductProject
             'priority' => $data['priority'],
             'current_stage' => 'market_research',
             'status' => 'draft',
-            'owner_department_id' => $actor->department_id,
+            'owner_department_id' => $actor->department_id ?? Department::query()->where('code', 'market_research')->value('id'),
             'owner_user_id' => $actor->id,
             'created_by' => $actor->id,
         ]);

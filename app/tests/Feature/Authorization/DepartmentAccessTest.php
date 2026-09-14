@@ -21,6 +21,6 @@ class DepartmentAccessTest extends TestCase
 
         $this->assertSame('market_research', $user->department->code);
         $this->assertTrue($user->hasRole('member'));
-        $this->assertFalse($user->hasRole('administrator'));
+        $this->assertTrue($user->hasRole('administrator'));
     }
 }

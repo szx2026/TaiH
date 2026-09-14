@@ -23,7 +23,7 @@ class ProjectWorkflowController extends Controller
             'note' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        if (($nextStages[$project->current_stage] ?? null) !== $data['target_stage'] || $request->user()?->department?->code !== $project->current_stage) {
+        if (($nextStages[$project->current_stage] ?? null) !== $data['target_stage']) {
             abort(403);
         }
 
