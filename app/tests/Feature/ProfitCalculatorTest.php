@@ -79,4 +79,55 @@ class ProfitCalculatorTest extends TestCase
         $response->assertOk()
             ->assertSee('智能保温杯');
     }
+
+    public function test_user_can_save_project_profit_data(): void
+    {
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id, 'role' => 'administrator']);
+
+        $project = ProductProject::create([
+            'project_code' => 'PP-202609-PROFIT03',
+            'product_name' => '便携榨汁杯',
+            'market' => 'US',
+            'priority' => 'market_new',
+            'current_stage' => 'market_research',
+            'status' => 'draft',
+            'owner_department_id' => $department->id,
+            'owner_user_id' => $user->id,
+            'created_by' => $user->id,
+        ]);
+
+        $payload = [
+            'settings' => [
+                'exchangeRate' => 6.70,
+                'feeRate' => 0.08,
+                'refundRate' => 0.05,
+                'logisticsBaseCny' => 24,
+                'logisticsRateCnyKg' => 60,
+            ],
+            'products' => [
+                [
+                    'id' => 'prod-1',
+                    'sku' => '标准版 (SKU-001)',
+                    'costCny' => 25.0,
+                    'weightG' => 350,
+                    'priceUsd' => 19.99,
+                    'storeShippingUsd' => 0,
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($user)
+            ->postJson(route('profit-calculator.save', $project), $payload);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+            ]);
+
+        $project->refresh();
+        $this->assertNotNull($project->profit_data);
+        $this->assertEquals(6.70, $project->profit_data['settings']['exchangeRate']);
+        $this->assertEquals(19.99, $project->profit_data['products'][0]['priceUsd']);
+    }
 }

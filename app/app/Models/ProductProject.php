@@ -26,11 +26,17 @@ class ProductProject extends Model
         'owner_user_id',
         'created_by',
         'outcome', 'outcome_reason', 'next_action', 'outcome_recorded_at', 'outcome_recorded_by',
+        'profit_data',
     ];
 
     protected function casts(): array
     {
-        return ['released_at' => 'datetime', 'ad_started_at' => 'datetime', 'ad_delivery_status_updated_at' => 'datetime'];
+        return [
+            'released_at' => 'datetime',
+            'ad_started_at' => 'datetime',
+            'ad_delivery_status_updated_at' => 'datetime',
+            'profit_data' => 'array',
+        ];
     }
 
     public function ownerDepartment(): BelongsTo

@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/feedback', [FeedbackCenterController::class, 'index'])->name('feedback.index');
     Route::get('/profit-calculator', [ProfitCalculatorController::class, 'index'])->name('profit-calculator.index');
+    Route::post('/profit-calculator/{project}', [ProfitCalculatorController::class, 'save'])->name('profit-calculator.save');
     Route::get('/integrations', [IntegrationController::class, 'index'])->name('integrations.index');
     Route::get('/projects', [ProductProjectController::class, 'index'])->name('projects.index');
     Route::get('/recycle-bin', [ProductProjectController::class, 'recycleBin'])->name('projects.recycle-bin');

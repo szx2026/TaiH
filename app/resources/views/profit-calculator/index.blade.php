@@ -1,44 +1,86 @@
 <x-layouts.app :title="'产品盈亏计算工具 · NC ERP'">
+@php
+    $projectsPayload = $projects->mapWithKeys(function ($proj) {
+        return [
+            $proj->id => [
+                'id' => $proj->id,
+                'name' => $proj->product_name,
+                'code' => $proj->project_code,
+                'skus' => $proj->skus->map(fn ($s) => [
+                    'id' => $s->id,
+                    'variant_name' => $s->variant_name,
+                    'sku_code' => $s->sku_code,
+                    'purchase_price' => $s->purchase_price !== null ? (float) $s->purchase_price : null,
+                    'weight_g' => $s->weight_g !== null ? (float) $s->weight_g : null,
+                ])->values(),
+                'profit_data' => $proj->profit_data,
+                'save_url' => route('profit-calculator.save', $proj),
+            ]
+        ];
+    });
+@endphp
+
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-            <p class="text-sm font-semibold text-teal-600">离线计算 · 数据保存在当前浏览器</p>
+            <p class="text-sm font-semibold text-teal-600">实时测算 · 支持绑定项目保存与自由独立计算</p>
             <h1 class="mt-1 text-3xl font-bold text-slate-900">产品盈亏计算工具</h1>
-            <p class="mt-2 text-sm text-slate-500">填写成本、重量和售价，实时计算保本广告成本（CPR）与盈亏保本 ROI。</p>
+            <p class="mt-2 text-sm text-slate-500">自动带入系统产品规格已知信息，填写售价实时计算保本广告成本（CPR）与盈亏保本 ROI。</p>
         </div>
         <div class="flex items-center gap-2">
             <span class="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700 border border-teal-200">
                 <span class="h-1.5 w-1.5 rounded-full bg-teal-500"></span>
-                实时自动保存
+                草稿实时缓存
             </span>
         </div>
     </div>
 
-    <!-- ERP 项目规格快速导入条 -->
+    <!-- ERP 项目联动与保存控制台 -->
     <section class="mb-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-teal-600">
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                    <line x1="12" y1="22.08" x2="12" y2="12"/>
-                </svg>
-                <span class="text-sm font-semibold text-slate-800">从系统项目快速导入规格：</span>
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+                <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-teal-600">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    <span>选择产品项目：</span>
+                </div>
+                <div class="flex-1 max-w-xl">
+                    <select id="erp-project-select" class="field-input mt-0 text-sm w-full font-medium">
+                        <option value="">-- 自由独立计算（不关联任何项目） --</option>
+                        @foreach($projects as $proj)
+                            <option value="{{ $proj->id }}" @selected($preloadedProject?->id === $proj->id)>
+                                {{ $proj->product_name }} ({{ $proj->skus->count() }} 个规格) · {{ $proj->project_code }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
-            <div class="flex flex-wrap items-center gap-2 flex-1 max-w-xl">
-                <select id="erp-project-select" class="field-input mt-0 text-sm flex-1">
-                    <option value="">-- 选择系统中的产品项目 --</option>
-                    @foreach($projects as $proj)
-                        <option value="{{ $proj->id }}" @selected($preloadedProject?->id === $proj->id) data-skus='@json($proj->skus)'>
-                            {{ $proj->product_name }} ({{ $proj->skus->count() }} 个规格) · {{ $proj->project_code }}
-                        </option>
-                    @endforeach
-                </select>
-                <button type="button" id="btn-import-project" class="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 transition">
-                    导入规格
+
+            <div class="flex items-center gap-3">
+                <div id="mode-badge-container">
+                    <span id="mode-badge" class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 border border-slate-200">
+                        <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                        自由独立计算模式
+                    </span>
+                </div>
+
+                <button type="button" id="btn-save-project-profit" class="inline-flex items-center gap-1.5 rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    <span id="btn-save-text">保存当前产品利润表</span>
                 </button>
             </div>
         </div>
-        <p id="erp-import-hint" class="mt-2 text-xs text-slate-400">导入会将所选项目的规格名称、内部 SKU、采购价（CNY）及重量（g）填入计算表中，自动带入利润测算。</p>
+
+        <div id="erp-mode-desc" class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2.5 text-xs text-slate-500">
+            <span id="erp-mode-hint">💡 自由独立计算模式：不关联系统项目，数据保存在浏览器本地，可任意自由测算。</span>
+            <span id="erp-last-saved" class="text-slate-400 font-medium"></span>
+        </div>
     </section>
 
     <!-- 状态提示 -->
@@ -218,21 +260,68 @@
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.StateManager = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (Core) {
-  const STORAGE_KEY = 'nc-erp-product-profit-calculator-v1';
+  const STORAGE_KEY = 'nc-erp-profit-calc-free-v1';
+
   function createInitialState() {
     return { version: 1, settings: { ...Core.DEFAULT_SETTINGS },
       products: Array.from({ length: 5 }, (_, i) => Core.blankProduct(i)) };
   }
+
+  function createStateFromSkus(skus) {
+    const products = [];
+    const seenPrices = new Set();
+
+    (skus || []).forEach((sku, idx) => {
+      const hasPrice = sku.purchase_price !== null && sku.purchase_price !== undefined && sku.purchase_price !== '';
+      const cost = hasPrice ? Number(sku.purchase_price) : '';
+
+      // 同一价格的 SKU 只自动填充一个
+      const priceKey = hasPrice ? String(cost) : `__empty__${idx}`;
+      if (hasPrice) {
+        if (seenPrices.has(priceKey)) {
+          return;
+        }
+        seenPrices.add(priceKey);
+      }
+
+      const label = sku.sku_code
+        ? (sku.variant_name ? `${sku.variant_name} (${sku.sku_code})` : sku.sku_code)
+        : (sku.variant_name || `规格 ${idx + 1}`);
+
+      products.push({
+        id: `erp-sku-${sku.id || Date.now()}-${idx}`,
+        sku: label,
+        costCny: cost,
+        weightG: sku.weight_g !== null && sku.weight_g !== undefined && sku.weight_g !== '' ? Number(sku.weight_g) : '',
+        priceUsd: '',
+        storeShippingUsd: 0,
+      });
+    });
+
+    // 若规格不足 5 个，补足至 5 行，方便用户直接录入
+    while (products.length < 5) {
+      products.push(Core.blankProduct(products.length));
+    }
+
+    return {
+      version: 1,
+      settings: { ...Core.DEFAULT_SETTINGS },
+      products,
+    };
+  }
+
   function normalizeState(value) {
-    if (!value || value.version !== 1) throw new Error('不支持的备份版本');
+    if (!value || value.version !== 1) throw new Error('不支持的数据版本');
     if (!value.settings || typeof value.settings !== 'object' || Array.isArray(value.settings))
       throw new Error('参数格式无效');
     if (!Array.isArray(value.products) || value.products.length < 1)
-      throw new Error('备份内容不完整');
+      throw new Error('产品明细列表不能为空');
+
     const settings = { ...Core.DEFAULT_SETTINGS, ...value.settings };
     const settingErrors = Core.validateSettings(settings);
     if (settingErrors.length) throw new Error(settingErrors[0]);
     for (const key of Object.keys(Core.DEFAULT_SETTINGS)) settings[key] = Number(settings[key]);
+
     const numericKeys = ['costCny', 'weightG', 'priceUsd', 'storeShippingUsd'];
     const productIds = new Set();
     const products = value.products.map((product, index) => {
@@ -241,7 +330,9 @@
       const fallback = Core.blankProduct(index);
       const normalized = { ...fallback, ...product,
         id: String(product.id || fallback.id), sku: String(product.sku || '') };
-      if (productIds.has(normalized.id)) throw new Error(`第 ${index + 1} 个产品 ID 重复`);
+      if (productIds.has(normalized.id)) {
+        normalized.id = `${normalized.id}-${index}`;
+      }
       productIds.add(normalized.id);
       for (const key of numericKeys) {
         if (normalized[key] === '' || normalized[key] === null || normalized[key] === undefined) {
@@ -256,31 +347,66 @@
     });
     return { version: 1, settings, products };
   }
+
   function importBackup(text) {
     let value;
     try { value = JSON.parse(text); } catch { throw new Error('备份文件不是有效的 JSON'); }
     return normalizeState(value);
   }
+
   function exportBackup(state) { return JSON.stringify(normalizeState(state), null, 2); }
-  function loadState(storage) {
-    try { const raw = storage.getItem(STORAGE_KEY); return raw ? importBackup(raw) : createInitialState(); }
-    catch { return createInitialState(); }
+
+  function loadState(storage, key = STORAGE_KEY) {
+    try {
+      const raw = storage ? storage.getItem(key) : null;
+      return raw ? importBackup(raw) : createInitialState();
+    } catch {
+      return createInitialState();
+    }
   }
-  function saveState(storage, state) {
-    storage.setItem(STORAGE_KEY, exportBackup(state));
+
+  function saveState(storage, state, key = STORAGE_KEY) {
+    if (storage) {
+      try {
+        storage.setItem(key, exportBackup(state));
+      } catch (e) {
+        console.warn('Storage save failed', e);
+      }
+    }
   }
-  return { STORAGE_KEY, createInitialState, normalizeState,
+
+  return { STORAGE_KEY, createInitialState, createStateFromSkus, normalizeState,
     loadState, saveState, exportBackup, importBackup };
 });
+
+const PROJECTS_DATA = @json($projectsPayload);
+const INITIAL_PROJECT_ID = {{ $preloadedProject ? $preloadedProject->id : 'null' }};
 
 let state;
 let statusMessage = '';
 let storage = null;
+let currentProjectId = null;
+
+function getActiveStorageKey() {
+  return currentProjectId ? `nc-erp-profit-calc-proj-${currentProjectId}` : StateManager.STORAGE_KEY;
+}
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
   }[char]));
+}
+
+function formatDateTime(isoString) {
+  if (!isoString) return '';
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return '';
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } catch {
+    return '';
+  }
 }
 
 function showStatus(message) {
@@ -294,10 +420,9 @@ function showStatus(message) {
 
 function replaceState(candidate, successMessage) {
   try {
-    StateManager.normalizeState(candidate);
-    if (!storage) throw new Error('浏览器存储不可用');
-    StateManager.saveState(storage, candidate);
-    state = candidate;
+    const normalized = StateManager.normalizeState(candidate);
+    StateManager.saveState(storage, normalized, getActiveStorageKey());
+    state = normalized;
     statusMessage = successMessage;
   } catch (error) {
     statusMessage = `存储失败，当前数据未更改：${error.message}`;
@@ -315,8 +440,7 @@ function updateAndRender(mutator, structureChanged = false) {
     return;
   }
   try {
-    if (!storage) throw new Error('浏览器存储不可用');
-    StateManager.saveState(storage, state);
+    StateManager.saveState(storage, state, getActiveStorageKey());
     statusMessage = '';
   } catch {
     statusMessage = '浏览器存储不可用或空间不足。更改仍保留在当前页面，但尚未保存。';
@@ -453,19 +577,39 @@ function renderProducts(results) {
     <td data-label="操作"><div class="row-action-btns"><button type="button" class="btn-copy" data-action="copy" data-product-id="${escapeHtml(product.id)}">复制</button><button type="button" class="btn-delete" data-action="delete" data-product-id="${escapeHtml(product.id)}">删除</button></div></td>
   </tr>`;
   }).join('');
+
+  const proj = currentProjectId ? PROJECTS_DATA[currentProjectId] : null;
+  const subtitle = proj 
+    ? `当前项目「${escapeHtml(proj.name)}」· 已填入规格信息，支持独立保存` 
+    : '自由独立计算模式 · 数据保存在浏览器草稿，不影响任何系统项目';
+
   document.getElementById('products').innerHTML = `
-    <div class="flex items-center justify-between gap-4 mb-3"><h2 id="products-title" class="text-base font-bold text-slate-900">产品明细列表</h2><button type="button" data-action="add" class="rounded-lg bg-teal-700 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-teal-800 transition">+ 新增产品</button></div>
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+      <div>
+        <h2 id="products-title" class="text-base font-bold text-slate-900">产品明细列表</h2>
+        <p class="text-xs text-slate-500 mt-0.5">${subtitle}</p>
+      </div>
+      <div class="flex items-center gap-2">
+        ${currentProjectId ? `<button type="button" data-action="save-project" class="inline-flex items-center gap-1.5 rounded-lg bg-teal-700 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-teal-800 transition shadow-sm">💾 保存此产品利润表</button>` : ''}
+        <button type="button" data-action="add" class="rounded-lg border border-slate-300 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">+ 新增产品规格</button>
+      </div>
+    </div>
     <div class="overflow-x-auto"><table class="calc-table"><thead><tr><th class="w-12 text-center">序号</th><th>SKU / 规格名称</th><th>产品成本 (¥)</th><th>重量 (g)</th><th>售价 ($)</th><th>店铺运费 ($)</th><th>计算结果</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 function renderDataActions() {
+  const proj = currentProjectId ? PROJECTS_DATA[currentProjectId] : null;
+  const tips = proj 
+    ? `当前正在为「${escapeHtml(proj.name)}」测算，点击「保存当前产品利润表」可持久化保存在系统中；也可导出 JSON 备份。`
+    : '自由独立测算数据保存在当前浏览器本地；导出 JSON 文件可在其他电脑或浏览器上随时还原。';
+
   document.getElementById('data-actions').innerHTML = `
     <h2 id="data-title" class="text-base font-bold text-slate-900 mb-1">数据备份与管理</h2>
-    <p class="text-xs text-slate-500 mb-3">测算数据自动保存在当前浏览器本地；导出 JSON 文件可在其他电脑或浏览器上随时还原。</p>
+    <p class="text-xs text-slate-500 mb-3">${tips}</p>
     <div class="flex flex-wrap gap-2">
       <button type="button" class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" data-action="export">导出备份 (JSON)</button>
       <button type="button" class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" data-action="import">导入备份 (JSON)</button>
-      <button type="button" class="rounded-lg border border-rose-300 bg-white px-3.5 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50" data-action="reset">重置全部数据</button>
+      <button type="button" class="rounded-lg border border-rose-300 bg-white px-3.5 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50" data-action="reset">重置当前数据</button>
     </div>`;
 }
 
@@ -499,12 +643,152 @@ function renderCalculations() {
   showStatus(statusMessage);
 }
 
+function updateModeUI(savedAt = null) {
+  const badge = document.getElementById('mode-badge');
+  const saveBtn = document.getElementById('btn-save-project-profit');
+  const modeHint = document.getElementById('erp-mode-hint');
+  const lastSaved = document.getElementById('erp-last-saved');
+
+  if (!currentProjectId) {
+    if (badge) {
+      badge.className = 'inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 border border-slate-200';
+      badge.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>自由独立计算模式';
+    }
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.title = '自由模式无需手动保存，浏览器本地自动缓存';
+    }
+    if (modeHint) {
+      modeHint.innerHTML = '💡 <strong>自由独立计算模式</strong>：不关联系统项目，数据保存在当前浏览器本地，可自由测算。如需专属保存请在上方选择产品。';
+    }
+    if (lastSaved) lastSaved.textContent = '';
+  } else {
+    const proj = PROJECTS_DATA[currentProjectId];
+    const hasSaved = Boolean(proj && proj.profit_data && proj.profit_data.products && proj.profit_data.products.length > 0);
+    const timeStr = savedAt ? formatDateTime(savedAt) : (hasSaved ? formatDateTime(proj.profit_data.saved_at) : '');
+
+    if (badge) {
+      if (hasSaved) {
+        badge.className = 'inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 border border-emerald-200';
+        badge.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>已保存专属利润表';
+      } else {
+        badge.className = 'inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 border border-amber-200';
+        badge.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>已带入已知规格 · 待保存';
+      }
+    }
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.title = '保存当前产品利润表至系统服务端';
+    }
+    if (modeHint) {
+      modeHint.innerHTML = `📦 <strong>当前产品</strong>：${escapeHtml(proj ? proj.name : '')} · 同一价格规格仅自动保留一个（共 ${proj ? proj.skus.length : 0} 个已知规格）。可输入售价并调整参数后点击保存。`;
+    }
+    if (lastSaved) {
+      lastSaved.textContent = timeStr ? `上次保存时间：${timeStr}` : '尚未保存到系统';
+    }
+  }
+}
+
+function switchProject(projectId, isUserInitiated = false) {
+  if (!projectId) {
+    currentProjectId = null;
+    state = StateManager.loadState(storage, StateManager.STORAGE_KEY);
+    updateModeUI();
+    render();
+    if (isUserInitiated) showStatus('已切回自由独立计算模式，已恢复本地草稿。');
+    return;
+  }
+
+  currentProjectId = Number(projectId);
+  const proj = PROJECTS_DATA[currentProjectId];
+  if (!proj) return;
+
+  if (proj.profit_data && proj.profit_data.products && proj.profit_data.products.length > 0) {
+    // 已有保存的专属利润表：完整还原
+    try {
+      state = StateManager.normalizeState({
+        version: 1,
+        settings: proj.profit_data.settings || { ...CalculatorCore.DEFAULT_SETTINGS },
+        products: proj.profit_data.products || [],
+      });
+    } catch {
+      state = StateManager.createStateFromSkus(proj.skus);
+    }
+    updateModeUI(proj.profit_data.saved_at);
+    render();
+    if (isUserInitiated) {
+      showStatus(`已载入「${proj.name}」已保存的专属利润表。`);
+    }
+  } else {
+    // 尚未保存过：自动填入已知规格信息（同一价格仅填 1 个），不足 5 行补足至 5 行
+    state = StateManager.createStateFromSkus(proj.skus);
+    updateModeUI(null);
+    render();
+    if (isUserInitiated) {
+      const filledCount = state.products.filter(p => p.sku || p.costCny !== '').length;
+      showStatus(`已自动填入「${proj.name}」的已知规格（同一价格规格已去重仅保留 1 个，共带入 ${filledCount} 个价格档位），并补齐至 5 行；设置好售价后可点击保存。`);
+    }
+  }
+}
+
+async function saveCurrentProjectProfit() {
+  if (!currentProjectId) {
+    alert('当前处于自由独立计算模式，数据已自动保存在当前浏览器本地。\n若需保存专属利润表，请先在上方关联一个产品项目。');
+    return;
+  }
+
+  const proj = PROJECTS_DATA[currentProjectId];
+  if (!proj) return;
+
+  const saveBtn = document.getElementById('btn-save-project-profit');
+  const saveText = document.getElementById('btn-save-text');
+  const tableSaveBtns = document.querySelectorAll('button[data-action="save-project"]');
+
+  if (saveBtn) saveBtn.disabled = true;
+  tableSaveBtns.forEach(b => b.disabled = true);
+  if (saveText) saveText.textContent = '保存中...';
+
+  try {
+    const csrfToken = '{{ csrf_token() }}';
+    const response = await fetch(proj.save_url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      body: JSON.stringify({
+        settings: state.settings,
+        products: state.products,
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '保存失败，请稍后重试');
+    }
+
+    // 更新内存中的 profit_data
+    proj.profit_data = result.profit_data;
+    updateModeUI(result.profit_data.saved_at);
+    showStatus(`✅ ${result.message}`);
+  } catch (error) {
+    alert('保存失败：' + error.message);
+    showStatus(`保存失败：${error.message}`);
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+    tableSaveBtns.forEach(b => b.disabled = false);
+    if (saveText) saveText.textContent = '保存当前产品利润表';
+  }
+}
+
 function downloadBackup() {
   try {
     const blob = new Blob([StateManager.exportBackup(state)], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `NC-ERP-产品盈亏测算备份-${new Date().toISOString().slice(0, 10)}.json`;
+    const prefix = currentProjectId ? `NC-ERP-项目-${PROJECTS_DATA[currentProjectId]?.code || 'PROJ'}-利润表` : 'NC-ERP-自由测算备份';
+    link.download = `${prefix}-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(link.href), 0);
     showStatus('备份已导出。');
@@ -517,73 +801,57 @@ async function restoreBackup(file) {
   if (!file) return;
   try {
     const restored = StateManager.importBackup(await file.text());
-    replaceState(restored, '备份已恢复并保存。');
+    replaceState(restored, '备份已恢复并缓存。');
   } catch (error) {
     showStatus(`导入失败：${error.message}`);
   }
 }
 
-function importProjectSkus(skus, projectName) {
-  if (!skus || !skus.length) {
-    alert(`该项目「${projectName}」尚未录入产品规格或 SKU。`);
-    return;
-  }
-  const newProducts = skus.map((sku, idx) => ({
-    id: `erp-sku-${Date.now()}-${idx}`,
-    sku: sku.sku_code ? `${sku.variant_name} (${sku.sku_code})` : sku.variant_name,
-    costCny: sku.purchase_price !== null && sku.purchase_price !== undefined ? Number(sku.purchase_price) : '',
-    weightG: sku.weight_g !== null && sku.weight_g !== undefined ? Number(sku.weight_g) : '',
-    priceUsd: '',
-    storeShippingUsd: 0,
-  }));
-
-  updateAndRender(current => {
-    current.products = newProducts;
-  }, true);
-
-  showStatus(`已成功从「${projectName}」导入 ${newProducts.length} 个规格；请填写预估售价（$）以计算保本 CPR 与 ROI。`);
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   try { storage = localStorage; } catch { storage = null; }
-  state = StateManager.loadState(storage);
-  if (!storage) statusMessage = '浏览器存储不可用。你仍可计算和导出备份，但当前更改不会自动保存。';
-  render();
 
-  // 检查是否有预选项目
   const projectSelect = document.getElementById('erp-project-select');
-  const btnImportProject = document.getElementById('btn-import-project');
+  const btnSaveProject = document.getElementById('btn-save-project-profit');
 
-  btnImportProject?.addEventListener('click', () => {
-    const selectedOption = projectSelect.selectedOptions[0];
-    if (!selectedOption || !selectedOption.value) {
-      alert('请先选择一个产品项目！');
-      return;
-    }
-    try {
-      const skus = JSON.parse(selectedOption.dataset.skus || '[]');
-      const projectName = selectedOption.textContent.trim().split('(')[0].trim();
-      importProjectSkus(skus, projectName);
-    } catch (e) {
-      alert('解析规格数据失败：' + e.message);
+  // 初始模式切换（根据预选项目或默认为自由模式）
+  if (INITIAL_PROJECT_ID && PROJECTS_DATA[INITIAL_PROJECT_ID]) {
+    projectSelect.value = String(INITIAL_PROJECT_ID);
+    switchProject(INITIAL_PROJECT_ID, false);
+  } else {
+    projectSelect.value = '';
+    switchProject(null, false);
+  }
+
+  // 下拉切换即时联动
+  projectSelect?.addEventListener('change', () => {
+    const val = projectSelect.value;
+    switchProject(val ? Number(val) : null, true);
+  });
+
+  // 保存按钮
+  btnSaveProject?.addEventListener('click', () => {
+    saveCurrentProjectProfit();
+  });
+
+  // 快捷键支持 (Ctrl+S / Cmd+S)
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      if (currentProjectId) {
+        e.preventDefault();
+        saveCurrentProjectProfit();
+      }
     }
   });
 
-  // 如果 URL 传参携带 project 且当前数据还是空模板时，自动触发导入一次
-  @if($preloadedProject && $preloadedProject->skus->isNotEmpty())
-    const preloadedSkus = @json($preloadedProject->skus);
-    const preloadedName = @json($preloadedProject->product_name);
-    // 只有当当前列表全为空时自动填充，避免覆盖已有草稿
-    const isAllBlank = state.products.every(p => !p.sku && !p.costCny && !p.priceUsd);
-    if (isAllBlank) {
-      importProjectSkus(preloadedSkus, preloadedName);
-    }
-  @endif
-
+  // 输入监听
   document.addEventListener('input', event => {
     const setting = event.target.dataset.setting;
     if (setting) {
-      updateAndRender(current => { current.settings[setting] = ['feeRate', 'refundRate'].includes(setting) ? (event.target.value === '' ? '' : Number(event.target.value) / 100) : event.target.value; });
+      updateAndRender(current => {
+        current.settings[setting] = ['feeRate', 'refundRate'].includes(setting)
+          ? (event.target.value === '' ? '' : Number(event.target.value) / 100)
+          : event.target.value;
+      });
       return;
     }
     const id = event.target.dataset.productId;
@@ -596,10 +864,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 按钮动作监听
   document.addEventListener('click', event => {
     const button = event.target.closest('button[data-action]');
     if (!button) return;
     const { action, productId } = button.dataset;
+    if (action === 'save-project') saveCurrentProjectProfit();
     if (action === 'add') updateAndRender(current => current.products.push(CalculatorCore.blankProduct(current.products.length)), true);
     if (action === 'copy') updateAndRender(current => {
       const source = current.products.find(product => product.id === productId);
@@ -611,8 +881,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }, true);
     if (action === 'export') downloadBackup();
     if (action === 'import') document.getElementById('backup-file').click();
-    if (action === 'reset' && window.confirm('确定要重置全部参数和产品吗？此操作会清除当前浏览器中的计算数据。')) {
-      replaceState(StateManager.createInitialState(), '已重置为默认参数和 5 行空白产品。');
+    if (action === 'reset') {
+      if (currentProjectId) {
+        if (window.confirm('确定要重置当前项目的利润表吗？这会将规格信息恢复为系统已知规格并清空填写的售价。')) {
+          const proj = PROJECTS_DATA[currentProjectId];
+          state = StateManager.createStateFromSkus(proj ? proj.skus : []);
+          StateManager.saveState(storage, state, getActiveStorageKey());
+          render();
+          showStatus('已重置为初始已知规格信息。');
+        }
+      } else {
+        if (window.confirm('确定要重置全部参数和产品吗？此操作会清除当前浏览器中的自由计算草稿。')) {
+          replaceState(StateManager.createInitialState(), '已重置为默认参数和 5 行空白产品。');
+        }
+      }
     }
   });
 
