@@ -689,7 +689,7 @@
                         <input type="number" id="param-exchange-rate" step="0.01" value="7.20" class="param-input" />
                     </div>
                     <div class="param-box">
-                        <label>单单挂号费 (¥)</label>
+                        <label title="发一个包裹的固定基础费用（处理费/挂号费），若货代纯按重量收费可填 0">物流基础费/单 (¥)</label>
                         <input type="number" id="param-shipping-base" step="0.5" value="30.00" class="param-input" />
                     </div>
                     <div class="param-box">
@@ -705,7 +705,7 @@
 
             <!-- 参数说明 -->
             <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;font-size:0.6875rem;color:#94a3b8;">
-                <span>跨境物流：单均挂号费 + (整单总重量 × 续重费率)</span>
+                <span>跨境物流：单笔物流基础费 + (整单总重量 × 续重费率)</span>
                 <span>网关扣款：销售额 × 费率 + $0.30/单</span>
             </div>
         </div>
