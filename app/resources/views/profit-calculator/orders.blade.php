@@ -14,392 +14,889 @@
 @endphp
 
     <style>
-        .btn-primary-action {
-            background-color: #0f766e !important;
-            color: #ffffff !important;
-            border: 1px solid #0d9488 !important;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+        /* 强制所有 SVG 尺寸受控，杜绝全屏放大 */
+        svg {
+            flex-shrink: 0;
+            display: inline-block;
+            vertical-align: middle;
         }
-        .btn-primary-action:hover {
-            background-color: #115e59 !important;
-            color: #ffffff !important;
+
+        /* 顶部 Tab 导航 */
+        .orders-nav-tabs {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
         }
-        .btn-secondary-action {
-            background-color: #ffffff !important;
-            color: #334155 !important;
-            border: 1px solid #cbd5e1 !important;
-        }
-        .btn-secondary-action:hover {
-            background-color: #f8fafc !important;
-            color: #0f172a !important;
-        }
-        .field-input {
-            width: 100%;
-            border-radius: 0.5rem;
-            border: 1px solid #cbd5e1;
-            padding: 0.5rem 0.75rem;
+        .orders-nav-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
             font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            color: #64748b;
+            transition: all 0.15s ease;
+        }
+        .orders-nav-tab:hover {
+            color: #334155;
+            border-bottom-color: #cbd5e1;
+        }
+        .orders-nav-tab.active {
+            color: #0f766e !important;
+            border-bottom-color: #0f766e !important;
+            font-weight: 700;
+        }
+
+        /* 顶部标题行 */
+        .orders-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .orders-header-badge {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #0f766e;
+            margin-bottom: 0.25rem;
+        }
+        .orders-header-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.25;
+            margin: 0.25rem 0;
+        }
+        .orders-header-sub {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin: 0;
+        }
+        .orders-action-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* 按钮样式 (显式颜色与防换行) */
+        .btn-primary-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.5rem 0.9rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #ffffff !important;
+            background-color: #0f766e !important;
+            border: 1px solid #0f766e !important;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            text-decoration: none;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.15s ease;
+        }
+        .btn-primary-action:hover:not(:disabled) {
+            background-color: #115e59 !important;
+        }
+        .btn-primary-action:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.5rem 0.9rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #334155 !important;
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            text-decoration: none;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.15s ease;
+        }
+        .btn-secondary-action:hover:not(:disabled) {
+            background-color: #f8fafc !important;
+            border-color: #94a3b8 !important;
+        }
+        .btn-secondary-action:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* 上半部分双栏卡片网格 */
+        .top-controls-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 960px) {
+            .top-controls-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .control-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.875rem;
+        }
+        .card-step-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
             color: #1e293b;
-            background-color: #ffffff;
-            transition: all 0.15s ease-in-out;
+            font-size: 0.9375rem;
         }
-        .field-input:focus {
-            outline: none;
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: #ccfbf1;
+            color: #0f766e;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+
+        /* CSV 拖拽区域 */
+        .csv-dropzone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            background-color: #f8fafc;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+        }
+        .csv-dropzone:hover {
             border-color: #0d9488;
-            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+            background-color: #f0fdfa;
         }
-        .dropzone-active {
+        .csv-dropzone.dropzone-active {
             border-color: #0d9488 !important;
-            background-color: #f0fdf4 !important;
+            background-color: #ecfdf5 !important;
+        }
+        .csv-dropzone-icon {
+            width: 36px !important;
+            height: 36px !important;
+            max-width: 36px !important;
+            max-height: 36px !important;
+            color: #0d9488;
+            margin: 0 auto 0.4rem auto;
+            display: block;
+        }
+        .csv-dropzone-text {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #334155;
+            margin: 0;
+        }
+        .csv-dropzone-sub {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin: 0.25rem 0 0 0;
+        }
+        .dropzone-file-input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* 底部统计栏 */
+        .csv-meta-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.65rem 0.5rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .csv-meta-item .meta-label {
+            font-size: 0.6875rem;
+            color: #64748b;
+            display: block;
+            margin-bottom: 0.15rem;
+        }
+        .csv-meta-item .meta-num {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: block;
+        }
+
+        /* 广告花费高亮栏 */
+        .ad-spend-banner {
+            border: 2px solid #5eead4;
+            background: #f0fdfa;
+            border-radius: 10px;
+            padding: 0.875rem 1rem;
+            margin-bottom: 1rem;
+        }
+        .ad-spend-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #134e4a;
+            letter-spacing: 0.025em;
+            margin-bottom: 0.35rem;
+        }
+        .ad-spend-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .ad-spend-prefix {
+            position: absolute;
+            left: 0.75rem;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #0f766e;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .ad-spend-input {
+            width: 100%;
+            border: 1px solid #99f6e4;
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem 0.5rem 2.1rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #134e4a;
+            background: #ffffff;
+            outline: none;
+            transition: all 0.15s;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03);
+            box-sizing: border-box;
+        }
+        .ad-spend-input:focus {
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+        }
+
+        /* 参数网格 */
+        .params-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.65rem;
+        }
+        @media (max-width: 580px) {
+            .params-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .param-box label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+        }
+        .param-input {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0.4rem 0.55rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #1e293b;
+            background: #ffffff;
+            box-sizing: border-box;
+        }
+        .param-input:focus {
+            border-color: #0d9488;
+            outline: none;
+        }
+
+        /* 核心利润指标 KPI 看板 */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 1080px) {
+            .kpi-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 540px) {
+            .kpi-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .kpi-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.15rem;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03);
+            box-sizing: border-box;
+        }
+        .kpi-card.highlight-profit {
+            background: #f0fdf4 !important;
+            border-color: #86efac !important;
+        }
+        .kpi-card.highlight-loss {
+            background: #fff1f2 !important;
+            border-color: #fecdd3 !important;
+        }
+        .kpi-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+        .kpi-value-row {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .kpi-val-main {
+            font-size: 1.75rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+        .kpi-val-sub {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .kpi-foot-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.75rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        .kpi-foot-bar strong {
+            color: #1e293b;
+            font-size: 0.8125rem;
+        }
+
+        /* 成本结构拆解网格 */
+        .cost-section {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.03);
+            margin-bottom: 1.5rem;
+        }
+        .cost-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.85rem;
+            margin-top: 0.875rem;
+        }
+        @media (max-width: 960px) {
+            .cost-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 520px) {
+            .cost-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .cost-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.85rem;
+            box-sizing: border-box;
+        }
+        .cost-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .cost-card-amount {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-top: 0.35rem;
+        }
+        .cost-card-note {
+            font-size: 0.6875rem;
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+
+        /* 数据明细表格 */
+        .table-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.03);
+            margin-bottom: 2.5rem;
+            overflow: hidden;
+        }
+        .table-header-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid #e2e8f0;
+            gap: 0.75rem;
+        }
+        .table-nav-btns {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .table-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            color: #64748b;
+            background: transparent;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .table-tab-btn.active {
+            color: #0f766e !important;
+            border-bottom-color: #0f766e !important;
+            font-weight: 700;
+        }
+        .table-search-input {
+            width: 240px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0.35rem 0.65rem;
+            font-size: 0.75rem;
+            color: #1e293b;
+            box-sizing: border-box;
+        }
+        .table-search-input:focus {
+            border-color: #0d9488;
+            outline: none;
+        }
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            text-align: left;
+        }
+        .orders-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            padding: 0.65rem 0.85rem;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        .orders-table td {
+            padding: 0.65rem 0.85rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+        }
+        .orders-table tr:hover td {
+            background-color: #f8fafc;
+        }
+        .badge-status {
+            display: inline-block;
+            border-radius: 4px;
+            padding: 0.15rem 0.4rem;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-status.paid {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .badge-status.other {
+            background: #f1f5f9;
+            color: #475569;
         }
     </style>
 
     <!-- 功能切换 Tab -->
-    <div class="mb-6 flex items-center border-b border-slate-200">
-        <a href="{{ route('profit-calculator.index') }}" class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-medium text-slate-500 hover:border-slate-300 hover:text-slate-700">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+    <div class="orders-nav-tabs">
+        <a href="{{ route('profit-calculator.index') }}" class="orders-nav-tab">
+            <svg width="16" height="16" style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
             单品保本盈亏测算
         </a>
-        <a href="{{ route('order-profit-calculator.index') }}" class="inline-flex items-center gap-2 border-b-2 border-teal-600 px-4 py-3 text-sm font-bold text-teal-600">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <a href="{{ route('order-profit-calculator.index') }}" class="orders-nav-tab active">
+            <svg width="16" height="16" style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
             每日订单利润核算 (Shopify + FB)
         </a>
     </div>
 
     <!-- 顶部标题与快捷操作栏 -->
-    <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div class="orders-header">
         <div>
-            <div class="flex items-center gap-2 text-sm font-semibold text-teal-600">
-                <span>出海电商核算工具</span>
-                <span>·</span>
-                <span>Shopify 订单与 Facebook 广告一站式毛利清算</span>
-            </div>
-            <h1 class="mt-1 text-3xl font-bold text-slate-900">每日订单利润核算</h1>
-            <p class="mt-1.5 text-sm text-slate-500">上传 Shopify 当日出单 CSV，自动匹配 ERP 产品采购价与跨境物流，填入 FB 广告花费即时获取净利润、真实 ROAS 与客单价。</p>
+            <div class="orders-header-badge">出海电商核算工具 · Shopify 订单与 Facebook 广告一站式毛利清算</div>
+            <h1 class="orders-header-title">每日订单利润核算</h1>
+            <p class="orders-header-sub">上传 Shopify 当日出单 CSV，自动匹配 ERP 产品采购价与跨境物流，填入 FB 广告花费即时获取净利润、真实 ROAS 与客单价。</p>
         </div>
-        <div class="flex flex-wrap items-center gap-2.5">
-            <button type="button" id="btn-load-sample" class="btn-secondary-action inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-semibold shadow-sm transition cursor-pointer">
-                <svg class="h-4 w-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                载入测试示例数据
+        <div class="orders-action-group">
+            <button type="button" id="btn-load-sample" class="btn-secondary-action">
+                <svg width="15" height="15" style="width:15px;height:15px;color:#0f766e;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span>载入测试示例数据</span>
             </button>
-            <button type="button" id="btn-export-csv" class="btn-secondary-action inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer" disabled>
-                <svg class="h-4 w-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                导出核算报表 (CSV)
+            <button type="button" id="btn-export-csv" class="btn-secondary-action" disabled>
+                <svg width="15" height="15" style="width:15px;height:15px;color:#475569;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>导出核算报表 (CSV)</span>
             </button>
-            <button type="button" id="btn-clear-data" class="btn-secondary-action inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm transition cursor-pointer">
-                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                清空数据
+            <button type="button" id="btn-clear-data" class="btn-secondary-action">
+                <svg width="15" height="15" style="width:15px;height:15px;color:#94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <span>清空数据</span>
             </button>
         </div>
     </div>
 
     <!-- 上半部分：左侧 CSV 上传与订单识别，右侧 广告花费与计算参数 -->
-    <div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
+    <div class="top-controls-row">
         <!-- 左侧：Shopify CSV 上传卡片 -->
-        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
+        <div class="control-card">
             <div>
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-2 font-bold text-slate-800 text-base">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">1</span>
+                <div class="card-header-bar">
+                    <div class="card-step-title">
+                        <span class="step-number">1</span>
                         <span>导入 Shopify 当日订单 (CSV)</span>
                     </div>
-                    <span id="upload-badge" class="hidden inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200">
-                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                        已成功识别
+                    <span id="upload-badge" style="display:none;font-size:0.75rem;font-weight:600;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;padding:0.2rem 0.6rem;border-radius:9999px;">
+                        ✓ 已成功识别
                     </span>
                 </div>
 
                 <!-- 拖拽上传框 -->
-                <div id="drop-zone" class="relative rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/70 p-6 text-center transition hover:border-teal-500 hover:bg-teal-50/20 cursor-pointer">
-                    <input type="file" id="file-input" accept=".csv,text/csv" class="absolute inset-0 h-full w-full opacity-0 cursor-pointer" />
-                    <div class="flex flex-col items-center justify-center pointer-events-none">
-                        <svg class="h-10 w-10 text-teal-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                        <p class="text-sm font-semibold text-slate-700">点击或将 Shopify Orders CSV 拖拽到此处</p>
-                        <p class="text-xs text-slate-500 mt-1">支持 Shopify 标准订单导出格式（跨行多商品自动汇总结算）</p>
-                    </div>
+                <div id="drop-zone" class="csv-dropzone">
+                    <input type="file" id="file-input" accept=".csv,text/csv" class="dropzone-file-input" />
+                    <svg width="36" height="36" class="csv-dropzone-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                    <p class="csv-dropzone-text">点击或将 Shopify Orders CSV 拖拽到此处</p>
+                    <p class="csv-dropzone-sub">支持 Shopify 标准订单导出格式（跨行多商品自动汇总结算）</p>
                 </div>
 
                 <!-- 订单筛选与识别概括 -->
-                <div class="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
-                    <div class="flex items-center gap-2">
-                        <span class="font-medium text-slate-700">订单状态筛选:</span>
-                        <select id="filter-status" class="rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-teal-500 focus:outline-none">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.75rem;font-size:0.75rem;color:#64748b;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <span style="font-weight:600;color:#334155;">订单状态筛选:</span>
+                        <select id="filter-status" style="border:1px solid #cbd5e1;border-radius:4px;padding:0.2rem 0.4rem;font-size:0.75rem;background:#ffffff;">
                             <option value="paid" selected>仅计算已付款 (paid) 订单</option>
                             <option value="all">计算全部状态订单</option>
                         </select>
                     </div>
-                    <div id="file-info-text" class="text-slate-400">暂未上传文件</div>
+                    <div id="file-info-text" style="color:#94a3b8;">暂未上传文件</div>
                 </div>
             </div>
 
             <!-- 数据统计小脚标 -->
-            <div id="summary-meta-bar" class="mt-4 rounded-lg bg-slate-50 p-2.5 border border-slate-100 flex items-center justify-around text-xs text-slate-600">
-                <div class="text-center">
-                    <span class="text-slate-400 block text-[11px]">总订单行数</span>
-                    <span id="meta-total-lines" class="font-bold text-slate-700">0</span>
+            <div id="summary-meta-bar" class="csv-meta-summary">
+                <div class="csv-meta-item">
+                    <span class="meta-label">总订单行数</span>
+                    <span id="meta-total-lines" class="meta-num">0</span>
                 </div>
-                <div class="h-6 w-px bg-slate-200"></div>
-                <div class="text-center">
-                    <span class="text-slate-400 block text-[11px]">有效订单数</span>
-                    <span id="meta-orders-count" class="font-bold text-teal-600">0</span>
+                <div class="csv-meta-item">
+                    <span class="meta-label">有效订单数</span>
+                    <span id="meta-orders-count" class="meta-num" style="color:#0f766e;">0</span>
                 </div>
-                <div class="h-6 w-px bg-slate-200"></div>
-                <div class="text-center">
-                    <span class="text-slate-400 block text-[11px]">售出商品件数</span>
-                    <span id="meta-items-count" class="font-bold text-slate-700">0</span>
+                <div class="csv-meta-item">
+                    <span class="meta-label">售出商品件数</span>
+                    <span id="meta-items-count" class="meta-num">0</span>
                 </div>
-                <div class="h-6 w-px bg-slate-200"></div>
-                <div class="text-center">
-                    <span class="text-slate-400 block text-[11px]">出单 SKU 种类</span>
-                    <span id="meta-skus-count" class="font-bold text-slate-700">0</span>
+                <div class="csv-meta-item">
+                    <span class="meta-label">出单 SKU 种类</span>
+                    <span id="meta-skus-count" class="meta-num">0</span>
                 </div>
             </div>
         </div>
 
         <!-- 右侧：广告花费与参数设置卡片 -->
-        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
+        <div class="control-card">
             <div>
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-2 font-bold text-slate-800 text-base">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">2</span>
+                <div class="card-header-bar">
+                    <div class="card-step-title">
+                        <span class="step-number">2</span>
                         <span>今日 FB 广告花费与核算参数</span>
                     </div>
-                    <span class="text-xs text-slate-400">修改任意项即时重算</span>
+                    <span style="font-size:0.75rem;color:#94a3b8;">修改任意项即时重算</span>
                 </div>
 
                 <!-- Facebook 广告花费突出输入框 -->
-                <div class="rounded-xl border-2 border-teal-500/80 bg-teal-50/30 p-4 mb-4">
-                    <label class="block text-xs font-bold text-teal-900 uppercase tracking-wider mb-1">
-                        今日 Facebook 广告总花费 (USD $)
-                    </label>
-                    <div class="relative flex items-center">
-                        <span class="absolute left-3 text-xl font-bold text-teal-700">$</span>
-                        <input type="number" id="input-fb-ad-spend" step="0.01" min="0" placeholder="0.00" value="0.00"
-                               class="w-full rounded-lg border border-teal-300 bg-white pl-8 pr-4 py-2.5 text-2xl font-extrabold text-teal-900 placeholder:text-teal-300 focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500/20" />
+                <div class="ad-spend-banner">
+                    <label class="ad-spend-label">今日 Facebook 广告总花费 (USD $)</label>
+                    <div class="ad-spend-input-wrap">
+                        <span class="ad-spend-prefix">$</span>
+                        <input type="number" id="input-fb-ad-spend" step="0.01" min="0" placeholder="0.00" value="0.00" class="ad-spend-input" />
                     </div>
-                    <p class="text-[11px] text-teal-700/80 mt-1.5 flex items-center gap-1">
-                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        输入 Meta Ads 后台今日的总花费（可直接带小数），系统将用于计算 ROAS 与净利润。
-                    </p>
+                    <div style="font-size:0.6875rem;color:#0f766e;margin-top:0.35rem;display:flex;align-items:center;gap:0.25rem;">
+                        <svg width="13" height="13" style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>输入 Meta Ads 后台今日的总花费（可带小数），系统将用于计算 ROAS 与净利润。</span>
+                    </div>
                 </div>
 
                 <!-- 成本与汇率参数网格 -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">汇率 (USD➔CNY)</label>
-                        <input type="number" id="param-exchange-rate" step="0.01" value="7.20" class="field-input text-xs font-medium py-1.5" />
+                <div class="params-row">
+                    <div class="param-box">
+                        <label>汇率 (USD➔CNY)</label>
+                        <input type="number" id="param-exchange-rate" step="0.01" value="7.20" class="param-input" />
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">单单挂号费 (¥)</label>
-                        <input type="number" id="param-shipping-base" step="0.5" value="30.00" class="field-input text-xs font-medium py-1.5" />
+                    <div class="param-box">
+                        <label>单单挂号费 (¥)</label>
+                        <input type="number" id="param-shipping-base" step="0.5" value="30.00" class="param-input" />
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">续重费率 (¥/g)</label>
-                        <input type="number" id="param-shipping-rate" step="0.01" value="0.05" class="field-input text-xs font-medium py-1.5" />
+                    <div class="param-box">
+                        <label>续重费率 (¥/g)</label>
+                        <input type="number" id="param-shipping-rate" step="0.01" value="0.05" class="param-input" />
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">网关费率 (%)</label>
-                        <input type="number" id="param-payment-fee-rate" step="0.1" value="3.0" class="field-input text-xs font-medium py-1.5" />
+                    <div class="param-box">
+                        <label>网关费率 (%)</label>
+                        <input type="number" id="param-payment-fee-rate" step="0.1" value="3.0" class="param-input" />
                     </div>
                 </div>
             </div>
 
             <!-- 参数说明 -->
-            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                <span>跨境物流公式：单均挂号费 + (整单总重 × 续重费率)</span>
-                <span>网关扣款：销售额 × 网关费率 + $0.30/单</span>
+            <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;font-size:0.6875rem;color:#94a3b8;">
+                <span>跨境物流：单均挂号费 + (整单总重量 × 续重费率)</span>
+                <span>网关扣款：销售额 × 费率 + $0.30/单</span>
             </div>
         </div>
     </div>
 
-    <!-- 未匹配 SKU 补齐提示条 (若有未识别到成本的 SKU 时自动显示) -->
-    <div id="missing-skus-alert" class="mb-6 hidden rounded-xl border border-amber-300 bg-amber-50 p-4 shadow-sm">
-        <div class="flex items-start justify-between">
-            <div class="flex items-center gap-2">
-                <svg class="h-5 w-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                <div>
-                    <h3 class="text-sm font-bold text-amber-800">发现 <span id="missing-skus-count">0</span> 个出单 SKU 在 ERP 中未录入采购成本或重量</h3>
-                    <p class="text-xs text-amber-700 mt-0.5">请在下方快速补齐单价与重量，系统将即刻将其计入采购与物流成本：</p>
-                </div>
+    <!-- 未匹配 SKU 补齐提示条 -->
+    <div id="missing-skus-alert" style="display:none;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:1rem;margin-bottom:1.5rem;">
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+            <svg width="20" height="20" style="width:20px;height:20px;color:#d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <div>
+                <h3 style="margin:0;font-size:0.875rem;font-weight:700;color:#92400e;">发现 <span id="missing-skus-count">0</span> 个出单 SKU 在 ERP 中未录入采购成本或重量</h3>
+                <p style="margin:0.2rem 0 0 0;font-size:0.75rem;color:#b45309;">请在下方快速补齐单价与重量，系统将即刻将其计入采购与物流成本：</p>
             </div>
         </div>
-        <div id="missing-skus-list" class="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <div id="missing-skus-list" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:0.75rem;margin-top:0.75rem;">
             <!-- 动态生成未匹配 SKU 快捷输入卡片 -->
         </div>
     </div>
 
     <!-- 核心利润看板 (Summary KPI Dashboard) -->
-    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <!-- 卡片 1: 今日净利润 (高亮大卡片) -->
-        <div id="card-net-profit" class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm transition">
-            <div class="flex items-center justify-between text-xs font-semibold text-emerald-800">
+    <div class="kpi-row">
+        <!-- 卡片 1: 今日净利润 -->
+        <div id="card-net-profit" class="kpi-card highlight-profit">
+            <div class="kpi-top-bar">
                 <span>今日净利润 (Net Profit)</span>
-                <span id="badge-profit-status" class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800 border border-emerald-200">盈利</span>
+                <span id="badge-profit-status" style="border-radius:9999px;padding:0.15rem 0.5rem;font-size:0.6875rem;font-weight:700;background:#dcfce7;color:#166534;border:1px solid #86efac;">盈利</span>
             </div>
-            <div class="mt-2 flex items-baseline gap-2">
-                <span class="text-3xl font-black tracking-tight" id="kpi-net-profit-usd">$0.00</span>
-                <span class="text-xs text-slate-500" id="kpi-net-profit-cny">≈ ¥0.00</span>
+            <div class="kpi-value-row">
+                <span class="kpi-val-main" id="kpi-net-profit-usd" style="color:#15803d;">$0.00</span>
+                <span class="kpi-val-sub" id="kpi-net-profit-cny">≈ ¥0.00</span>
             </div>
-            <div class="mt-3 flex items-center justify-between text-xs text-emerald-700/80 pt-2 border-t border-emerald-100">
+            <div class="kpi-foot-bar">
                 <span>实际净利率:</span>
-                <span id="kpi-net-margin" class="font-bold text-emerald-900 text-sm">0.0%</span>
+                <strong id="kpi-net-margin" style="color:#166534;">0.0%</strong>
             </div>
         </div>
 
         <!-- 卡片 2: 真实 ROAS -->
-        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between text-xs font-semibold text-slate-600">
+        <div class="kpi-card">
+            <div class="kpi-top-bar">
                 <span>真实投产比 (ROAS)</span>
-                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">总营收 ÷ FB花费</span>
+                <span style="font-size:0.6875rem;color:#64748b;background:#f1f5f9;padding:0.15rem 0.4rem;border-radius:4px;">总营收 ÷ FB花费</span>
             </div>
-            <div class="mt-2 flex items-baseline gap-2">
-                <span class="text-3xl font-black tracking-tight text-slate-900" id="kpi-roas">0.00</span>
-                <span class="text-sm font-bold text-slate-400">x</span>
+            <div class="kpi-value-row">
+                <span class="kpi-val-main" id="kpi-roas">0.00</span>
+                <span style="font-size:0.875rem;font-weight:700;color:#94a3b8;">x</span>
             </div>
-            <div class="mt-3 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <div class="kpi-foot-bar">
                 <span>保本 ROAS 目标:</span>
-                <span id="kpi-breakeven-roas" class="font-bold text-slate-700 text-sm">--</span>
+                <strong id="kpi-breakeven-roas">--</strong>
             </div>
         </div>
 
         <!-- 卡片 3: 今日总销售额 -->
-        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between text-xs font-semibold text-slate-600">
+        <div class="kpi-card">
+            <div class="kpi-top-bar">
                 <span>今日总销售额 (Revenue)</span>
-                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">Shopify 订单总入账</span>
+                <span style="font-size:0.6875rem;color:#64748b;background:#f1f5f9;padding:0.15rem 0.4rem;border-radius:4px;">Shopify 订单总入账</span>
             </div>
-            <div class="mt-2 flex items-baseline gap-2">
-                <span class="text-3xl font-black tracking-tight text-slate-900" id="kpi-gross-revenue">$0.00</span>
-                <span class="text-xs text-slate-500" id="kpi-gross-revenue-cny">≈ ¥0.00</span>
+            <div class="kpi-value-row">
+                <span class="kpi-val-main" id="kpi-gross-revenue">$0.00</span>
+                <span class="kpi-val-sub" id="kpi-gross-revenue-cny">≈ ¥0.00</span>
             </div>
-            <div class="mt-3 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <div class="kpi-foot-bar">
                 <span>客单价 (AOV):</span>
-                <span id="kpi-aov" class="font-bold text-slate-700 text-sm">$0.00</span>
+                <strong id="kpi-aov">$0.00</strong>
             </div>
         </div>
 
         <!-- 卡片 4: 广告获客与出单效率 -->
-        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between text-xs font-semibold text-slate-600">
+        <div class="kpi-card">
+            <div class="kpi-top-bar">
                 <span>单均广告成本 (CPA)</span>
-                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">FB花费 ÷ 订单数</span>
+                <span style="font-size:0.6875rem;color:#64748b;background:#f1f5f9;padding:0.15rem 0.4rem;border-radius:4px;">FB花费 ÷ 订单数</span>
             </div>
-            <div class="mt-2 flex items-baseline gap-2">
-                <span class="text-3xl font-black tracking-tight text-slate-900" id="kpi-cpa">$0.00</span>
-                <span class="text-xs text-slate-500" id="kpi-order-count-tag">0 笔订单</span>
+            <div class="kpi-value-row">
+                <span class="kpi-val-main" id="kpi-cpa">$0.00</span>
+                <span class="kpi-val-sub" id="kpi-order-count-tag">0 笔订单</span>
             </div>
-            <div class="mt-3 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <div class="kpi-foot-bar">
                 <span>售出总件数:</span>
-                <span id="kpi-total-items" class="font-bold text-slate-700 text-sm">0 件</span>
+                <strong id="kpi-total-items">0 件</strong>
             </div>
         </div>
     </div>
 
     <!-- 成本深度拆解看板 -->
-    <div class="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <svg class="h-4 w-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
-                今日成本结构拆解与占比分析
-            </h2>
-            <span class="text-xs text-slate-400">总成本 = FB广告 + 产品采购 + 跨境物流 + 平台手续费</span>
+    <div class="cost-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.9375rem;font-weight:700;color:#1e293b;">
+                <svg width="18" height="18" style="width:18px;height:18px;color:#0f766e;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+                <span>今日成本结构拆解与占比分析</span>
+            </div>
+            <span style="font-size:0.75rem;color:#94a3b8;">总成本 = FB广告 + 产品采购 + 跨境物流 + 平台手续费</span>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="cost-grid">
             <!-- 成本 1: FB 广告花费 -->
-            <div class="rounded-lg bg-slate-50 p-4 border border-slate-100">
-                <div class="flex items-center justify-between text-xs text-slate-500">
-                    <span class="flex items-center gap-1.5">
-                        <span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span>
-                        Meta 广告花费
+            <div class="cost-card">
+                <div class="cost-card-header">
+                    <span style="display:flex;align-items:center;gap:0.35rem;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#3b82f6;display:inline-block;"></span>
+                        <span>Meta 广告花费</span>
                     </span>
-                    <span id="cost-percent-ad" class="font-bold text-slate-700">0.0%</span>
+                    <strong id="cost-percent-ad" style="color:#1e293b;">0.0%</strong>
                 </div>
-                <div class="mt-2 text-xl font-bold text-slate-800" id="cost-val-ad">$0.00</div>
-                <div class="text-[11px] text-slate-400 mt-1">占比营收: <span id="cost-rev-pct-ad">0.0%</span></div>
+                <div class="cost-card-amount" id="cost-val-ad">$0.00</div>
+                <div class="cost-card-note">占比营收: <span id="cost-rev-pct-ad">0.0%</span></div>
             </div>
 
             <!-- 成本 2: 产品采购成本 -->
-            <div class="rounded-lg bg-slate-50 p-4 border border-slate-100">
-                <div class="flex items-center justify-between text-xs text-slate-500">
-                    <span class="flex items-center gap-1.5">
-                        <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-                        产品采购总成本
+            <div class="cost-card">
+                <div class="cost-card-header">
+                    <span style="display:flex;align-items:center;gap:0.35rem;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;"></span>
+                        <span>产品采购总成本</span>
                     </span>
-                    <span id="cost-percent-purchase" class="font-bold text-slate-700">0.0%</span>
+                    <strong id="cost-percent-purchase" style="color:#1e293b;">0.0%</strong>
                 </div>
-                <div class="mt-2 text-xl font-bold text-slate-800" id="cost-val-purchase">$0.00</div>
-                <div class="text-[11px] text-slate-400 mt-1" id="cost-val-purchase-cny">折合 ¥0.00</div>
+                <div class="cost-card-amount" id="cost-val-purchase">$0.00</div>
+                <div class="cost-card-note" id="cost-val-purchase-cny">折合 ¥0.00</div>
             </div>
 
             <!-- 成本 3: 跨境物流成本 -->
-            <div class="rounded-lg bg-slate-50 p-4 border border-slate-100">
-                <div class="flex items-center justify-between text-xs text-slate-500">
-                    <span class="flex items-center gap-1.5">
-                        <span class="h-2.5 w-2.5 rounded-full bg-purple-500"></span>
-                        跨境物流总运费
+            <div class="cost-card">
+                <div class="cost-card-header">
+                    <span style="display:flex;align-items:center;gap:0.35rem;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#8b5cf6;display:inline-block;"></span>
+                        <span>跨境物流总运费</span>
                     </span>
-                    <span id="cost-percent-shipping" class="font-bold text-slate-700">0.0%</span>
+                    <strong id="cost-percent-shipping" style="color:#1e293b;">0.0%</strong>
                 </div>
-                <div class="mt-2 text-xl font-bold text-slate-800" id="cost-val-shipping">$0.00</div>
-                <div class="text-[11px] text-slate-400 mt-1" id="cost-val-shipping-cny">折合 ¥0.00</div>
+                <div class="cost-card-amount" id="cost-val-shipping">$0.00</div>
+                <div class="cost-card-note" id="cost-val-shipping-cny">折合 ¥0.00</div>
             </div>
 
             <!-- 成本 4: 网关手续费 -->
-            <div class="rounded-lg bg-slate-50 p-4 border border-slate-100">
-                <div class="flex items-center justify-between text-xs text-slate-500">
-                    <span class="flex items-center gap-1.5">
-                        <span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
-                        平台与支付网关费
+            <div class="cost-card">
+                <div class="cost-card-header">
+                    <span style="display:flex;align-items:center;gap:0.35rem;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+                        <span>平台与支付网关费</span>
                     </span>
-                    <span id="cost-percent-gateway" class="font-bold text-slate-700">0.0%</span>
+                    <strong id="cost-percent-gateway" style="color:#1e293b;">0.0%</strong>
                 </div>
-                <div class="mt-2 text-xl font-bold text-slate-800" id="cost-val-gateway">$0.00</div>
-                <div class="text-[11px] text-slate-400 mt-1">费率 3.0% + $0.30/单</div>
+                <div class="cost-card-amount" id="cost-val-gateway">$0.00</div>
+                <div class="cost-card-note">费率 3.0% + $0.30/单</div>
             </div>
         </div>
     </div>
 
     <!-- 表格区域：Tab 标签切换查看【SKU 出单与毛利汇总】vs【订单明细穿透】 -->
-    <div class="mb-10 rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div class="flex flex-wrap items-center justify-between border-b border-slate-200 px-6 py-3">
-            <div class="flex items-center gap-4">
-                <button type="button" id="tab-btn-skus" class="inline-flex items-center gap-1.5 border-b-2 border-teal-600 pb-2 text-sm font-bold text-teal-600 transition cursor-pointer">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                    出单 SKU 销售与毛利汇总 (<span id="tab-skus-count">0</span>)
+    <div class="table-card">
+        <div class="table-header-wrap">
+            <div class="table-nav-btns">
+                <button type="button" id="tab-btn-skus" class="table-tab-btn active">
+                    <svg width="15" height="15" style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    <span>出单 SKU 销售与毛利汇总 (<span id="tab-skus-count">0</span>)</span>
                 </button>
-                <button type="button" id="tab-btn-orders" class="inline-flex items-center gap-1.5 border-b-2 border-transparent pb-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition cursor-pointer">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                    订单详情穿透列表 (<span id="tab-orders-count">0</span>)
+                <button type="button" id="tab-btn-orders" class="table-tab-btn">
+                    <svg width="15" height="15" style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <span>订单详情穿透列表 (<span id="tab-orders-count">0</span>)</span>
                 </button>
             </div>
 
             <!-- 搜索框 -->
-            <div class="w-64">
-                <input type="text" id="table-search" placeholder="搜索 SKU / 品名 / 订单号..." class="field-input py-1 text-xs" />
+            <div>
+                <input type="text" id="table-search" placeholder="搜索 SKU / 品名 / 订单号..." class="table-search-input" />
             </div>
         </div>
 
         <!-- 视图 1: SKU 销售与毛利汇总表 -->
-        <div id="view-skus" class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+        <div id="view-skus" style="overflow-x:auto;">
+            <table class="orders-table">
+                <thead>
                     <tr>
-                        <th class="px-4 py-3 font-semibold">SKU 编码</th>
-                        <th class="px-4 py-3 font-semibold">关联项目 / 商品名</th>
-                        <th class="px-4 py-3 font-semibold text-center">出单件数</th>
-                        <th class="px-4 py-3 font-semibold text-right">总销售额 ($)</th>
-                        <th class="px-4 py-3 font-semibold text-right">单件采购价 (¥)</th>
-                        <th class="px-4 py-3 font-semibold text-right">单件重量 (g)</th>
-                        <th class="px-4 py-3 font-semibold text-right">总采购成本 ($)</th>
-                        <th class="px-4 py-3 font-semibold text-right">总物流成本 ($)</th>
-                        <th class="px-4 py-3 font-semibold text-right">预估毛利 ($)</th>
-                        <th class="px-4 py-3 font-semibold text-right">毛利率</th>
+                        <th>SKU 编码</th>
+                        <th>关联项目 / 商品名</th>
+                        <th style="text-align:center;">出单件数</th>
+                        <th style="text-align:right;">总销售额 ($)</th>
+                        <th style="text-align:right;">单件采购价 (¥)</th>
+                        <th style="text-align:right;">单件重量 (g)</th>
+                        <th style="text-align:right;">总采购成本 ($)</th>
+                        <th style="text-align:right;">总物流成本 ($)</th>
+                        <th style="text-align:right;">预估毛利 ($)</th>
+                        <th style="text-align:right;">毛利率</th>
                     </tr>
                 </thead>
-                <tbody id="tbody-skus" class="divide-y divide-slate-100 text-slate-700">
+                <tbody id="tbody-skus">
                     <tr>
-                        <td colspan="10" class="py-12 text-center text-slate-400">
+                        <td colspan="10" style="padding:2.5rem 1rem;text-align:center;color:#94a3b8;">
                             暂无出单数据，请在上方上传 Shopify 订单 CSV 或点击「载入测试示例数据」
                         </td>
                     </tr>
@@ -408,24 +905,24 @@
         </div>
 
         <!-- 视图 2: 订单明细穿透表 -->
-        <div id="view-orders" class="hidden overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+        <div id="view-orders" style="display:none;overflow-x:auto;">
+            <table class="orders-table">
+                <thead>
                     <tr>
-                        <th class="px-4 py-3 font-semibold">订单编号</th>
-                        <th class="px-4 py-3 font-semibold">下单时间</th>
-                        <th class="px-4 py-3 font-semibold text-center">支付状态</th>
-                        <th class="px-4 py-3 font-semibold">包含商品条目</th>
-                        <th class="px-4 py-3 font-semibold text-right">订单入账 ($)</th>
-                        <th class="px-4 py-3 font-semibold text-right">采购成本 ($)</th>
-                        <th class="px-4 py-3 font-semibold text-right">物流预估 ($)</th>
-                        <th class="px-4 py-3 font-semibold text-right">网关扣费 ($)</th>
-                        <th class="px-4 py-3 font-semibold text-right">单笔订单毛利 ($)</th>
+                        <th>订单编号</th>
+                        <th>下单时间</th>
+                        <th style="text-align:center;">支付状态</th>
+                        <th>包含商品条目</th>
+                        <th style="text-align:right;">订单入账 ($)</th>
+                        <th style="text-align:right;">采购成本 ($)</th>
+                        <th style="text-align:right;">物流预估 ($)</th>
+                        <th style="text-align:right;">网关扣费 ($)</th>
+                        <th style="text-align:right;">单笔订单毛利 ($)</th>
                     </tr>
                 </thead>
-                <tbody id="tbody-orders" class="divide-y divide-slate-100 text-slate-700">
+                <tbody id="tbody-orders">
                     <tr>
-                        <td colspan="9" class="py-12 text-center text-slate-400">
+                        <td colspan="9" style="padding:2.5rem 1rem;text-align:center;color:#94a3b8;">
                             暂无订单明细
                         </td>
                     </tr>
@@ -546,7 +1043,6 @@
                     return;
                 }
 
-                // 规范化列名
                 const rawHeaders = matrix[0].map(h => (h || '').trim().toLowerCase());
                 const getIndex = (...keys) => {
                     for (const k of keys) {
@@ -572,7 +1068,6 @@
                 }
 
                 const ordersMap = new Map();
-                let totalDataRows = matrix.length - 1;
 
                 for (let i = 1; i < matrix.length; i++) {
                     const row = matrix[i];
@@ -584,7 +1079,6 @@
                     const lineQty = idxLineQty !== -1 ? parseInt(row[idxLineQty], 10) || 0 : 1;
                     const linePrice = idxLinePrice !== -1 ? parseFloat(row[idxLinePrice]) || 0 : 0;
 
-                    // 若行无订单号，可能跟随上一行订单（Shopify 跨行多行项）
                     let targetOrderName = rawName;
                     if (!targetOrderName) {
                         const lastOrder = Array.from(ordersMap.values()).pop();
@@ -613,7 +1107,6 @@
 
                     const orderObj = ordersMap.get(targetOrderName);
 
-                    // 若当前行包含商品项目
                     if (lineSku || lineName || lineQty > 0) {
                         orderObj.items.push({
                             sku: lineSku || 'UNASSIGNED-SKU',
@@ -626,12 +1119,10 @@
 
                 parsedOrders = Array.from(ordersMap.values());
 
-                // 更新上传状态
-                uploadBadge.classList.remove('hidden');
+                uploadBadge.style.display = 'inline-block';
                 fileInfoText.textContent = `已加载: ${sourceName || 'Shopify 订单文件'} (${parsedOrders.length} 笔订单)`;
                 btnExportCsv.disabled = false;
 
-                // 重新计算并渲染
                 calculateAndRender();
             }
 
@@ -639,12 +1130,10 @@
             function getSkuSpecs(skuCode) {
                 const cleanCode = (skuCode || '').trim();
                 
-                // 1. 用户临时补齐的
                 if (customOverrides[cleanCode]) {
                     return customOverrides[cleanCode];
                 }
 
-                // 2. ERP 已录入的精确匹配
                 if (erpSkusMap[cleanCode]) {
                     return {
                         purchase_price: erpSkusMap[cleanCode].purchase_price,
@@ -655,7 +1144,6 @@
                     };
                 }
 
-                // 3. 不区分大小写匹配
                 const lowerCode = cleanCode.toLowerCase();
                 for (const key in erpSkusMap) {
                     if (key.toLowerCase() === lowerCode) {
@@ -669,7 +1157,6 @@
                     }
                 }
 
-                // 4. 未知 SKU，返回默认值
                 return {
                     purchase_price: null,
                     weight_g: null,
@@ -689,14 +1176,11 @@
                 const fbAdSpendUsd = parseFloat(inputFbAdSpend.value) || 0;
                 const filterPaidOnly = filterStatus.value === 'paid';
 
-                // 筛选订单
                 const validOrders = parsedOrders.filter(ord => {
                     if (!filterPaidOnly) return true;
-                    // Shopify paid, partially_refunded, authorized 等
                     return ord.financial_status === 'paid' || ord.financial_status === 'authorized';
                 });
 
-                // 统计未知 SKU
                 const missingSkus = new Set();
                 let totalItemsCount = 0;
                 let grossRevenueUsd = 0;
@@ -704,10 +1188,8 @@
                 let totalShippingCny = 0;
                 let totalPaymentFeeUsd = 0;
 
-                // SKU 聚合字典: skuCode -> { qty, revenue, purchaseCny, weightG, name, project }
                 const skuMap = new Map();
 
-                // 逐笔订单计算
                 const calculatedOrders = validOrders.map(order => {
                     let orderPurchaseCny = 0;
                     let orderWeightG = 0;
@@ -717,13 +1199,12 @@
                         const specs = getSkuSpecs(item.sku);
                         orderItemsCount += item.quantity;
 
-                        // 检查是否有缺失成本
                         if (specs.purchase_price === null || specs.purchase_price === undefined) {
                             missingSkus.add(item.sku);
                         }
 
                         const pPrice = specs.purchase_price !== null ? specs.purchase_price : 0;
-                        const pWeight = specs.weight_g !== null ? specs.weight_g : 100; // 默认 100g 估算
+                        const pWeight = specs.weight_g !== null ? specs.weight_g : 100;
 
                         const itemPurchaseTotal = pPrice * item.quantity;
                         const itemWeightTotal = pWeight * item.quantity;
@@ -731,7 +1212,6 @@
                         orderPurchaseCny += itemPurchaseTotal;
                         orderWeightG += itemWeightTotal;
 
-                        // SKU 汇总
                         if (!skuMap.has(item.sku)) {
                             skuMap.set(item.sku, {
                                 sku: item.sku,
@@ -753,21 +1233,17 @@
 
                     totalItemsCount += orderItemsCount;
 
-                    // 订单总金额
                     const orderRevenueUsd = order.total > 0 ? order.total : order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
                     grossRevenueUsd += orderRevenueUsd;
 
-                    // 单笔订单跨境物流成本：基础挂号费 + (整单重量 × 续重费率)
                     const orderShippingCny = shippingBaseCny + (orderWeightG * shippingRateCny);
                     totalShippingCny += orderShippingCny;
 
-                    // 单笔网关手续费: 营收 * 费率 + $0.30
                     const orderFeeUsd = (orderRevenueUsd * paymentFeePct) + (orderRevenueUsd > 0 ? paymentFeeFixUsd : 0);
                     totalPaymentFeeUsd += orderFeeUsd;
 
                     totalPurchaseCny += orderPurchaseCny;
 
-                    // 订单维度数据
                     const orderPurchaseUsd = orderPurchaseCny / exchangeRate;
                     const orderShippingUsd = orderShippingCny / exchangeRate;
                     const orderGrossProfitUsd = orderRevenueUsd - orderPurchaseUsd - orderShippingUsd - orderFeeUsd;
@@ -783,7 +1259,6 @@
                     };
                 });
 
-                // 成本折合 USD
                 const totalPurchaseUsd = totalPurchaseCny / exchangeRate;
                 const totalShippingUsd = totalShippingCny / exchangeRate;
                 const totalCostsUsd = fbAdSpendUsd + totalPurchaseUsd + totalShippingUsd + totalPaymentFeeUsd;
@@ -791,9 +1266,7 @@
                 const netProfitCny = netProfitUsd * exchangeRate;
                 const netMarginPct = grossRevenueUsd > 0 ? (netProfitUsd / grossRevenueUsd) * 100 : 0;
 
-                // ROAS 与指标
                 const realRoas = fbAdSpendUsd > 0 ? (grossRevenueUsd / fbAdSpendUsd) : 0;
-                // 保本 ROAS = 总销售额 / (总销售额 - 采购 - 物流 - 手续费)
                 const marginBeforeAd = grossRevenueUsd - totalPurchaseUsd - totalShippingUsd - totalPaymentFeeUsd;
                 const breakevenRoas = marginBeforeAd > 0 ? (grossRevenueUsd / marginBeforeAd) : 0;
 
@@ -801,13 +1274,11 @@
                 const aovUsd = ordersCount > 0 ? (grossRevenueUsd / ordersCount) : 0;
                 const cpaUsd = ordersCount > 0 ? (fbAdSpendUsd / ordersCount) : 0;
 
-                // 更新概括栏
                 document.getElementById('meta-total-lines').textContent = parsedOrders.length;
                 document.getElementById('meta-orders-count').textContent = ordersCount;
                 document.getElementById('meta-items-count').textContent = totalItemsCount;
                 document.getElementById('meta-skus-count').textContent = skuMap.size;
 
-                // 更新核心 KPI 看板
                 const cardNetProfit = document.getElementById('card-net-profit');
                 const badgeProfitStatus = document.getElementById('badge-profit-status');
                 const kpiNetProfitUsd = document.getElementById('kpi-net-profit-usd');
@@ -819,15 +1290,19 @@
                 kpiNetMargin.textContent = netMarginPct.toFixed(1) + '%';
 
                 if (netProfitUsd >= 0) {
-                    cardNetProfit.className = 'rounded-xl border border-emerald-300 bg-emerald-50/60 p-5 shadow-sm transition';
-                    badgeProfitStatus.className = 'rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800 border border-emerald-300';
+                    cardNetProfit.className = 'kpi-card highlight-profit';
+                    badgeProfitStatus.style.background = '#dcfce7';
+                    badgeProfitStatus.style.color = '#166534';
+                    badgeProfitStatus.style.borderColor = '#86efac';
                     badgeProfitStatus.textContent = '今日盈利';
-                    kpiNetProfitUsd.className = 'text-3xl font-black tracking-tight text-emerald-700';
+                    kpiNetProfitUsd.style.color = '#15803d';
                 } else {
-                    cardNetProfit.className = 'rounded-xl border border-rose-300 bg-rose-50/60 p-5 shadow-sm transition';
-                    badgeProfitStatus.className = 'rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-bold text-rose-800 border border-rose-300';
+                    cardNetProfit.className = 'kpi-card highlight-loss';
+                    badgeProfitStatus.style.background = '#ffe4e6';
+                    badgeProfitStatus.style.color = '#9f1239';
+                    badgeProfitStatus.style.borderColor = '#fecdd3';
                     badgeProfitStatus.textContent = '今日亏损';
-                    kpiNetProfitUsd.className = 'text-3xl font-black tracking-tight text-rose-700';
+                    kpiNetProfitUsd.style.color = '#e11d48';
                 }
 
                 document.getElementById('kpi-roas').textContent = realRoas.toFixed(2);
@@ -841,7 +1316,6 @@
                 document.getElementById('kpi-order-count-tag').textContent = ordersCount + ' 笔有效订单';
                 document.getElementById('kpi-total-items').textContent = totalItemsCount + ' 件';
 
-                // 成本拆解更新
                 const calcPct = (val, total) => total > 0 ? ((val / total) * 100).toFixed(1) + '%' : '0.0%';
                 document.getElementById('cost-percent-ad').textContent = calcPct(fbAdSpendUsd, totalCostsUsd);
                 document.getElementById('cost-val-ad').textContent = '$' + fbAdSpendUsd.toFixed(2);
@@ -858,19 +1332,16 @@
                 document.getElementById('cost-percent-gateway').textContent = calcPct(totalPaymentFeeUsd, totalCostsUsd);
                 document.getElementById('cost-val-gateway').textContent = '$' + totalPaymentFeeUsd.toFixed(2);
 
-                // 处理未匹配 SKU 提示
                 if (missingSkus.size > 0) {
-                    missingSkusAlert.classList.remove('hidden');
+                    missingSkusAlert.style.display = 'block';
                     missingSkusCount.textContent = missingSkus.size;
                     renderMissingSkusInputs(Array.from(missingSkus));
                 } else {
-                    missingSkusAlert.classList.add('hidden');
+                    missingSkusAlert.style.display = 'none';
                 }
 
-                // 渲染表格数据
                 parsedSkuSummary = Array.from(skuMap.values()).map(s => {
                     const purchaseUsd = s.total_purchase_cny / exchangeRate;
-                    // 单个 SKU 物流估算: 单件重量运费 + 均摊单单挂号费
                     const unitShippingCny = shippingBaseCny + (s.weight_g * shippingRateCny);
                     const totalShippingUsd = (unitShippingCny * s.total_quantity) / exchangeRate;
                     const grossProfitUsd = s.total_revenue_usd - purchaseUsd - totalShippingUsd;
@@ -897,33 +1368,33 @@
                 missingSkusList.innerHTML = '';
                 skus.forEach(sku => {
                     const card = document.createElement('div');
-                    card.className = 'rounded-lg border border-amber-200 bg-white p-3 shadow-xs';
+                    card.style.background = '#ffffff';
+                    card.style.border = '1px solid #fde68a';
+                    card.style.borderRadius = '8px';
+                    card.style.padding = '0.65rem';
                     const currentVal = customOverrides[sku] || { purchase_price: '', weight_g: '' };
 
                     card.innerHTML = `
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="font-mono text-xs font-bold text-slate-800 truncate" title="${sku}">${sku}</span>
-                            <span class="text-[10px] rounded bg-amber-100 text-amber-800 px-1.5 py-0.5">待补齐</span>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+                            <span style="font-family:monospace;font-weight:700;font-size:0.75rem;color:#1e293b;" title="${sku}">${sku}</span>
+                            <span style="font-size:0.625rem;background:#fef3c7;color:#92400e;padding:0.1rem 0.35rem;border-radius:4px;">待补齐</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;">
                             <div>
-                                <label class="block text-[10px] text-slate-500 mb-0.5">采购价 (¥)</label>
+                                <label style="display:block;font-size:0.6875rem;color:#64748b;margin-bottom:0.15rem;">采购价(¥)</label>
                                 <input type="number" step="0.1" placeholder="0.00" value="${currentVal.purchase_price ?? ''}"
-                                       data-sku="${sku}" data-field="purchase_price"
-                                       class="missing-sku-input field-input py-1 text-xs" />
+                                       data-sku="${sku}" data-field="purchase_price" class="missing-sku-input param-input" style="padding:0.25rem 0.4rem;font-size:0.75rem;" />
                             </div>
                             <div>
-                                <label class="block text-[10px] text-slate-500 mb-0.5">重量 (g)</label>
+                                <label style="display:block;font-size:0.6875rem;color:#64748b;margin-bottom:0.15rem;">重量(g)</label>
                                 <input type="number" step="1" placeholder="100" value="${currentVal.weight_g ?? ''}"
-                                       data-sku="${sku}" data-field="weight_g"
-                                       class="missing-sku-input field-input py-1 text-xs" />
+                                       data-sku="${sku}" data-field="weight_g" class="missing-sku-input param-input" style="padding:0.25rem 0.4rem;font-size:0.75rem;" />
                             </div>
                         </div>
                     `;
                     missingSkusList.appendChild(card);
                 });
 
-                // 绑定输入事件
                 missingSkusList.querySelectorAll('.missing-sku-input').forEach(input => {
                     input.addEventListener('input', function () {
                         const sku = this.dataset.sku;
@@ -935,7 +1406,6 @@
                         }
                         customOverrides[sku][field] = isNaN(val) ? null : val;
 
-                        // 即刻重算
                         calculateAndRender();
                     });
                 });
@@ -951,35 +1421,34 @@
                 });
 
                 if (filtered.length === 0) {
-                    tbodySkus.innerHTML = `<tr><td colspan="10" class="py-8 text-center text-slate-400">没有找到匹配的 SKU 数据</td></tr>`;
+                    tbodySkus.innerHTML = `<tr><td colspan="10" style="padding:2.5rem 1rem;text-align:center;color:#94a3b8;">没有找到匹配的 SKU 数据</td></tr>`;
                     return;
                 }
 
-                // 按出单件数倒序排列
                 filtered.sort((a, b) => b.total_quantity - a.total_quantity);
 
                 tbodySkus.innerHTML = filtered.map(item => {
                     const isProfit = item.gross_profit_usd >= 0;
                     return `
-                        <tr class="hover:bg-slate-50/80 transition">
-                            <td class="px-4 py-3 font-mono font-bold text-slate-800">
+                        <tr>
+                            <td style="font-family:monospace;font-weight:700;color:#1e293b;white-space:nowrap;">
                                 ${item.sku}
-                                ${!item.is_erp ? '<span class="ml-1 text-[10px] text-amber-600 bg-amber-50 px-1 rounded border border-amber-200">自定义</span>' : ''}
+                                ${!item.is_erp ? '<span style="margin-left:0.25rem;font-size:0.625rem;color:#d97706;background:#fef3c7;padding:0.1rem 0.3rem;border-radius:4px;border:1px solid #fde68a;">自定义</span>' : ''}
                             </td>
-                            <td class="px-4 py-3">
-                                <div class="font-medium text-slate-800 truncate max-w-xs" title="${item.name}">${item.name || '--'}</div>
-                                <div class="text-[11px] text-slate-400">${item.project_name || '未关联项目'}</div>
+                            <td>
+                                <div style="font-weight:600;color:#1e293b;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.name}">${item.name || '--'}</div>
+                                <div style="font-size:0.6875rem;color:#94a3b8;">${item.project_name || '未关联项目'}</div>
                             </td>
-                            <td class="px-4 py-3 text-center font-bold text-teal-700">${item.total_quantity}</td>
-                            <td class="px-4 py-3 text-right font-medium text-slate-800">$${item.total_revenue_usd.toFixed(2)}</td>
-                            <td class="px-4 py-3 text-right text-slate-600">¥${item.purchase_price ? item.purchase_price.toFixed(2) : '0.00'}</td>
-                            <td class="px-4 py-3 text-right text-slate-600">${item.weight_g || 0}g</td>
-                            <td class="px-4 py-3 text-right text-slate-600">$${item.purchase_usd.toFixed(2)}</td>
-                            <td class="px-4 py-3 text-right text-slate-600">$${item.shipping_usd.toFixed(2)}</td>
-                            <td class="px-4 py-3 text-right font-bold ${isProfit ? 'text-emerald-600' : 'text-rose-600'}">
+                            <td style="text-align:center;font-weight:700;color:#0f766e;">${item.total_quantity}</td>
+                            <td style="text-align:right;font-weight:600;color:#1e293b;">$${item.total_revenue_usd.toFixed(2)}</td>
+                            <td style="text-align:right;color:#64748b;">¥${item.purchase_price ? item.purchase_price.toFixed(2) : '0.00'}</td>
+                            <td style="text-align:right;color:#64748b;">${item.weight_g || 0}g</td>
+                            <td style="text-align:right;color:#64748b;">$${item.purchase_usd.toFixed(2)}</td>
+                            <td style="text-align:right;color:#64748b;">$${item.shipping_usd.toFixed(2)}</td>
+                            <td style="text-align:right;font-weight:700;color:${isProfit ? '#15803d' : '#e11d48'};">
                                 ${isProfit ? '+' : ''}$${item.gross_profit_usd.toFixed(2)}
                             </td>
-                            <td class="px-4 py-3 text-right font-semibold ${isProfit ? 'text-emerald-700' : 'text-rose-700'}">
+                            <td style="text-align:right;font-weight:600;color:${isProfit ? '#166534' : '#e11d48'};">
                                 ${item.margin_pct.toFixed(1)}%
                             </td>
                         </tr>
@@ -996,7 +1465,7 @@
                 });
 
                 if (filtered.length === 0) {
-                    tbodyOrders.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">没有找到匹配的订单</td></tr>`;
+                    tbodyOrders.innerHTML = `<tr><td colspan="9" style="padding:2.5rem 1rem;text-align:center;color:#94a3b8;">没有找到匹配的订单</td></tr>`;
                     return;
                 }
 
@@ -1005,22 +1474,22 @@
                     const itemsDesc = ord.items.map(i => `${i.sku} × ${i.quantity}`).join(', ');
 
                     return `
-                        <tr class="hover:bg-slate-50/80 transition">
-                            <td class="px-4 py-3 font-mono font-bold text-teal-700">${ord.name}</td>
-                            <td class="px-4 py-3 text-slate-500 whitespace-nowrap">${ord.created_at || '--'}</td>
-                            <td class="px-4 py-3 text-center">
-                                <span class="inline-block rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${ord.financial_status === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
+                        <tr>
+                            <td style="font-family:monospace;font-weight:700;color:#0f766e;white-space:nowrap;">${ord.name}</td>
+                            <td style="color:#64748b;white-space:nowrap;">${ord.created_at || '--'}</td>
+                            <td style="text-align:center;">
+                                <span class="badge-status ${ord.financial_status === 'paid' ? 'paid' : 'other'}">
                                     ${ord.financial_status}
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-slate-700 max-w-sm truncate" title="${itemsDesc}">
-                                <span class="font-medium">${ord.items_count} 件商品:</span> ${itemsDesc}
+                            <td style="color:#334155;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${itemsDesc}">
+                                <strong style="color:#1e293b;">${ord.items_count} 件:</strong> ${itemsDesc}
                             </td>
-                            <td class="px-4 py-3 text-right font-semibold text-slate-800">$${ord.revenue_usd.toFixed(2)}</td>
-                            <td class="px-4 py-3 text-right text-slate-600">$${ord.purchase_usd.toFixed(2)}</td>
-                            <td class="px-4 py-3 text-right text-slate-600">$${ord.shipping_usd.toFixed(2)}</td>
-                            <td class="px-4 py-3 text-right text-slate-500">$${ord.gateway_usd.toFixed(2)}</td>
-                            <td class="px-4 py-3 text-right font-bold ${isProfit ? 'text-emerald-600' : 'text-rose-600'}">
+                            <td style="text-align:right;font-weight:600;color:#1e293b;">$${ord.revenue_usd.toFixed(2)}</td>
+                            <td style="text-align:right;color:#64748b;">$${ord.purchase_usd.toFixed(2)}</td>
+                            <td style="text-align:right;color:#64748b;">$${ord.shipping_usd.toFixed(2)}</td>
+                            <td style="text-align:right;color:#94a3b8;">$${ord.gateway_usd.toFixed(2)}</td>
+                            <td style="text-align:right;font-weight:700;color:${isProfit ? '#15803d' : '#e11d48'};">
                                 ${isProfit ? '+' : ''}$${ord.gross_profit_usd.toFixed(2)}
                             </td>
                         </tr>
@@ -1035,7 +1504,7 @@
                     return;
                 }
 
-                let csv = '\uFEFF'; // UTF-8 BOM
+                let csv = '\uFEFF';
                 csv += 'SKU,商品名称,关联项目,出单数量,销售额(USD),单件采购价(CNY),单件重量(g),采购总成本(USD),物流预估(USD),预估毛利(USD),毛利率\n';
 
                 parsedSkuSummary.forEach(row => {
@@ -1065,14 +1534,13 @@
                 document.body.removeChild(a);
             }
 
-            // 交互事件监听
+            // 交互事件绑定
             fileInput.addEventListener('change', function (e) {
                 if (e.target.files && e.target.files[0]) {
                     handleFileUpload(e.target.files[0]);
                 }
             });
 
-            // 拖拽高亮
             ['dragenter', 'dragover'].forEach(eventName => {
                 dropZone.addEventListener(eventName, (e) => {
                     e.preventDefault();
@@ -1106,7 +1574,7 @@
                 parsedOrders = [];
                 parsedSkuSummary = [];
                 fileInput.value = '';
-                uploadBadge.classList.add('hidden');
+                uploadBadge.style.display = 'none';
                 fileInfoText.textContent = '暂未上传文件';
                 inputFbAdSpend.value = '0.00';
                 btnExportCsv.disabled = true;
@@ -1115,35 +1583,32 @@
 
             btnExportCsv.addEventListener('click', exportCsvReport);
 
-            // 参数输入监听实时重算
             [inputFbAdSpend, paramExchangeRate, paramShippingBase, paramShippingRate, paramPaymentFeeRate].forEach(el => {
                 el.addEventListener('input', calculateAndRender);
             });
 
             filterStatus.addEventListener('change', calculateAndRender);
 
-            // 搜索过滤
             tableSearch.addEventListener('input', function (e) {
                 currentSearchTerm = e.target.value.trim();
                 renderSkuTable(parsedSkuSummary);
                 renderOrderTable(parsedOrders);
             });
 
-            // 表格视图 Tab 切换
             tabBtnSkus.addEventListener('click', function () {
                 activeTab = 'skus';
-                tabBtnSkus.className = 'inline-flex items-center gap-1.5 border-b-2 border-teal-600 pb-2 text-sm font-bold text-teal-600 transition cursor-pointer';
-                tabBtnOrders.className = 'inline-flex items-center gap-1.5 border-b-2 border-transparent pb-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition cursor-pointer';
-                viewSkus.classList.remove('hidden');
-                viewOrders.classList.add('hidden');
+                tabBtnSkus.className = 'table-tab-btn active';
+                tabBtnOrders.className = 'table-tab-btn';
+                viewSkus.style.display = 'block';
+                viewOrders.style.display = 'none';
             });
 
             tabBtnOrders.addEventListener('click', function () {
                 activeTab = 'orders';
-                tabBtnOrders.className = 'inline-flex items-center gap-1.5 border-b-2 border-teal-600 pb-2 text-sm font-bold text-teal-600 transition cursor-pointer';
-                tabBtnSkus.className = 'inline-flex items-center gap-1.5 border-b-2 border-transparent pb-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition cursor-pointer';
-                viewOrders.classList.remove('hidden');
-                viewSkus.classList.add('hidden');
+                tabBtnOrders.className = 'table-tab-btn active';
+                tabBtnSkus.className = 'table-tab-btn';
+                viewOrders.style.display = 'block';
+                viewSkus.style.display = 'none';
             });
         })();
     </script>
