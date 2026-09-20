@@ -38,13 +38,13 @@
             <h1 class="mt-1 text-3xl font-bold text-slate-900">产品盈亏计算工具</h1>
             <p class="mt-2 text-sm text-slate-500">自动带入系统产品规格已知信息，填写售价实时计算保本广告成本（CPR）与盈亏保本 ROI。</p>
         </div>
-        <div class="flex items-center gap-2.5">
-            <button type="button" id="btn-open-create-modal" class="btn-primary-action" style="padding: 0.45rem 0.85rem; font-size: 0.8125rem;">
+        <div class="flex items-center" style="display: flex; align-items: center; gap: 14px;">
+            <button type="button" id="btn-open-create-modal" class="btn-primary-action" style="padding: 0.45rem 0.85rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 6px;">
                 <svg width="15" height="15" style="width:15px;height:15px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 <span>新增产品利润计算表</span>
             </button>
-            <span class="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700 border border-teal-200">
-                <span class="h-1.5 w-1.5 rounded-full bg-teal-500"></span>
+            <span class="inline-flex items-center rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700 border border-teal-200" style="display: inline-flex; align-items: center; gap: 6px; margin-left: 12px;">
+                <span class="rounded-full bg-teal-500" style="width: 6px; height: 6px; border-radius: 9999px; background-color: #14b8a6; display: inline-block;"></span>
                 草稿实时缓存
             </span>
         </div>
