@@ -1,3 +1,26 @@
 @props(['label', 'href' => '#', 'active' => false, 'count' => null, 'tone' => 'slate'])
-@php($activeClasses = ['market_research' => 'bg-orange-600', 'website_operations' => 'bg-blue-600', 'content_creative' => 'bg-yellow-500 text-black', 'traffic_growth' => 'bg-violet-600', 'slate' => 'bg-zinc-700'])
-<a href="{{ $href }}" @class(['group mb-1 flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition', ($activeClasses[$tone] ?? $activeClasses['slate']).' font-semibold text-white shadow-sm' => $active, 'text-zinc-400 hover:bg-zinc-900 hover:text-white' => ! $active])><span class="h-2 w-2 rounded-full transition-transform duration-200 {{ $active ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.7)] scale-110' : 'bg-zinc-600 group-hover:bg-zinc-400 group-hover:scale-125' }}"></span><span class="ml-3 transition-transform duration-200 group-hover:translate-x-0.5">{{ $label }}</span>@if ($count)<span class="ml-auto rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] transition-transform duration-200 group-hover:scale-105">{{ $count }}</span>@endif</a>
+@php
+    $dotColors = [
+        'market_research' => 'bg-orange-400',
+        'website_operations' => 'bg-sky-400',
+        'content_creative' => 'bg-amber-400',
+        'traffic_growth' => 'bg-violet-400',
+        'slate' => 'bg-slate-400',
+    ];
+    $dotColor = $dotColors[$tone] ?? 'bg-slate-400';
+@endphp
+<a href="{{ $href }}" @class([
+    'group mb-0.5 flex items-center rounded-lg px-3 py-2 text-xs font-medium transition-all duration-150',
+    'bg-teal-500/15 text-teal-300 font-semibold border-l-2 border-teal-400 shadow-xs' => $active,
+    'text-slate-400 hover:bg-white/[0.05] hover:text-slate-200' => ! $active,
+])>
+    <span class="h-2 w-2 rounded-full transition-transform duration-200 {{ $dotColor }} {{ $active ? 'scale-110 shadow-[0_0_6px_rgba(45,212,191,0.6)]' : 'opacity-60 group-hover:opacity-100 group-hover:scale-110' }}"></span>
+    <span class="ml-2.5 tracking-wide">{{ $label }}</span>
+    @if ($count)
+        <span @class([
+            'ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold transition-all',
+            'bg-teal-900/80 text-teal-300 border border-teal-500/40' => $active,
+            'bg-slate-800 text-slate-400 border border-slate-700/60 group-hover:text-slate-300' => ! $active,
+        ])>{{ $count }}</span>
+    @endif
+</a>
