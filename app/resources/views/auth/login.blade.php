@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录 · NC ERP</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     @unless (app()->environment('testing'))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endunless
@@ -11,7 +12,9 @@
 <body class="login-page">
     <section class="login-intro" aria-labelledby="login-brand-heading">
         <a class="login-brand" href="{{ route('login') }}" aria-label="NC ERP 登录页">
-            <span class="login-mark" aria-hidden="true">NC</span>
+            <span class="login-mark" aria-hidden="true" style="overflow: hidden; padding: 0; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.25);">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+            </span>
             <span class="login-brand-copy">
                 <span id="login-brand-heading" class="login-brand-name">NC ERP</span>
                 <span class="login-brand-tagline">跨境产品增长协作系统</span>

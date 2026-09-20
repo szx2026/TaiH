@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? 'NC ERP' }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     @unless (app()->environment('testing'))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endunless
@@ -242,11 +243,8 @@
     <div class="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
         <aside data-app-sidebar class="border-b border-zinc-800 bg-black px-4 py-3 text-zinc-200 lg:border-r lg:border-b-0 lg:border-zinc-200 lg:px-4 lg:py-5">
             <a href="{{ route('dashboard') }}" class="mb-3 flex items-center gap-3 px-2 lg:mb-8">
-                <span aria-label="NC 标志" class="grid size-10 place-items-center rounded-xl bg-white shadow-sm">
-                    <span aria-hidden="true" class="flex items-baseline gap-px leading-none">
-                        <span class="text-[17px] font-black tracking-[-0.08em] text-zinc-950">N</span>
-                        <span class="text-[16px] font-semibold tracking-[-0.08em] text-zinc-500">C</span>
-                    </span>
+                <span aria-label="系统 Logo" style="width: 38px; height: 38px; min-width: 38px; border-radius: 10px; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 1px 3px rgba(0,0,0,0.3);">
+                    <img src="{{ asset('images/logo.png') }}" alt="NC ERP Logo" width="38" height="38" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
                 </span>
                 <span>
                     <span class="block text-sm font-bold tracking-tight text-white">NC ERP</span>
