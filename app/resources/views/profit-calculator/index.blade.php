@@ -60,13 +60,13 @@
 
             <div class="flex items-center gap-3">
                 <div id="mode-badge-container">
-                    <span id="mode-badge" class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 border border-slate-200">
-                        <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                    <span id="mode-badge" class="mode-status-badge free">
+                        <span class="dot"></span>
                         自由独立计算模式
                     </span>
                 </div>
 
-                <button type="button" id="btn-save-project-profit" class="inline-flex items-center gap-1.5 rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                <button type="button" id="btn-save-project-profit" class="btn-primary-action" disabled>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
                         <polyline points="17 21 17 13 7 13 7 21"/>
@@ -101,6 +101,96 @@
     <input id="backup-file" type="file" accept="application/json,.json" hidden>
 
     <style>
+        .btn-primary-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #ffffff !important;
+            background-color: #0f766e !important;
+            border: 1px solid #0f766e !important;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .btn-primary-action:hover:not(:disabled) {
+            background-color: #115e59 !important;
+            border-color: #115e59 !important;
+        }
+        .btn-primary-action:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            background-color: #0f766e !important;
+        }
+        .btn-primary-action svg {
+            color: #ffffff !important;
+            stroke: #ffffff !important;
+        }
+
+        .btn-secondary-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.45rem 0.9rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #334155 !important;
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .btn-secondary-action:hover {
+            background-color: #f8fafc !important;
+            border-color: #94a3b8 !important;
+        }
+
+        .mode-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .mode-status-badge.free {
+            background-color: #f1f5f9 !important;
+            color: #475569 !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+        .mode-status-badge.saved {
+            background-color: #ecfdf5 !important;
+            color: #047857 !important;
+            border: 1px solid #6ee7b7 !important;
+        }
+        .mode-status-badge.unsaved {
+            background-color: #fffbeb !important;
+            color: #b45309 !important;
+            border: 1px solid #fcd34d !important;
+        }
+        .mode-status-badge .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .mode-status-badge.free .dot { background-color: #94a3b8; }
+        .mode-status-badge.saved .dot { background-color: #10b981; }
+        .mode-status-badge.unsaved .dot { background-color: #f59e0b; }
+
         .settings-grid { display: grid; grid-template-columns: repeat(5, minmax(130px, 1fr)); gap: 1rem; }
         .settings-grid label { display: grid; gap: 0.35rem; color: #0f172a; font-weight: 600; font-size: 0.875rem; }
         .settings-grid .field-note { color: #64748b; font-size: 0.75rem; font-weight: 400; }
@@ -590,8 +680,8 @@ function renderProducts(results) {
         <p class="text-xs text-slate-500 mt-0.5">${subtitle}</p>
       </div>
       <div class="flex items-center gap-2">
-        ${currentProjectId ? `<button type="button" data-action="save-project" class="inline-flex items-center gap-1.5 rounded-lg bg-teal-700 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-teal-800 transition shadow-sm">💾 保存此产品利润表</button>` : ''}
-        <button type="button" data-action="add" class="rounded-lg border border-slate-300 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">+ 新增产品规格</button>
+        ${currentProjectId ? `<button type="button" data-action="save-project" class="btn-primary-action" style="padding: 0.35rem 0.85rem; font-size: 0.8125rem;">💾 保存此产品利润表</button>` : ''}
+        <button type="button" data-action="add" class="btn-secondary-action" style="padding: 0.35rem 0.85rem; font-size: 0.8125rem;">+ 新增产品规格</button>
       </div>
     </div>
     <div class="overflow-x-auto"><table class="calc-table"><thead><tr><th class="w-12 text-center">序号</th><th>SKU / 规格名称</th><th>产品成本 (¥)</th><th>重量 (g)</th><th>售价 ($)</th><th>店铺运费 ($)</th><th>计算结果</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>`;
@@ -651,8 +741,8 @@ function updateModeUI(savedAt = null) {
 
   if (!currentProjectId) {
     if (badge) {
-      badge.className = 'inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 border border-slate-200';
-      badge.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>自由独立计算模式';
+      badge.className = 'mode-status-badge free';
+      badge.innerHTML = '<span class="dot"></span>自由独立计算模式';
     }
     if (saveBtn) {
       saveBtn.disabled = true;
@@ -669,11 +759,11 @@ function updateModeUI(savedAt = null) {
 
     if (badge) {
       if (hasSaved) {
-        badge.className = 'inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 border border-emerald-200';
-        badge.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>已保存专属利润表';
+        badge.className = 'mode-status-badge saved';
+        badge.innerHTML = '<span class="dot"></span>已保存专属利润表';
       } else {
-        badge.className = 'inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 border border-amber-200';
-        badge.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>已带入已知规格 · 待保存';
+        badge.className = 'mode-status-badge unsaved';
+        badge.innerHTML = '<span class="dot"></span>已带入已知规格 · 待保存';
       }
     }
     if (saveBtn) {
