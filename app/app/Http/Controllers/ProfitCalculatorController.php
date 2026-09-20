@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProductProject;
+use App\Models\ProductSku;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -27,6 +28,19 @@ class ProfitCalculatorController extends Controller
         return view('profit-calculator.index', [
             'projects' => $projects,
             'preloadedProject' => $preloadedProject,
+        ]);
+    }
+
+    public function ordersIndex(Request $request): View
+    {
+        $skus = ProductSku::query()
+            ->with('project:id,product_name,project_code')
+            ->whereNotNull('sku_code')
+            ->orderBy('id')
+            ->get(['id', 'product_project_id', 'variant_name', 'sku_code', 'purchase_price', 'weight_g']);
+
+        return view('profit-calculator.orders', [
+            'knownSkus' => $skus,
         ]);
     }
 

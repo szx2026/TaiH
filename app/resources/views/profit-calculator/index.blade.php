@@ -20,6 +20,18 @@
     });
 @endphp
 
+    <!-- 功能切换 Tab -->
+    <div class="mb-6 flex items-center border-b border-slate-200">
+        <a href="{{ route('profit-calculator.index') }}" class="inline-flex items-center gap-2 border-b-2 border-teal-600 px-4 py-3 text-sm font-bold text-teal-600">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            单品保本盈亏测算
+        </a>
+        <a href="{{ route('order-profit-calculator.index') }}" class="inline-flex items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-medium text-slate-500 hover:border-slate-300 hover:text-slate-700">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            每日订单利润核算 (Shopify + FB)
+        </a>
+    </div>
+
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
             <p class="text-sm font-semibold text-teal-600">实时测算 · 支持绑定项目保存与自由独立计算</p>
