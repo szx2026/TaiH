@@ -937,8 +937,14 @@
             // 系统已知的 SKU 成本字典
             const erpSkusMap = @json($skusMap);
             
-            // 用户在页面临时补齐的未知 SKU 字典: { sku_code: { purchase_price: xx, weight_g: xx } }
-            const customOverrides = {};
+            // 用户在页面临时补齐的未知 SKU 字典，自动持久化至 localStorage
+            const STORAGE_KEY = 'nc_erp_order_custom_skus';
+            let customOverrides = {};
+            try {
+                customOverrides = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            } catch (e) {
+                customOverrides = {};
+            }
 
             // 订单状态与计算状态
             let parsedOrders = [];
@@ -1405,6 +1411,10 @@
                             customOverrides[sku] = { purchase_price: null, weight_g: null };
                         }
                         customOverrides[sku][field] = isNaN(val) ? null : val;
+
+                        try {
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(customOverrides));
+                        } catch (e) {}
 
                         calculateAndRender();
                     });
