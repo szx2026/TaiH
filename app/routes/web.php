@@ -17,6 +17,7 @@ use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\ResearchSourceController;
 use App\Http\Controllers\ProjectDecisionController;
 use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\ProfitCalculatorController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => auth()->check() ? to_route('projects.index') : to_route('login'));
@@ -26,6 +27,7 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middlew
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/feedback', [FeedbackCenterController::class, 'index'])->name('feedback.index');
+    Route::get('/profit-calculator', [ProfitCalculatorController::class, 'index'])->name('profit-calculator.index');
     Route::get('/integrations', [IntegrationController::class, 'index'])->name('integrations.index');
     Route::get('/projects', [ProductProjectController::class, 'index'])->name('projects.index');
     Route::get('/recycle-bin', [ProductProjectController::class, 'recycleBin'])->name('projects.recycle-bin');

@@ -261,6 +261,7 @@
                 <x-nav-item label="运营部" tone="website_operations" :href="route('projects.index', ['stage' => 'website_operations'])" :active="request('stage') === 'website_operations'" />
                 <x-nav-item label="创意部" tone="content_creative" :href="route('projects.index', ['stage' => 'content_creative'])" :active="request('stage') === 'content_creative'" />
                 <x-nav-item label="流量部" tone="traffic_growth" :href="route('projects.index', ['stage' => 'traffic_growth'])" :active="request('stage') === 'traffic_growth'" :count="$pendingFeedbackCount" />
+                <x-nav-item label="利润测算" :href="route('profit-calculator.index')" :active="request()->routeIs('profit-calculator.*')" />
                 <x-nav-item label="回收站" :href="route('projects.recycle-bin')" :active="request()->routeIs('projects.recycle-bin')" />
             </nav>
 
