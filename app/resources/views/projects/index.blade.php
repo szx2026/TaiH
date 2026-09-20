@@ -27,7 +27,44 @@
 
     <form method="GET" class="mb-5 rounded-xl border border-slate-200 bg-white p-4"><input type="hidden" name="stage" value="{{ $stage }}"><div class="grid gap-4 xl:grid-cols-[minmax(250px,0.95fr)_minmax(0,2.65fr)]"><label class="rounded-xl border dept-panel-{{ $stage }} p-3 text-xs font-semibold">当前产品项目<select name="project" onchange="this.form.submit()" class="mt-2 w-full rounded-lg border-slate-300 bg-white text-sm text-slate-800"><option value="">选择一个产品项目</option>@foreach($projects as $project)<option value="{{ $project->id }}" @selected($selectedProject?->id === $project->id)>{{ $project->product_name }}@if($project->keywords) · {{ $project->keywords }}@endif · {{ $project->project_code }}</option>@endforeach</select></label><div class="grid gap-3 border-slate-200 xl:border-l xl:pl-4 md:grid-cols-2 xl:grid-cols-[minmax(190px,1.25fr)_minmax(150px,0.75fr)_minmax(130px,0.6fr)_minmax(135px,0.7fr)_minmax(135px,0.7fr)_auto_auto]"><label class="text-xs font-medium text-slate-600">搜索项目<input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="产品名称或项目编号" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></label><label class="text-xs font-medium text-slate-600">产品类目<select name="category" class="mt-1 w-full rounded-lg border-slate-300 text-sm"><option value="">全部类目</option>@foreach($availableCategories as $category)<option value="{{ $category }}" @selected(($filters['category'] ?? null) === $category)>{{ $category }}</option>@endforeach</select></label><label class="text-xs font-medium text-slate-600">产品阶段<select name="priority" class="mt-1 w-full rounded-lg border-slate-300 text-sm"><option value="">全部阶段</option><option value="initial_screening" @selected(($filters['priority'] ?? null) === 'initial_screening')>初筛产品</option><option value="market_new" @selected(($filters['priority'] ?? null) === 'market_new')>市场新品</option><option value="historical_winner" @selected(($filters['priority'] ?? null) === 'historical_winner')>历史爆品</option></select></label><label class="text-xs font-medium text-slate-600">创建时间从<input name="created_from" type="date" value="{{ $filters['created_from'] ?? '' }}" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></label><label class="text-xs font-medium text-slate-600">创建时间至<input name="created_to" type="date" value="{{ $filters['created_to'] ?? '' }}" class="mt-1 w-full rounded-lg border-slate-300 text-sm"></label><button class="mt-5 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">应用筛选</button><a href="{{ route('projects.index', ['stage' => $stage]) }}" class="mt-5 rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700">清除</a></div></div>@if($projects->isEmpty())<p class="mt-3 text-sm text-slate-500">当前没有可处理项目。</p>@endif</form>
 
-    @if($projects->isNotEmpty())<section class="mb-5 rounded-xl border border-slate-200 bg-white p-4"><div class="flex items-center justify-between"><h2 class="font-semibold">匹配的产品项目</h2><span class="text-sm text-slate-500">{{ $projects->count() }} 个</span></div><div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">@foreach($projects as $project)<a href="{{ route('projects.index', array_merge($filters, ['stage' => $stage, 'project' => $project->id])) }}" class="project-card-item rounded-lg border border-slate-200 p-3 transition hover:border-slate-400 hover:bg-slate-50 @if($selectedProject?->id === $project->id) border-slate-900 bg-slate-50 @endif"><p class="font-semibold text-slate-950">{{ $project->product_name }}@if($project->keywords) · {{ $project->keywords }}@endif</p><p class="mt-1 text-xs text-slate-500">{{ $project->project_code }} · {{ $labels[$project->current_stage] ?? $project->current_stage }}@if($project->category) · {{ $project->category }}@endif</p></a>@endforeach</div></section>@endif
+    @if($projects->isNotEmpty())
+    <section class="mb-5 rounded-xl border border-slate-200 bg-white p-4">
+        <div class="flex items-center justify-between cursor-pointer select-none" id="toggle-matched-projects-header" title="点击展开或收起匹配项目">
+            <div class="flex flex-wrap items-center gap-2">
+                <h2 class="font-semibold text-slate-900">匹配的产品项目</h2>
+                <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 border border-slate-200">{{ $projects->count() }} 个</span>
+                @if($selectedProject)
+                    <span class="inline-flex items-center gap-1 rounded bg-teal-50 px-2 py-0.5 text-xs text-teal-800 font-medium border border-teal-200">
+                        当前已选：{{ $selectedProject->product_name }}
+                    </span>
+                @endif
+            </div>
+            <button type="button" id="toggle-matched-projects-btn" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 rounded-lg px-2.5 py-1.5 hover:bg-slate-100 transition cursor-pointer" style="border: 1px solid #cbd5e1; background: #f8fafc;">
+                <span id="toggle-matched-projects-text">收起列表</span>
+                <svg id="toggle-matched-projects-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="transition-transform duration-200">
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+            </button>
+        </div>
+
+        <div id="matched-projects-body">
+            <div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                @foreach($projects as $project)
+                    <a href="{{ route('projects.index', array_merge($filters, ['stage' => $stage, 'project' => $project->id])) }}" class="project-card-item rounded-lg border border-slate-200 p-3 transition hover:border-slate-400 hover:bg-slate-50 @if($selectedProject?->id === $project->id) border-slate-900 bg-slate-50 @endif">
+                        <p class="font-semibold text-slate-950">{{ $project->product_name }}@if($project->keywords) · {{ $project->keywords }}@endif</p>
+                        <p class="mt-1 text-xs text-slate-500">{{ $project->project_code }} · {{ $labels[$project->current_stage] ?? $project->current_stage }}@if($project->category) · {{ $project->category }}@endif</p>
+                    </a>
+                @endforeach
+            </div>
+            <div class="mt-3 flex justify-center border-t border-slate-100 pt-2.5">
+                <button type="button" id="btn-collapse-at-bottom" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1.5 py-1 px-3.5 rounded hover:bg-slate-100 transition cursor-pointer" style="border: 1px solid #e2e8f0; background: #ffffff;">
+                    <span>收起匹配列表</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                </button>
+            </div>
+        </div>
+    </section>
+    @endif
     <div id="project-work-area"></div>
     @if($departmentWorkspace && $selectedProject)
         <section class="mt-5 rounded-xl border border-slate-200 bg-white p-5">
@@ -864,4 +901,57 @@ function closeEditProductNameModal() {
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeEditProductNameModal();
 });
+
+// 匹配的产品项目折叠与展开逻辑
+(function () {
+    const header = document.getElementById('toggle-matched-projects-header');
+    const body = document.getElementById('matched-projects-body');
+    const toggleText = document.getElementById('toggle-matched-projects-text');
+    const toggleIcon = document.getElementById('toggle-matched-projects-icon');
+    const bottomBtn = document.getElementById('btn-collapse-at-bottom');
+
+    if (!header || !body) return;
+
+    const STORAGE_KEY = 'nc-erp-matched-projects-collapsed';
+    const totalCount = {{ $projects->count() }};
+    const hasSelectedProject = {{ $selectedProject ? 'true' : 'false' }};
+
+    function setCollapsed(collapsed, save = true) {
+        if (collapsed) {
+            body.style.display = 'none';
+            if (toggleText) toggleText.textContent = `展开列表 (${totalCount} 个)`;
+            if (toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
+        } else {
+            body.style.display = 'block';
+            if (toggleText) toggleText.textContent = '收起列表';
+            if (toggleIcon) toggleIcon.style.transform = 'rotate(0deg)';
+        }
+        if (save) {
+            try {
+                localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+            } catch (e) {}
+        }
+    }
+
+    const savedPreference = localStorage.getItem(STORAGE_KEY);
+    let initialCollapsed = false;
+    if (savedPreference !== null) {
+        initialCollapsed = savedPreference === '1';
+    } else if (hasSelectedProject && totalCount > 3) {
+        initialCollapsed = true;
+    }
+
+    setCollapsed(initialCollapsed, false);
+
+    header.addEventListener('click', function () {
+        const isCurrentlyCollapsed = body.style.display === 'none';
+        setCollapsed(!isCurrentlyCollapsed);
+    });
+
+    bottomBtn?.addEventListener('click', function (e) {
+        e.stopPropagation();
+        setCollapsed(true);
+        header.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+})();
 </script>
