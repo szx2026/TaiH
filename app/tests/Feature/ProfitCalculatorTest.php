@@ -130,4 +130,66 @@ class ProfitCalculatorTest extends TestCase
         $this->assertEquals(6.70, $project->profit_data['settings']['exchangeRate']);
         $this->assertEquals(19.99, $project->profit_data['products'][0]['priceUsd']);
     }
+
+    public function test_can_create_new_project_profit_calculation_and_sync_skus(): void
+    {
+        $department = Department::factory()->create(['code' => 'market_research']);
+        $user = User::factory()->create(['department_id' => $department->id, 'role' => 'administrator']);
+
+        $payload = [
+            'product_name' => '磁吸折叠手机支架',
+            'settings' => [
+                'exchangeRate' => 7.20,
+                'feeRate' => 0.03,
+                'refundRate' => 0.05,
+                'logisticsBaseCny' => 30,
+                'logisticsRateCnyKg' => 50,
+            ],
+            'products' => [
+                [
+                    'id' => 'prod-1',
+                    'sku' => 'STAND-MAG-BLK',
+                    'costCny' => 15.50,
+                    'weightG' => 120,
+                    'priceUsd' => 24.99,
+                    'storeShippingUsd' => 0,
+                ],
+                [
+                    'id' => 'prod-2',
+                    'sku' => 'STAND-MAG-SLV',
+                    'costCny' => 16.00,
+                    'weightG' => 120,
+                    'priceUsd' => 24.99,
+                    'storeShippingUsd' => 0,
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($user)
+            ->postJson(route('profit-calculator.save-new'), $payload);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+            ]);
+
+        $project = ProductProject::where('product_name', '磁吸折叠手机支架')->first();
+        $this->assertNotNull($project);
+        $this->assertNotNull($project->profit_data);
+        $this->assertCount(2, $project->skus);
+
+        $skuBlk = $project->skus()->where('sku_code', 'STAND-MAG-BLK')->first();
+        $this->assertNotNull($skuBlk);
+        $this->assertEquals(15.50, $skuBlk->purchase_price);
+        $this->assertEquals(120, $skuBlk->weight_g);
+
+        // Verify that order profit calculator can see these SKUs
+        $orderCalcResponse = $this->actingAs($user)
+            ->get(route('order-profit-calculator.index'));
+
+        $orderCalcResponse->assertOk()
+            ->assertSee('STAND-MAG-BLK')
+            ->assertSee('STAND-MAG-SLV')
+            ->assertSee('磁吸折叠手机支架');
+    }
 }

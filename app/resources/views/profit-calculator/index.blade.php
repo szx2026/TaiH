@@ -38,7 +38,11 @@
             <h1 class="mt-1 text-3xl font-bold text-slate-900">产品盈亏计算工具</h1>
             <p class="mt-2 text-sm text-slate-500">自动带入系统产品规格已知信息，填写售价实时计算保本广告成本（CPR）与盈亏保本 ROI。</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2.5">
+            <button type="button" id="btn-open-create-modal" class="btn-primary-action" style="padding: 0.45rem 0.85rem; font-size: 0.8125rem;">
+                <svg width="15" height="15" style="width:15px;height:15px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>新增产品利润计算表</span>
+            </button>
             <span class="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700 border border-teal-200">
                 <span class="h-1.5 w-1.5 rounded-full bg-teal-500"></span>
                 草稿实时缓存
@@ -692,7 +696,7 @@ function renderProducts(results) {
         <p class="text-xs text-slate-500 mt-0.5">${subtitle}</p>
       </div>
       <div class="flex items-center gap-2">
-        ${currentProjectId ? `<button type="button" data-action="save-project" class="btn-primary-action" style="padding: 0.35rem 0.85rem; font-size: 0.8125rem;">💾 保存此产品利润表</button>` : ''}
+        ${currentProjectId ? `<button type="button" data-action="save-project" class="btn-primary-action" style="padding: 0.35rem 0.85rem; font-size: 0.8125rem;">💾 保存此产品利润表</button>` : `<button type="button" data-action="save-project" class="btn-primary-action" style="padding: 0.35rem 0.85rem; font-size: 0.8125rem;">💾 保存为新产品测算表</button>`}
         <button type="button" data-action="add" class="btn-secondary-action" style="padding: 0.35rem 0.85rem; font-size: 0.8125rem;">+ 新增产品规格</button>
       </div>
     </div>
@@ -757,11 +761,15 @@ function updateModeUI(savedAt = null) {
       badge.innerHTML = '<span class="dot"></span>自由独立计算模式';
     }
     if (saveBtn) {
-      saveBtn.disabled = true;
-      saveBtn.title = '自由模式无需手动保存，浏览器本地自动缓存';
+      saveBtn.disabled = false;
+      saveBtn.title = '将当前填写的测算数据保存为系统新产品利润表';
+    }
+    const saveText = document.getElementById('btn-save-text');
+    if (saveText) {
+      saveText.textContent = '保存为新产品利润表';
     }
     if (modeHint) {
-      modeHint.innerHTML = '💡 <strong>自由独立计算模式</strong>：不关联系统项目，数据保存在当前浏览器本地，可自由测算。如需专属保存请在上方选择产品。';
+      modeHint.innerHTML = '💡 <strong>自由独立计算模式</strong>：可自由测算，或点击右侧「保存为新产品利润表」录入品名及公司内部 SKU 保存至系统。';
     }
     if (lastSaved) lastSaved.textContent = '';
   } else {
@@ -835,7 +843,7 @@ function switchProject(projectId, isUserInitiated = false) {
 
 async function saveCurrentProjectProfit() {
   if (!currentProjectId) {
-    alert('当前处于自由独立计算模式，数据已自动保存在当前浏览器本地。\n若需保存专属利润表，请先在上方关联一个产品项目。');
+    openCreateProjectModal(true);
     return;
   }
 
@@ -909,6 +917,99 @@ async function restoreBackup(file) {
   }
 }
 
+
+function openCreateProjectModal(preserveCurrentState = true) {
+  const modal = document.getElementById('create-project-modal');
+  const inputName = document.getElementById('modal-input-product-name');
+  if (!modal) return;
+  if (!preserveCurrentState) {
+    // 全新开始：重置为默认 5 行空模板
+    state = StateManager.createInitialState();
+    currentProjectId = null;
+    document.getElementById('erp-project-select').value = '';
+    updateModeUI(null);
+    render();
+  }
+  if (inputName) {
+    inputName.value = '';
+    setTimeout(() => inputName.focus(), 50);
+  }
+  modal.style.display = 'flex';
+}
+
+function closeCreateProjectModal() {
+  const modal = document.getElementById('create-project-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function handleCreateNewProjectSubmit(e) {
+  e.preventDefault();
+  const inputName = document.getElementById('modal-input-product-name');
+  const submitBtn = document.getElementById('btn-submit-create-modal');
+  const submitText = document.getElementById('btn-submit-modal-text');
+  const productName = (inputName?.value || '').trim();
+
+  if (!productName) {
+    alert('请输入产品名称');
+    return;
+  }
+
+  if (submitBtn) submitBtn.disabled = true;
+  if (submitText) submitText.textContent = '保存中...';
+
+  try {
+    const csrfToken = '{{ csrf_token() }}';
+    const response = await fetch('{{ route("profit-calculator.save-new") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      body: JSON.stringify({
+        product_name: productName,
+        settings: state.settings,
+        products: state.products,
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.project) {
+      throw new Error(result.message || '创建产品测算表失败，请稍后重试');
+    }
+
+    const newProj = {
+      id: result.project.id,
+      name: result.project.name,
+      code: result.project.code,
+      skus: result.project.skus || [],
+      profit_data: result.project.profit_data,
+      save_url: result.project.save_url,
+    };
+    PROJECTS_DATA[newProj.id] = newProj;
+
+    // 添加到下拉列表
+    const select = document.getElementById('erp-project-select');
+    if (select) {
+      const option = document.createElement('option');
+      option.value = String(newProj.id);
+      option.textContent = `${newProj.name} (${newProj.skus.length} 个规格) · ${newProj.code}`;
+      select.appendChild(option);
+      select.value = String(newProj.id);
+    }
+
+    currentProjectId = newProj.id;
+    updateModeUI(newProj.profit_data.saved_at);
+    showStatus(`✅ ${result.message}`);
+    closeCreateProjectModal();
+  } catch (error) {
+    alert('保存失败：' + error.message);
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+    if (submitText) submitText.textContent = '立即保存并开始测算';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   try { storage = localStorage; } catch { storage = null; }
 
@@ -933,6 +1034,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // 保存按钮
   btnSaveProject?.addEventListener('click', () => {
     saveCurrentProjectProfit();
+  });
+
+  document.getElementById('btn-open-create-modal')?.addEventListener('click', () => {
+    openCreateProjectModal(false);
+  });
+
+  document.getElementById('btn-close-create-modal')?.addEventListener('click', closeCreateProjectModal);
+  document.getElementById('btn-cancel-create-modal')?.addEventListener('click', closeCreateProjectModal);
+  document.getElementById('form-create-project')?.addEventListener('submit', handleCreateNewProjectSubmit);
+
+  const modalBackdrop = document.getElementById('create-project-modal');
+  modalBackdrop?.addEventListener('click', (e) => {
+    if (e.target === modalBackdrop) closeCreateProjectModal();
   });
 
   // 快捷键支持 (Ctrl+S / Cmd+S)
@@ -1006,4 +1120,40 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
     </script>
+
+    <!-- 新增产品利润计算表弹窗 Modal -->
+    <div id="create-project-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(15,23,42,0.45);backdrop-filter:blur(2px);align-items:center;justify-content:center;padding:1rem;">
+        <div style="background:#ffffff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 8px 10px -6px rgba(0,0,0,0.1);width:100%;max-width:440px;padding:1.5rem;box-sizing:border-box;">
+            <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.75rem;margin-bottom:1rem;">
+                <div style="display:flex;align-items:center;gap:0.4rem;font-size:1rem;font-weight:700;color:#0f172a;">
+                    <svg width="18" height="18" style="width:18px;height:18px;color:#0f766e;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>新增产品利润计算表</span>
+                </div>
+                <button type="button" id="btn-close-create-modal" style="background:transparent;border:none;cursor:pointer;color:#94a3b8;padding:0.25rem;">
+                    <svg width="18" height="18" style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="form-create-project">
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#334155;margin-bottom:0.35rem;">
+                        产品名称 <span style="color:#ef4444;">*</span>
+                    </label>
+                    <input type="text" id="modal-input-product-name" required placeholder="例如：磁吸车载无线充 / 露营折叠椅"
+                           class="field-input" style="width:100%;box-sizing:border-box;font-size:0.875rem;" />
+                    <p style="font-size:0.6875rem;color:#94a3b8;margin:0.35rem 0 0 0;">
+                        保存后系统将自动生成独立测算编号并存入系统，下方的公司内部 SKU 将可直接用于订单利润核算。
+                    </p>
+                </div>
+                <div style="background:#f0fdfa;border:1px solid #ccfbf1;border-radius:8px;padding:0.75rem;font-size:0.75rem;color:#115e59;margin-bottom:1.25rem;line-height:1.45;">
+                    💡 <strong>联动说明</strong>：保存后，您在下方各行填写的<strong>「公司内部 SKU 编码」</strong>、<strong>「采购价 (¥)」</strong>与<strong>「重量 (g)」</strong>将自动同步入系统库，在「每日订单利润核算」中上传 Shopify 订单将实现自动对照匹配！
+                </div>
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:0.5rem;">
+                    <button type="button" id="btn-cancel-create-modal" class="btn-secondary-action">取消</button>
+                    <button type="submit" id="btn-submit-create-modal" class="btn-primary-action">
+                        <span id="btn-submit-modal-text">立即保存并开始测算</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </x-layouts.app>
